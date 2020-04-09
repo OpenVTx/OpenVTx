@@ -8,10 +8,12 @@ Working
 - Remembers previous settings on reboot.
 
 Attempts to do but needs checking and more work
+- Power settings
 - Clean startup and channel change.
+- Pitmode
 
 Work in progress
-- Pitmode
+- Eachine TX526
 
 # Supported VTx
 - Eachine TX801

@@ -6,13 +6,13 @@ char txPacket[16] = {0};
 
 uint16_t currFreq = 5800;
 uint16_t currPower = 25;
-uint16_t temperature = 69;
+uint16_t temperature = 69; // Dummy value.
 uint8_t pitMode = 0;
 
 /*
- * New targets can be added in the targets folder and added to targets.h
- * Uncomment your VTx.
- */
+   New targets can be added in the targets folder and added to targets.h
+   Uncomment your VTx.
+*/
 #define EACHINE_TX801
 //#define EACHINE_XXXXX
 //#define EACHINE_YYYYY
@@ -41,18 +41,18 @@ void zeroTxPacket()
 
 uint8_t calcCrc(uint8_t *packet)
 {
-    uint8_t crc = 0;
-    
-    for (int i = 1 ; i < 14 ; i++) {
-        crc += packet[i];
-    }
+  uint8_t crc = 0;
 
-    return crc;
+  for (int i = 1 ; i < 14 ; i++) {
+    crc += packet[i];
+  }
+
+  return crc;
 }
 
 void trampSendPacket()
 {
-  for (int i=0; i<16; i++)
+  for (int i = 0; i < 16; i++)
   {
     Serial_write(txPacket[i]);
   }
@@ -69,7 +69,7 @@ void buildrPacket()
   txPacket[5] = (MAX_FREQ >> 8) & 0xff;
   txPacket[6] = MAX_POWER & 0xff;
   txPacket[7] = (MAX_POWER >> 8) & 0xff;
-  txPacket[14] = calcCrc(txPacket);  
+  txPacket[14] = calcCrc(txPacket);
 }
 
 void buildvPacket()
@@ -82,10 +82,10 @@ void buildvPacket()
   txPacket[4] = currPower & 0xff;         // Configured transmitting power
   txPacket[5] = (currPower >> 8) & 0xff;  // Configured transmitting power
   txPacket[6] = 0;                        // trampControlMode
-  txPacket[7] = pitMode;                  // trampPitMode
+  txPacket[7] = pitMode ? 0 : 1;          // trampPitMode
   txPacket[8] = currPower & 0xff;         // Actual transmitting power
   txPacket[9] = (currPower >> 8) & 0xff;  // Actual transmitting power
-  txPacket[14] = calcCrc(txPacket);  
+  txPacket[14] = calcCrc(txPacket);
 }
 
 void buildsPacket()
@@ -95,52 +95,57 @@ void buildsPacket()
   txPacket[1] = 's';
   txPacket[6] = temperature & 0xff;
   txPacket[7] = (temperature >> 8) & 0xff;
-  txPacket[14] = calcCrc(txPacket);  
+  txPacket[14] = calcCrc(txPacket);
 }
 
 void processFPacket()
 {
-  currFreq = rxPacket[2]|(rxPacket[3] << 8);  
-  
-  rtc6705PowerAmpOn(false);
+  currFreq = rxPacket[2] | (rxPacket[3] << 8);
+
+  rtc6705PowerAmpOff();
   setPower(0);
+
   rtc6705WriteFrequency(currFreq);
-  rtc6705PowerAmpOn(true);
+
+  rtc6705PowerAmpOn();
   setPower(currPower);
-  
+
   EEPROM_put(0, currFreq);
 }
 
 void processPPacket()
 {
-  currPower = rxPacket[2]|(rxPacket[3] << 8);
+  currPower = rxPacket[2] | (rxPacket[3] << 8);
   setPower(currPower);
-  
+
   EEPROM_put(2, currPower);
 }
 
 void processIPacket()
 {
-  pitMode = rxPacket[2];
-//  //TODO - fix and finish
-//  if (pitMode)
-//  {
-//    setPitModePower(true);
-//    setPower(0);
-//  } else
-//  {
-//    setPitModePower(false); 
-//    setPower(currPower);    
-//  }
+  pitMode = rxPacket[2] ? 0 : 1;
+
+  EEPROM_put(4, pitMode);
+
+  if (pitMode)
+  {
+    rtc6705PowerAmpOff();
+    setPower(0);
+  } else
+  {
+    rtc6705PowerAmpOn();
+    setPower(currPower);
+  }
 }
 
 void setup()
 {
   EEPROM_get(0, currFreq);
   EEPROM_get(2, currPower);
-  
+  EEPROM_get(4, pitMode);
+
   Serial_begin(9600);
-  while(!Serial)
+  while (!Serial)
   {
     ;
   }
@@ -152,18 +157,22 @@ void setup()
   rfPowerAmpPinSetup();
   setPower(0);
 
-  // During testing this register got messed up. So now it gets reset on boot!
-  rtc6705ResetState(); 
-    
-  // Spam rtc6705 with PA off cmd to try and have clean powerup
-  // Need to check with a spectrum analyser
-  while(millis() < 1000)
+  // During testing registers got messed up. So now it gets reset on boot!
+  rtc6705ResetState();
+
+  //  // Spam rtc6705 with PA off cmd to try and have clean powerup
+  //  // Need to check with a spectrum analyser
+  //  while (millis() < 1000)
+  //  {
+  rtc6705PowerAmpOff();
+  rtc6705WriteFrequency(currFreq);
+  //  }
+
+  if (!pitMode)
   {
-    rtc6705PowerAmpOn(false);
-    rtc6705WriteFrequency(currFreq); 
+    rtc6705PowerAmpOn();
+    setPower(currPower);
   }
-  rtc6705PowerAmpOn(true);
-  setPower(currPower);
 
   // clear any uart garbage
   emptyUartBuffers();
@@ -174,10 +183,10 @@ void loop()
   if (Serial_available() == 15) // stm8s buffer is 16 bytes but this doesnt work when == 16 :/
   {
     // delay to prevent rx/tx collisions
-    delay(100); 
+    delay(100);
 
     // read in buffer
-    for (int i=0; i<15; i++)
+    for (int i = 0; i < 15; i++)
     {
       rxPacket[i] = Serial_read();
     }
@@ -185,9 +194,9 @@ void loop()
     // packet type and check crc
     if (rxPacket[0] == 15) // tramp header
     {
-      if(rxPacket[14] == calcCrc(rxPacket))
+      if (rxPacket[14] == calcCrc(rxPacket))
       {
-        switch(rxPacket[1]) // command
+        switch (rxPacket[1]) // command
         {
           case 'F':
             processFPacket();
@@ -219,9 +228,9 @@ void loop()
         }
       }
     }
-    
+
     // return to make serial monitor readable when debuging
-//     Serial_print_c('\n');
+    //     Serial_print_c('\n');
 
     // wait for tx and then clear buffer so serial_read does not read it back in.
     delay(20);
