@@ -2,6 +2,8 @@
    https://www.eachine.com/Eachine-TX801-5_8G-72CH-0_01mW-5mW-25mW-50mW-100mW-200mW-400mW-600mW-Switched-AV-VTX-FPV-Transmitter-p-842.html
 */
 
+#include <Arduino.h>
+
 #define MAX_POWER             600 // mW
 
 #define SPI_SS                PC6

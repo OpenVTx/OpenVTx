@@ -9,14 +9,6 @@ uint16_t currPower = 25;
 uint16_t temperature = 69; // Dummy value.
 uint8_t pitMode = 0;
 
-/*
-   New targets can be added in the targets folder and added to targets.h
-   Uncomment your VTx.
-*/
-#define EACHINE_TX801
-//#define EACHINE_XXXXX
-//#define EACHINE_YYYYY
-
 #include "targets.h"
 #include "rtc6705.h"
 
@@ -43,7 +35,8 @@ uint8_t calcCrc(uint8_t *packet)
 {
   uint8_t crc = 0;
 
-  for (int i = 1 ; i < 14 ; i++) {
+  for (int i = 1; i < 14; i++)
+  {
     crc += packet[i];
   }
 
@@ -79,12 +72,12 @@ void buildvPacket()
   txPacket[1] = 'v';
   txPacket[2] = currFreq & 0xff;
   txPacket[3] = (currFreq >> 8) & 0xff;
-  txPacket[4] = currPower & 0xff;         // Configured transmitting power
-  txPacket[5] = (currPower >> 8) & 0xff;  // Configured transmitting power
-  txPacket[6] = 0;                        // trampControlMode
-  txPacket[7] = pitMode ? 0 : 1;          // trampPitMode
-  txPacket[8] = currPower & 0xff;         // Actual transmitting power
-  txPacket[9] = (currPower >> 8) & 0xff;  // Actual transmitting power
+  txPacket[4] = currPower & 0xff;        // Configured transmitting power
+  txPacket[5] = (currPower >> 8) & 0xff; // Configured transmitting power
+  txPacket[6] = 0;                       // trampControlMode
+  txPacket[7] = pitMode ? 0 : 1;         // trampPitMode
+  txPacket[8] = currPower & 0xff;        // Actual transmitting power
+  txPacket[9] = (currPower >> 8) & 0xff; // Actual transmitting power
   txPacket[14] = calcCrc(txPacket);
 }
 
@@ -131,7 +124,8 @@ void processIPacket()
   {
     rtc6705PowerAmpOff();
     setPower(0);
-  } else
+  }
+  else
   {
     rtc6705PowerAmpOn();
     setPower(currPower);
@@ -198,33 +192,33 @@ void loop()
       {
         switch (rxPacket[1]) // command
         {
-          case 'F':
-            processFPacket();
-            buildvPacket();
-            trampSendPacket();
-            break;
-          case 'P':
-            processPPacket();
-            buildvPacket();
-            trampSendPacket();
-            break;
-          case 'I':
-            processIPacket();
-            buildvPacket();
-            trampSendPacket();
-            break;
-          case 'r':
-            buildrPacket();
-            trampSendPacket();
-            break;
-          case 'v':
-            buildvPacket();
-            trampSendPacket();
-            break;
-          case 's':
-            buildsPacket();
-            trampSendPacket();
-            break;
+        case 'F':
+          processFPacket();
+          buildvPacket();
+          trampSendPacket();
+          break;
+        case 'P':
+          processPPacket();
+          buildvPacket();
+          trampSendPacket();
+          break;
+        case 'I':
+          processIPacket();
+          buildvPacket();
+          trampSendPacket();
+          break;
+        case 'r':
+          buildrPacket();
+          trampSendPacket();
+          break;
+        case 'v':
+          buildvPacket();
+          trampSendPacket();
+          break;
+        case 's':
+          buildsPacket();
+          trampSendPacket();
+          break;
         }
       }
     }
