@@ -1,11 +1,11 @@
 #include <Arduino.h>
 
-#define SynthesizerRegisterB          0x01
+#define SynthesizerRegisterB 0x01
 #define PredriverandPAControlRegister 0x07
-#define StateRegister                 0x0F
+#define StateRegister 0x0F
 
-#define MIN_FREQ                      5000
-#define MAX_FREQ                      5999
+#define MIN_FREQ 5000
+#define MAX_FREQ 5999
 
 void spiPinSetup()
 {
@@ -59,7 +59,7 @@ void rtc6705PowerAmpOn()
 
 void rtc6705PowerAmpOff()
 {
-  long data = PredriverandPAControlRegister | (1 << 4) | (0b00000100000000111101 << 5);
+  long data = PredriverandPAControlRegister | (1 << 4) | (0b00000000000000000000 << 5);
 
   sendBits(data);
 }

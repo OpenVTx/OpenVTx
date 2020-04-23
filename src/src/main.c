@@ -116,27 +116,27 @@ void processPPacket()
 
 void processIPacket()
 {
-  pitMode = rxPacket[2] ? 0 : 1;
+  // pitMode = rxPacket[2] ? 0 : 1;
 
-  EEPROM_put(4, pitMode);
+  // EEPROM_put(4, pitMode);
 
-  if (pitMode)
-  {
-    rtc6705PowerAmpOff();
-    setPower(0);
-  }
-  else
-  {
-    rtc6705PowerAmpOn();
-    setPower(currPower);
-  }
+  // if (pitMode)
+  // {
+  //   rtc6705PowerAmpOff();
+  //   setPower(0);
+  // }
+  // else
+  // {
+  //   rtc6705PowerAmpOn();
+  //   setPower(currPower);
+  // }
 }
 
 void setup()
 {
   EEPROM_get(0, currFreq);
   EEPROM_get(2, currPower);
-  EEPROM_get(4, pitMode);
+  // EEPROM_get(4, pitMode);
 
   Serial_begin(9600);
   while (!Serial)
@@ -154,13 +154,13 @@ void setup()
   // During testing registers got messed up. So now it gets reset on boot!
   rtc6705ResetState();
 
-  //  // Spam rtc6705 with PA off cmd to try and have clean powerup
-  //  // Need to check with a spectrum analyser
-  //  while (millis() < 1000)
-  //  {
-  rtc6705PowerAmpOff();
-  rtc6705WriteFrequency(currFreq);
-  //  }
+  // Spam rtc6705 with PA off cmd to try and have clean powerup
+  // Need to check with a spectrum analyser
+  while (millis() < 1000)
+  {
+    rtc6705PowerAmpOff();
+    rtc6705WriteFrequency(currFreq);
+  }
 
   if (!pitMode)
   {
