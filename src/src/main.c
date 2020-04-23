@@ -12,13 +12,12 @@ uint8_t pitMode = 0;
 #include "targets.h"
 #include "rtc6705.h"
 
-void emptyUartBuffers()
+void clearSerialBuffer()
 {
   while (Serial_available())
   {
     Serial_read();
   }
-  Serial_flush();
 }
 
 void zeroRxPacket()
@@ -169,7 +168,7 @@ void setup()
   }
 
   // clear any uart garbage
-  emptyUartBuffers();
+  clearSerialBuffer();
 }
 
 void loop()
@@ -223,11 +222,10 @@ void loop()
       }
     }
 
+    Serial_flush();
+    clearSerialBuffer();
+
     // return to make serial monitor readable when debuging
     //     Serial_print_c('\n');
-
-    // wait for tx and then clear buffer so serial_read does not read it back in.
-    delay(20);
-    emptyUartBuffers();
   }
 }

@@ -12,8 +12,8 @@ vtxtable band 3 BOSCAM_E E CUSTOM  5705 5685 5665 5645 5885 5905 5925 5945
 vtxtable band 4 FATSHARK F CUSTOM  5740 5760 5780 5800 5820 5840 5860 5880
 vtxtable band 5 RACEBAND R CUSTOM  5658 5695 5732 5769 5806 5843 5880 5917
 vtxtable powerlevels 4
-vtxtable powervalues 0 25 100 200
-vtxtable powerlabels 0 25 100 200
+vtxtable powervalues 1 25 100 200
+vtxtable powerlabels 1 25 100 200
 
 
 The below measurements are done hot on the bench.  However mW output does increase when the VTx is cooled.
