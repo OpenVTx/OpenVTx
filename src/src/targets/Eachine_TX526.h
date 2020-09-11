@@ -47,7 +47,7 @@ void rfPowerAmpPinSetup()
   pinMode(POWER_AMP_5, OUTPUT);
 }
 
-void setPower(uint16_t power)
+void setPowermW(uint16_t power)
 {
   if (pitMode)
   {

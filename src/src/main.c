@@ -1,171 +1,44 @@
 #include <Arduino.h>
 #include <EEPROM.h>
+#include "openVTxEEPROM.h"
+
+#define SERIAL_PIN PD5
+#define TRAMP_BAUD 9600
+#define SMARTAUDIO_BAUD 4800
 
 char rxPacket[16] = {0};
-char txPacket[16] = {0};
+char txPacket[18] = {0}; // May need to be increase for SA2.1 with more than 4 power levels
 
-uint16_t currFreq = 5800;
-uint16_t currPower = 25;
-uint16_t temperature = 69; // Dummy value.
-uint8_t pitMode = 0;
+uint8_t pitMode = 1;
+bool vtxModeLocked = false;
+uint16_t temperature = 0; // Dummy value.
 
 #include "targets.h"
 #include "rtc6705.h"
-
-void clearSerialBuffer()
-{
-  while (Serial_available())
-  {
-    Serial_read();
-  }
-}
-
-void zeroRxPacket()
-{
-  memcpy(rxPacket, 0, 16);
-}
-
-void zeroTxPacket()
-{
-  memcpy(txPacket, 0, 16);
-}
-
-uint8_t calcCrc(uint8_t *packet)
-{
-  uint8_t crc = 0;
-
-  for (int i = 1; i < 14; i++)
-  {
-    crc += packet[i];
-  }
-
-  return crc;
-}
-
-void trampSendPacket()
-{
-  for (int i = 0; i < 16; i++)
-  {
-    Serial_write(txPacket[i]);
-  }
-}
-
-void buildrPacket()
-{
-  zeroTxPacket();
-  txPacket[0] = 15;
-  txPacket[1] = 'r';
-  txPacket[2] = MIN_FREQ & 0xff;
-  txPacket[3] = (MIN_FREQ >> 8) & 0xff;
-  txPacket[4] = MAX_FREQ & 0xff;
-  txPacket[5] = (MAX_FREQ >> 8) & 0xff;
-  txPacket[6] = MAX_POWER & 0xff;
-  txPacket[7] = (MAX_POWER >> 8) & 0xff;
-  txPacket[14] = calcCrc(txPacket);
-}
-
-void buildvPacket()
-{
-  zeroTxPacket();
-  txPacket[0] = 15;
-  txPacket[1] = 'v';
-  txPacket[2] = currFreq & 0xff;
-  txPacket[3] = (currFreq >> 8) & 0xff;
-  txPacket[4] = currPower & 0xff;        // Configured transmitting power
-  txPacket[5] = (currPower >> 8) & 0xff; // Configured transmitting power
-  txPacket[6] = 0;                       // trampControlMode
-  txPacket[7] = pitMode ? 0 : 1;         // trampPitMode
-  txPacket[8] = currPower & 0xff;        // Actual transmitting power
-  txPacket[9] = (currPower >> 8) & 0xff; // Actual transmitting power
-  txPacket[14] = calcCrc(txPacket);
-}
-
-void buildsPacket()
-{
-  zeroTxPacket();
-  txPacket[0] = 15;
-  txPacket[1] = 's';
-  txPacket[6] = temperature & 0xff;
-  txPacket[7] = (temperature >> 8) & 0xff;
-  txPacket[14] = calcCrc(txPacket);
-}
-
-void processFPacket()
-{
-  currFreq = rxPacket[2] | (rxPacket[3] << 8);
-
-  rtc6705PowerAmpOff();
-  setPower(0);
-
-  rtc6705WriteFrequency(currFreq);
-
-  rtc6705PowerAmpOn();
-  setPower(currPower);
-
-  EEPROM_put(0, currFreq);
-}
-
-void processPPacket()
-{
-  currPower = rxPacket[2] | (rxPacket[3] << 8);
-  setPower(currPower);
-
-  EEPROM_put(2, currPower);
-}
-
-void processIPacket()
-{
-  // pitMode = rxPacket[2] ? 0 : 1;
-
-  // EEPROM_put(4, pitMode);
-
-  // if (pitMode)
-  // {
-  //   rtc6705PowerAmpOff();
-  //   setPower(0);
-  // }
-  // else
-  // {
-  //   rtc6705PowerAmpOn();
-  //   setPower(currPower);
-  // }
-}
+#include "common.h"
+#include "tramp.h"
+#include "smartAudio.h"
 
 void setup()
 {
-  EEPROM_get(0, currFreq);
-  EEPROM_get(2, currPower);
-  // EEPROM_get(4, pitMode);
+  rfPowerAmpPinSetup();
+  setPowerdB(0);
 
-  Serial_begin(9600);
+  readEEPROM();
+  pitMode = (myEEPROM.pitmodeInRange || myEEPROM.pitmodeOutRange) ? 1 : 0;
+
+  spiPinSetup();  
+  rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
+  rtc6705WriteFrequency(myEEPROM.currFreq);
+
+  Serial_begin(myEEPROM.vtxMode == TRAMP ? TRAMP_BAUD : SMARTAUDIO_BAUD);
+
   while (!Serial)
   {
     ;
   }
   UART1_HalfDuplexCmd(ENABLE);
-  pinMode(PD5, INPUT_PULLUP);
-
-  spiPinSetup();
-
-  rfPowerAmpPinSetup();
-  setPower(0);
-
-  // During testing registers got messed up. So now it gets reset on boot!
-  rtc6705ResetState();
-
-  // Spam rtc6705 with PA off cmd to try and have clean powerup
-  // Need to check with a spectrum analyser
-  while (millis() < 1000)
-  {
-    rtc6705PowerAmpOff();
-    rtc6705WriteFrequency(currFreq);
-  }
-
-  if (!pitMode)
-  {
-    rtc6705PowerAmpOn();
-    setPower(currPower);
-  }
+  pinMode(SERIAL_PIN, INPUT_PULLUP);
 
   // clear any uart garbage
   clearSerialBuffer();
@@ -173,59 +46,14 @@ void setup()
 
 void loop()
 {
-  if (Serial_available() == 15) // stm8s buffer is 16 bytes but this doesnt work when == 16 :/
+  if (myEEPROM.vtxMode == TRAMP)
   {
-    // delay to prevent rx/tx collisions
-    delay(100);
-
-    // read in buffer
-    for (int i = 0; i < 15; i++)
-    {
-      rxPacket[i] = Serial_read();
-    }
-
-    // packet type and check crc
-    if (rxPacket[0] == 15) // tramp header
-    {
-      if (rxPacket[14] == calcCrc(rxPacket))
-      {
-        switch (rxPacket[1]) // command
-        {
-        case 'F':
-          processFPacket();
-          buildvPacket();
-          trampSendPacket();
-          break;
-        case 'P':
-          processPPacket();
-          buildvPacket();
-          trampSendPacket();
-          break;
-        case 'I':
-          processIPacket();
-          buildvPacket();
-          trampSendPacket();
-          break;
-        case 'r':
-          buildrPacket();
-          trampSendPacket();
-          break;
-        case 'v':
-          buildvPacket();
-          trampSendPacket();
-          break;
-        case 's':
-          buildsPacket();
-          trampSendPacket();
-          break;
-        }
-      }
-    }
-
-    Serial_flush();
-    clearSerialBuffer();
-
-    // return to make serial monitor readable when debuging
-    //     Serial_print_c('\n');
+    trampProcessSerial();
   }
+  else
+  {
+    smartaudioProcessSerial();
+  }
+
+  writeEEPROM();
 }

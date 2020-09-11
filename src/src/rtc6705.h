@@ -1,6 +1,12 @@
 #include <Arduino.h>
 
+#define SynthesizerRegisterA 0x00
 #define SynthesizerRegisterB 0x01
+#define SynthesizerRegisterC 0x02
+#define RFVCODFCControlRegister 0x03
+#define VCOControlRegister 0x04
+#define VCOControlRegisterCont 0x05
+#define AudioModulatorControlRegister 0x06
 #define PredriverandPAControlRegister 0x07
 #define StateRegister 0x0F
 
@@ -49,12 +55,9 @@ void rtc6705ResetState()
 
 void rtc6705PowerAmpOn()
 {
-  if (!pitMode)
-  {
-    long data = PredriverandPAControlRegister | (1 << 4) | (0b00000100111110111101 << 5);
+  long data = PredriverandPAControlRegister | (1 << 4) | (0b00000100111110111111 << 5);
 
-    sendBits(data);
-  }
+  sendBits(data);
 }
 
 void rtc6705PowerAmpOff()
@@ -73,5 +76,14 @@ void rtc6705WriteFrequency(long newFreq)
 
   long data = SynthesizerRegisterB | (1 << 4) | (SYN_RF_A_REG << 5) | (SYN_RF_N_REG << 12);
 
+  rtc6705PowerAmpOff();
+  setPowermW(0);
+
   sendBits(data);
+
+  if (!pitMode)
+  {
+    rtc6705PowerAmpOn();
+    setPowerdB(myEEPROM.currPowerdB);
+  }
 }
