@@ -59,12 +59,18 @@ pinOutput value and mW measured
 
 void rfPowerAmpPinSetup()
 {
-  pinMode(POWER_AMP_1, OUTPUT);
-  pinMode(POWER_AMP_2, OUTPUT);
-  pinMode(POWER_AMP_3, OUTPUT);
-  pinMode(POWER_AMP_4, OUTPUT);
-  pinMode(POWER_AMP_5, OUTPUT);
-  pinMode(POWER_AMP_6, OUTPUT);
+  // pinMode(POWER_AMP_1, INPUT);
+  // pinMode(POWER_AMP_2, INPUT);
+  // pinMode(POWER_AMP_3, INPUT);
+  // pinMode(POWER_AMP_4, INPUT);
+  // pinMode(POWER_AMP_5, INPUT);
+  
+  // pinMode(POWER_AMP_1, OUTPUT);
+  // pinMode(POWER_AMP_2, OUTPUT);
+  // pinMode(POWER_AMP_3, OUTPUT);
+  // pinMode(POWER_AMP_4, OUTPUT);
+  // pinMode(POWER_AMP_5, OUTPUT);
+  // pinMode(POWER_AMP_6, OUTPUT);
 }
 
 void setPowermW(uint16_t power)
@@ -112,12 +118,12 @@ void setPowermW(uint16_t power)
     rtc6705PowerAmpOn();
   }
 
-  digitalWrite(POWER_AMP_1, pinOutput & 0b000001);
-  digitalWrite(POWER_AMP_2, pinOutput & 0b000010);
-  digitalWrite(POWER_AMP_3, pinOutput & 0b000100);
-  digitalWrite(POWER_AMP_4, pinOutput & 0b001000);
-  digitalWrite(POWER_AMP_5, pinOutput & 0b010000);
-  digitalWrite(POWER_AMP_6, pinOutput & 0b100000);
+  // digitalWrite(POWER_AMP_1, pinOutput & 0b000001);
+  // digitalWrite(POWER_AMP_2, pinOutput & 0b000010);
+  // digitalWrite(POWER_AMP_3, pinOutput & 0b000100);
+  // digitalWrite(POWER_AMP_4, pinOutput & 0b001000);
+  // digitalWrite(POWER_AMP_5, pinOutput & 0b010000);
+  // digitalWrite(POWER_AMP_6, pinOutput & 0b100000);
 
 }
 
