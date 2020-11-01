@@ -22,12 +22,15 @@ void setup()
 
   Serial_begin(myEEPROM.vtxMode == TRAMP ? TRAMP_BAUD : SMARTAUDIO_BAUD);
 
+#ifdef ARDUINO
   while (!Serial)
-  {
     ;
-  }
+#endif
+
   UART1_HalfDuplexCmd(ENABLE);
+#ifdef SERIAL_PIN
   pinMode(SERIAL_PIN, INPUT_PULLUP);
+#endif
 
   // clear any uart garbage
   clearSerialBuffer();

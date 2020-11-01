@@ -4,6 +4,7 @@
 #include "rtc6705.h"
 #include <Arduino.h>
 
+
 void rfPowerAmpPinSetup()
 {
   pinMode(POWER_AMP_2, OUTPUT);
@@ -45,10 +46,13 @@ void setPowerdB(uint16_t currPowerdB)
   switch (currPowerdB)
   {
   case 0:
-    setPowermW(1);
+    setPowermW(0);
     break;
   case 14:
     setPowermW(25);
+    break;
+  case 20:
+    setPowermW(100);
     break;
   case 23:
     setPowermW(200);

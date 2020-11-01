@@ -20,13 +20,16 @@ The below measurements are done hot on the bench.  However mW output does increa
 If you have made it this far and have the equipment to check these outputs, please do and report back on their accuracy :)
 
 */
-#pragma once
+#ifndef __TARGET_DEF_H_
+#define __TARGET_DEF_H_
 
 #define MAX_POWER 200 // mW
 
+//#define SERIAL_PIN -1
+
 #define SPI_SS PC6
 #define SPI_CLOCK PC5
-#define SPI_DATA PC7
+#define SPI_MOSI PC7
 
 #define POWER_AMP_1 PA2
 #define POWER_AMP_2 PD4
@@ -40,3 +43,5 @@ If you have made it this far and have the equipment to check these outputs, plea
 #define POWER_AMP_9 PB5
 #define POWER_AMP_10 PB4
 #define POWER_AMP_11 PD1
+
+#endif /* __TARGET_DEF_H_ */

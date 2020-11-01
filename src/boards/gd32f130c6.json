@@ -1,0 +1,40 @@
+{
+  "build": {
+    "core": "gd32",
+    "cpu": "cortex-m3",
+    "extra_flags": "-DGD32F1x0=1  -DGD32F130=1 -DGD32F130_150=1 -D__GD32F130_SUBFAMILY -D__GD32F1x0_FAMILY",
+    "f_cpu": "48000000L",
+    "ldscript": "",
+    "mcu": "gd32f130g6u6"
+  },
+  "connectivity": [],
+  "debug": {
+    "default_tools": [
+      "stlink"
+    ],
+    "jlink_device": "GD32F130C6",
+    "onboard_tools": [
+      "stlink"
+    ],
+    "openocd_target": "stm32f1x",
+    "svd_path": "STM32F10x.svd"
+  },
+  "frameworks": [
+    "stm32cube",
+    "spl"
+  ],
+  "name": "GigaDevice GD32F130G6U6",
+  "upload": {
+    "maximum_ram_size": 4096,
+    "maximum_size": 32768,
+    "protocol": "stlink",
+    "protocols": [
+      "jlink",
+      "stlink",
+      "blackmagic",
+      "mbed"
+    ]
+  },
+  "url": "https://www.gigadevice.com/microcontroller/gd32f130g6u6/",
+  "vendor": "GigaDevice"
+}

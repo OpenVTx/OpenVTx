@@ -8,8 +8,8 @@ void spiPinSetup(void)
 {
   pinMode(SPI_CLOCK, OUTPUT);
   digitalWrite(SPI_CLOCK, LOW);
-  pinMode(SPI_DATA, OUTPUT);
-  digitalWrite(SPI_DATA, LOW);
+  pinMode(SPI_MOSI, OUTPUT);
+  digitalWrite(SPI_MOSI, LOW);
   pinMode(SPI_SS, OUTPUT);
   digitalWrite(SPI_SS, HIGH);
 }
@@ -23,7 +23,7 @@ void sendBits(uint32_t data)
   {
     digitalWrite(SPI_CLOCK, LOW);
     delayMicroseconds(1);
-    digitalWrite(SPI_DATA, data & 0x1);
+    digitalWrite(SPI_MOSI, data & 0x1);
     delayMicroseconds(1);
     digitalWrite(SPI_CLOCK, HIGH);
     delayMicroseconds(1);
@@ -32,7 +32,7 @@ void sendBits(uint32_t data)
   }
 
   digitalWrite(SPI_CLOCK, LOW);
-  digitalWrite(SPI_DATA, LOW);
+  digitalWrite(SPI_MOSI, LOW);
   digitalWrite(SPI_SS, HIGH);
   delayMicroseconds(1);
 }

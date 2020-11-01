@@ -39,7 +39,7 @@ uint8_t smartadioCalcCrc(const uint8_t *data, uint8_t len)
         {
             if ((crc & 0x80) != 0)
             {
-                crc = (byte)((crc << 1) ^ POLYGEN);
+                crc = (uint8_t)((crc << 1) ^ POLYGEN);
             }
             else
             {
@@ -61,7 +61,7 @@ void smartaudioSendPacket(void)
 
 void smartaudioBuildSettingsPacket(void)
 {
-    byte operationMode = 0;
+    uint8_t operationMode = 0;
     bitWrite(operationMode, 0, myEEPROM.freqMode);
     bitWrite(operationMode, 1, pitMode);
     bitWrite(operationMode, 2, myEEPROM.pitmodeInRange);
@@ -109,7 +109,7 @@ void smartaudioProcessFrequencyPacket(void)
     txPacket[0] = SMARTAUDIO_SYNC;
     txPacket[1] = SMARTAUDIO_HEADER;
     txPacket[2] = SET_FREQUENCY;
-    txPacket[3] = 0x04​​; // Length
+    txPacket[3] = 0x04; // Length
     txPacket[4] = (returnFreq >> 8) & 0xFF;
     txPacket[5] = returnFreq & 0xFF;
     txPacket[6] = RESERVE_BYTE;
@@ -129,7 +129,7 @@ void smartaudioProcessChannelPacket(void)
     txPacket[0] = SMARTAUDIO_SYNC;
     txPacket[1] = SMARTAUDIO_HEADER;
     txPacket[2] = SET_CHANNEL;
-    txPacket[3] = 0x03​​; // Length
+    txPacket[3] = 0x03; // Length
     txPacket[4] = myEEPROM.channel;
     txPacket[5] = RESERVE_BYTE;
     txPacket[6] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
@@ -148,7 +148,7 @@ void smartaudioProcessPowerPacket(void)
     txPacket[0] = SMARTAUDIO_SYNC;
     txPacket[1] = SMARTAUDIO_HEADER;
     txPacket[2] = SET_POWER;
-    txPacket[3] = 0x03​​; // Length
+    txPacket[3] = 0x03; // Length
     txPacket[4] = myEEPROM.currPowerdB;
     txPacket[5] = RESERVE_BYTE;
     txPacket[6] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
@@ -172,7 +172,7 @@ void smartaudioProcessModePacket(void)
 
     updateEEPROM = true;
 
-    byte operationMode = 0;
+    uint8_t operationMode = 0;
     bitWrite(operationMode, 0, myEEPROM.pitmodeInRange);
     bitWrite(operationMode, 1, myEEPROM.pitmodeOutRange);
     bitWrite(operationMode, 2, pitMode);
@@ -181,7 +181,7 @@ void smartaudioProcessModePacket(void)
     txPacket[0] = SMARTAUDIO_SYNC;
     txPacket[1] = SMARTAUDIO_HEADER;
     txPacket[2] = SET_OPERATION_MODE;
-    txPacket[3] = 0x03​​; // Length
+    txPacket[3] = 0x03; // Length
     txPacket[4] = operationMode;
     txPacket[5] = RESERVE_BYTE;
     txPacket[6] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
@@ -208,9 +208,9 @@ void smartaudioProcessSerial(void)
                 rxPacket[4 + i] = Serial_read(); // Payload
             }
 
-            uint8_t CRC = Serial_read();
+            uint8_t crc = Serial_read();
 
-            if (smartadioCalcCrc(rxPacket, 4 + rxPacket[3]) == CRC) // CRC check
+            if (smartadioCalcCrc(rxPacket, 4 + rxPacket[3]) == crc) // CRC check
             {
                 vtxModeLocked = true; // Successfully got a packet so lock VTx mode.
 
