@@ -1,24 +1,19 @@
+#pragma once
 
-void clearSerialBuffer()
-{
-  while (Serial_available())
-  {
-    Serial_read();
-  }
-}
+#include <stdint.h>
 
-void zeroRxPacket()
-{
-  for (uint8_t i = 0; i < 16; i++)
-  {
-    rxPacket[i] = 0;
-  }
-}
+#define TRAMP_BAUD 9600
+#define SMARTAUDIO_BAUD 4800
 
-void zeroTxPacket()
-{
-  for (uint8_t i = 0; i < 18; i++)
-  {
-    txPacket[i] = 0;
-  }
-}
+
+extern uint8_t rxPacket[16];
+extern uint8_t txPacket[18];
+
+extern uint8_t vtxModeLocked;
+extern uint8_t pitMode;
+extern uint16_t temperature;
+
+
+void clearSerialBuffer(void);
+void zeroRxPacket(void);
+void zeroTxPacket(void);
