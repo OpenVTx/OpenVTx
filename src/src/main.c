@@ -1,23 +1,10 @@
-#include <Arduino.h>
-#include <EEPROM.h>
-#include "openVTxEEPROM.h"
-
-#define SERIAL_PIN PD5
-#define TRAMP_BAUD 9600
-#define SMARTAUDIO_BAUD 4800
-
-char rxPacket[16] = {0};
-char txPacket[18] = {0}; // May need to be increase for SA2.1 with more than 4 power levels
-
-uint8_t pitMode = 1;
-bool vtxModeLocked = false;
-uint16_t temperature = 0; // Dummy value.
-
 #include "targets.h"
-#include "rtc6705.h"
 #include "common.h"
-#include "tramp.h"
+#include "openVTxEEPROM.h"
+#include "rtc6705.h"
 #include "smartAudio.h"
+#include "tramp.h"
+#include <Arduino.h>
 
 uint16_t dCycle;
 
@@ -29,7 +16,7 @@ void setup()
   readEEPROM();
   pitMode = (myEEPROM.pitmodeInRange || myEEPROM.pitmodeOutRange) ? 1 : 0;
 
-  spiPinSetup();  
+  spiPinSetup();
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
   rtc6705WriteFrequency(myEEPROM.currFreq);
 
@@ -44,7 +31,7 @@ void setup()
 
   // clear any uart garbage
   clearSerialBuffer();
-  
+
 
 // pinMode(POWER_AMP_6, OUTPUT);
 // uint16_t AutoReloadRegister = 255;//1591; // 10khz
@@ -64,7 +51,7 @@ void setup()
 // dCycle = 1024; // 2.9V
 // dCycle = 1; // 0V
 // dCycle = AutoReloadRegister / 2;
-// dCycle = 155; // 1.463V 
+// dCycle = 155; // 1.463V
 // dCycle = 160; // 1.510V 27mW
 // dCycle = 170; // 1.600V 33mW
 // dCycle = 175; // 1.643V 34mW

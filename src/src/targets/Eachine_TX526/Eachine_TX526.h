@@ -20,6 +20,7 @@ The below measurements are done hot on the bench.  However mW output does increa
 If you have made it this far and have the equipment to check these outputs, please do and report back on their accuracy :)
 
 */
+#pragma once
 
 #define MAX_POWER 200 // mW
 
@@ -39,39 +40,3 @@ If you have made it this far and have the equipment to check these outputs, plea
 #define POWER_AMP_9 PB5
 #define POWER_AMP_10 PB4
 #define POWER_AMP_11 PD1
-
-void rfPowerAmpPinSetup()
-{
-  pinMode(POWER_AMP_2, OUTPUT);
-  pinMode(POWER_AMP_3, OUTPUT);
-  pinMode(POWER_AMP_5, OUTPUT);
-}
-
-void setPowermW(uint16_t power)
-{
-  if (pitMode)
-  {
-    power = 1;
-  }
-
-  switch (power)
-  {
-  case 1:
-    digitalWrite(POWER_AMP_2, LOW);
-    digitalWrite(POWER_AMP_3, LOW);
-    digitalWrite(POWER_AMP_5, HIGH);
-    break;
-  case 25:
-    digitalWrite(POWER_AMP_2, LOW);
-    digitalWrite(POWER_AMP_3, HIGH);
-    digitalWrite(POWER_AMP_5, HIGH);
-    break;
-  case 200:
-    digitalWrite(POWER_AMP_2, HIGH);
-    digitalWrite(POWER_AMP_5, HIGH);
-    break;
-  default:
-    return; // power value not recognised and no change
-    break;
-  }
-}
