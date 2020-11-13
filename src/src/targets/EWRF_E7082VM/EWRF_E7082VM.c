@@ -5,11 +5,9 @@
 #include <Arduino.h>
 
 
-void rfPowerAmpPinSetup()
+void rfPowerAmpPinSetup(void)
 {
-  pinMode(POWER_AMP_2, OUTPUT);
-  pinMode(POWER_AMP_3, OUTPUT);
-  pinMode(POWER_AMP_5, OUTPUT);
+  // TODO: PWM setup...
 }
 
 void setPowermW(uint16_t power)
@@ -22,18 +20,12 @@ void setPowermW(uint16_t power)
   switch (power)
   {
   case 1:
-    digitalWrite(POWER_AMP_2, LOW);
-    digitalWrite(POWER_AMP_3, LOW);
-    digitalWrite(POWER_AMP_5, HIGH);
     break;
   case 25:
-    digitalWrite(POWER_AMP_2, LOW);
-    digitalWrite(POWER_AMP_3, HIGH);
-    digitalWrite(POWER_AMP_5, HIGH);
+    break;
+  case 100:
     break;
   case 200:
-    digitalWrite(POWER_AMP_2, HIGH);
-    digitalWrite(POWER_AMP_5, HIGH);
     break;
   default:
     return; // power value not recognised and no change

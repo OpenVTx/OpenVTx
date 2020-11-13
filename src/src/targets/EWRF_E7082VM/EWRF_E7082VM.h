@@ -28,24 +28,17 @@ If you have made it this far and have the equipment to check these outputs, plea
 
 //#define SERIAL_PIN    -1
 
-#define UART_RX       PA3
-#define UART_TX       PA2
+#define UART_RX       PA9 //PA10
+#define UART_TX       PA9
 
-#define SPI_SS        PC6
-#define SPI_CLOCK     PC5
-#define SPI_MOSI      PC7
+#define SPI_SS        PB3
+#define SPI_CLOCK     PA15
+#define SPI_MOSI      PB4
 
-#define POWER_AMP_1   PA2
-#define POWER_AMP_2   PD4
-#define POWER_AMP_3   PD3
-#define POWER_AMP_4   PD2
-#define POWER_AMP_5   PC3
-#define POWER_AMP_6   PC4
+#define LED           PA4
+#define VREF          PA0
+#define VPD           PA1
 
-#define POWER_AMP_7   PA2
-#define POWER_AMP_8   PA3
-#define POWER_AMP_9   PB5
-#define POWER_AMP_10  PB4
-#define POWER_AMP_11  PD1
+#define PWM_BIAS_FREQ 10000 // Hz
 
 #endif /* __TARGET_DEF_H_ */

@@ -11,6 +11,8 @@ void delayMicroseconds(uint32_t us);
 
 /***********************************************************/
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+
 #define true 1
 #define false 0
 
@@ -116,9 +118,13 @@ void delayMicroseconds(uint32_t us);
 
 enum {
     OUTPUT = 0,
-    INPUT = 1,
-    INPUT_PULLUP = 2,
+    INPUT,
+    INPUT_PULLUP,
+    ANALOG,
+    ALTERNATE = 0x80,
 };
+
+#define ALTERNATE_CREATE(_a) (ALTERNATE | (_a))
 
 void pinMode(uint32_t pin, uint8_t type);
 void digitalWrite(uint32_t pin, uint8_t val);
@@ -130,7 +136,5 @@ uint8_t Serial_available(void);
 uint8_t Serial_read(void);
 void Serial_write(uint8_t data);
 void Serial_flush(void);
-
-void UART1_HalfDuplexCmd(uint8_t state);
 
 #endif /* __ARDUINO_H_ */

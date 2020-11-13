@@ -25,11 +25,10 @@ void setup()
 #ifdef ARDUINO
   while (!Serial)
     ;
-#endif
-
   UART1_HalfDuplexCmd(ENABLE);
 #ifdef SERIAL_PIN
   pinMode(SERIAL_PIN, INPUT_PULLUP);
+#endif
 #endif
 
   // clear any uart garbage

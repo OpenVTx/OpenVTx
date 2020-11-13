@@ -4,7 +4,7 @@
 #include "rtc6705.h"
 #include <Arduino.h>
 
-void rfPowerAmpPinSetup()
+void rfPowerAmpPinSetup(void)
 {
   pinMode(POWER_AMP_2, OUTPUT);
   pinMode(POWER_AMP_3, OUTPUT);
