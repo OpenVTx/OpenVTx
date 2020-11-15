@@ -5,15 +5,12 @@
 #include "smartAudio.h"
 #include "tramp.h"
 #include <Arduino.h>
-#include "pwm.h"
 
 uint16_t dCycle;
 
-struct timeout outputPowerTimer;
-
 void setup()
 {
-//   rfPowerAmpPinSetup();
+  rfPowerAmpPinSetup();
 //   setPowerdB(0);
 
 //   readEEPROM();
@@ -41,12 +38,6 @@ void setup()
 
   Serial_begin(SMARTAUDIO_BAUD);
 
-  pinMode(VREF, OUTPUT);
-  digitalWrite(VREF, HIGH); // Power amp ON
-  // digitalWrite(VREF, LOW); // Power amp OFF
-  
-  outputPowerTimer = pwm_init(RTC_BIAS);
-
   // Below flashing is just for testing. Delete later.
   pinMode(LED, OUTPUT);
   for (int i = 0; i < 5; i++)
@@ -60,7 +51,7 @@ void setup()
 
 void loop()
 {
-  pwm_out_write(outputPowerTimer, 2999); // Here just for testing. 2999 = low mW, 0 = Max mW
+  // pwm_out_write(outputPowerTimer, 2999); // Here just for testing. 2999 = low mW, 0 = Max mW
 
   // digitalWrite(LED, HIGH);
   // delay(50);

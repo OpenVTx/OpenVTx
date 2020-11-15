@@ -140,9 +140,9 @@ void smartaudioProcessChannelPacket(void)
 
 void smartaudioProcessPowerPacket(void)
 {
+    bitWrite(rxPacket[4], 7, 0); // SA2.1 sets the MSB to indicate power is in dB. Set MSB to zero and currPower will now be in dB.
+    setPowerdB(rxPacket[4]);
     myEEPROM.currPowerdB = rxPacket[4];
-    bitWrite(myEEPROM.currPowerdB, 7, 0); // SA2.1 sets the MSB to indicate power is in dB. Set MSB to zero and currPower will now be in dB.
-    setPowerdB(myEEPROM.currPowerdB);
     updateEEPROM = true;
 
     txPacket[0] = SMARTAUDIO_SYNC;

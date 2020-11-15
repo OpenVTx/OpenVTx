@@ -3,29 +3,43 @@
 #include "openVTxEEPROM.h"
 #include "rtc6705.h"
 #include <Arduino.h>
+#include "pwm.h"
 
+struct timeout outputPowerTimer;
 
 void rfPowerAmpPinSetup(void)
 {
-  // TODO: PWM setup...
+  pinMode(VREF, OUTPUT);
+  digitalWrite(VREF, LOW); // Power amp OFF
+  
+  outputPowerTimer = pwm_init(RTC_BIAS);
+  setPowermW(0);
 }
 
 void setPowermW(uint16_t power)
 {
   if (pitMode)
   {
-    power = 1;
+    power = 0;
   }
 
   switch (power)
   {
-  case 1:
+  case 0:
+    pwm_out_write(outputPowerTimer, 3000);
+    digitalWrite(VREF, LOW); // Power amp OFF
     break;
   case 25:
+    pwm_out_write(outputPowerTimer, 2452);
+    digitalWrite(VREF, HIGH); // Power amp ON
     break;
   case 100:
+    pwm_out_write(outputPowerTimer, 2413);
+    digitalWrite(VREF, HIGH); // Power amp ON
     break;
-  case 200:
+  case 400:
+    pwm_out_write(outputPowerTimer, 0);
+    digitalWrite(VREF, HIGH); // Power amp ON
     break;
   default:
     return; // power value not recognised and no change
@@ -46,8 +60,8 @@ void setPowerdB(uint16_t currPowerdB)
   case 20:
     setPowermW(100);
     break;
-  case 23:
-    setPowermW(200);
+  case 26:
+    setPowermW(400);
     break;
   default:
     return; // power value not recognised and no change
