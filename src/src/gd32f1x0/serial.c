@@ -114,9 +114,9 @@ static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfdu
         usart_transmit_config(usart_periph, USART_TRANSMIT_ENABLE);
         usart_receive_config(usart_periph, USART_RECEIVE_ENABLE);
     }
-    // usart_interrupt_enable(usart_periph, USART_INT_RBNE);
+    usart_interrupt_enable(usart_periph, USART_INT_RBNE);
     usart_enable(usart_periph);
-    // nvic_irq_enable((usart_periph == USART1) ? USART1_IRQn : USART0_IRQn, 0, 0);
+    nvic_irq_enable((usart_periph == USART1) ? USART1_IRQn : USART0_IRQn, 0, 0);
 
     usart_periph_selected = usart_periph;
     usart_periph_halfduplex = halfduplex;
@@ -157,8 +157,10 @@ void Serial_write(uint8_t data)
 
     usart_data_transmit(usart_periph_selected, data);
     /* wait until end of transmit */
-    while (RESET == usart_flag_get(usart_periph_selected, USART_FLAG_TBE))
+    while (RESET == usart_flag_get(usart_periph_selected, USART_FLAG_TC))
       ;
+
+    // delay(2);
 
     if (usart_periph_halfduplex) {
         usart_transmit_config(usart_periph_selected, USART_TRANSMIT_DISABLE);
