@@ -39,6 +39,6 @@ If you have made it this far and have the equipment to check these outputs, plea
 #define VREF          PA0
 #define VPD           PA1
 
-#define PWM_BIAS_FREQ 10000 // Hz
+#define RTC_BIAS      PB5
 
 #endif /* __TARGET_DEF_H_ */

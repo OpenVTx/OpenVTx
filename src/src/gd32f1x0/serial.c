@@ -78,22 +78,33 @@ static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfdu
 {
     uint32_t usart_periph = usart_cfg->usart;
 
-    if (!halfduplex)
-        //config_uart_pin(usart_cfg->pin_rx, usart_cfg->af);
-        pinMode(usart_cfg->pin_rx, ALTERNATE_CREATE(usart_cfg->af));
-    //config_uart_pin(usart_cfg->pin_tx, usart_cfg->af);
-    pinMode(usart_cfg->pin_tx, ALTERNATE_CREATE(usart_cfg->af));
+    // if (!halfduplex)
+    //     //config_uart_pin(usart_cfg->pin_rx, usart_cfg->af);
+    //     pinMode(usart_cfg->pin_rx, ALTERNATE_CREATE(usart_cfg->af));
+    // //config_uart_pin(usart_cfg->pin_tx, usart_cfg->af);
+    // pinMode(usart_cfg->pin_tx, ALTERNATE_CREATE(usart_cfg->af));
+
+
+    /* enable USART and GPIOA clock */
+    rcu_periph_clock_disable(RCU_DMA);
+    rcu_periph_clock_enable(RCU_GPIOA);
+    rcu_periph_clock_enable(RCU_USART0);
+
+    /* configure the USART0 Tx pin and USART1 Tx pin */
+    gpio_af_set(GPIOA, GPIO_AF_1, GPIO_PIN_9);
+    gpio_mode_set(GPIOA, GPIO_MODE_AF, GPIO_PUPD_PULLUP, GPIO_PIN_9);
+    gpio_output_options_set(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_9);
 
     /* enable USART clock */
-    rcu_periph_clock_enable((usart_periph == USART1) ? RCU_USART1 : RCU_USART0);
+    // rcu_periph_clock_enable((usart_periph == USART1) ? RCU_USART1 : RCU_USART0);
 
     /* USART configure */
-    usart_deinit(usart_periph);
+    // usart_deinit(usart_periph);
     /* 8N1 (standard) */
     usart_baudrate_set(usart_periph, baud);
-    usart_parity_config(usart_periph, USART_PM_NONE);
-    usart_word_length_set(usart_periph, USART_WL_8BIT);
-    usart_stop_bit_set(usart_periph, USART_STB_1BIT);
+    // usart_parity_config(usart_periph, USART_PM_NONE);
+    // usart_word_length_set(usart_periph, USART_WL_8BIT);
+    // usart_stop_bit_set(usart_periph, USART_STB_1BIT);
     if (halfduplex) {
         usart_halfduplex_enable(usart_periph);
         usart_transmit_config(usart_periph, USART_TRANSMIT_DISABLE);
@@ -103,9 +114,9 @@ static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfdu
         usart_transmit_config(usart_periph, USART_TRANSMIT_ENABLE);
         usart_receive_config(usart_periph, USART_RECEIVE_ENABLE);
     }
-    usart_interrupt_enable(usart_periph, USART_INT_RBNE);
+    // usart_interrupt_enable(usart_periph, USART_INT_RBNE);
     usart_enable(usart_periph);
-    nvic_irq_enable((usart_periph == USART1) ? USART1_IRQn : USART0_IRQn, 0, 0);
+    // nvic_irq_enable((usart_periph == USART1) ? USART1_IRQn : USART0_IRQn, 0, 0);
 
     usart_periph_selected = usart_periph;
     usart_periph_halfduplex = halfduplex;
@@ -115,9 +126,10 @@ void Serial_begin(uint32_t baud)
 {
     uint8_t iter, halfduplex = (UART_TX == UART_RX);
 
-    for (iter = 0; iter < ARRAY_SIZE(usart_config); iter++) {
-        if (usart_config[iter].pin_tx == UART_TX &&
-            (halfduplex || usart_config[iter].pin_rx == UART_RX)) {
+    for (iter = 0; iter < ARRAY_SIZE(usart_config); iter++)
+    {
+        if (usart_config[iter].pin_tx == UART_TX && (halfduplex || usart_config[iter].pin_rx == UART_RX))
+        {
             config_uart(&usart_config[iter], baud, halfduplex);
             break;
         }
@@ -138,21 +150,19 @@ uint8_t Serial_read(void)
 
 void Serial_write(uint8_t data)
 {
-    uint32_t usart_periph = usart_periph_selected;
-    uint8_t halfduplex = usart_periph_halfduplex;
-    if (halfduplex) {
-        usart_transmit_config(usart_periph, USART_TRANSMIT_ENABLE);
-        usart_receive_config(usart_periph, USART_RECEIVE_DISABLE);
+    if (usart_periph_halfduplex) {
+        usart_transmit_config(usart_periph_selected, USART_TRANSMIT_ENABLE);
+        usart_receive_config(usart_periph_selected, USART_RECEIVE_DISABLE);
     }
 
-    usart_data_transmit(usart_periph, data);
+    usart_data_transmit(usart_periph_selected, data);
     /* wait until end of transmit */
-    while (RESET == usart_flag_get(usart_periph, USART_FLAG_TBE))
+    while (RESET == usart_flag_get(usart_periph_selected, USART_FLAG_TBE))
       ;
 
-    if (halfduplex) {
-        usart_transmit_config(usart_periph, USART_TRANSMIT_DISABLE);
-        usart_receive_config(usart_periph, USART_RECEIVE_ENABLE);
+    if (usart_periph_halfduplex) {
+        usart_transmit_config(usart_periph_selected, USART_TRANSMIT_DISABLE);
+        usart_receive_config(usart_periph_selected, USART_RECEIVE_ENABLE);
     }
 }
 

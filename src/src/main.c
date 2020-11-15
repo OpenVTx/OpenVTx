@@ -5,34 +5,38 @@
 #include "smartAudio.h"
 #include "tramp.h"
 #include <Arduino.h>
+#include "pwm.h"
 
 uint16_t dCycle;
 
+struct timeout outputPowerTimer;
+
 void setup()
 {
-  rfPowerAmpPinSetup();
-  setPowerdB(0);
+//   rfPowerAmpPinSetup();
+//   setPowerdB(0);
 
-  readEEPROM();
-  pitMode = (myEEPROM.pitmodeInRange || myEEPROM.pitmodeOutRange) ? 1 : 0;
+//   readEEPROM();
+//   pitMode = (myEEPROM.pitmodeInRange || myEEPROM.pitmodeOutRange) ? 1 : 0;
 
   spiPinSetup();
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
-  rtc6705WriteFrequency(myEEPROM.currFreq);
+  rtc6705WriteFrequency(5800);
+//   rtc6705WriteFrequency(myEEPROM.currFreq);
 
-  Serial_begin(myEEPROM.vtxMode == TRAMP ? TRAMP_BAUD : SMARTAUDIO_BAUD);
+//   Serial_begin(myEEPROM.vtxMode == TRAMP ? TRAMP_BAUD : SMARTAUDIO_BAUD);
 
-#ifdef ARDUINO
-  while (!Serial)
-    ;
-  UART1_HalfDuplexCmd(ENABLE);
-#ifdef SERIAL_PIN
-  pinMode(SERIAL_PIN, INPUT_PULLUP);
-#endif
-#endif
+// #ifdef ARDUINO
+//   while (!Serial)
+//     ;
+//   UART1_HalfDuplexCmd(ENABLE);
+// #ifdef SERIAL_PIN
+//   pinMode(SERIAL_PIN, INPUT_PULLUP);
+// #endif
+// #endif
 
-  // clear any uart garbage
-  clearSerialBuffer();
+//   // clear any uart garbage
+//   clearSerialBuffer();
 
 
 // pinMode(POWER_AMP_6, OUTPUT);
@@ -66,18 +70,56 @@ void setup()
 
 // TIM1->CCR4H = (uint8_t)(dCycle >> 8);
 // TIM1->CCR4L = (uint8_t)(dCycle);
+
+  Serial_begin(9600);
+  // pinMode(UART_TX, INPUT_PULLUP);
+
+  pinMode(LED, OUTPUT);
+
+  pinMode(VREF, OUTPUT);
+  // digitalWrite(VREF, HIGH);
+  digitalWrite(VREF, LOW);
+
+  // pinMode(RTC_BIAS, OUTPUT);
+  // digitalWrite(RTC_BIAS, HIGH);
+  
+  outputPowerTimer = pwm_init(RTC_BIAS);
+
+  for (int i = 0; i < 5; i++)
+  {
+    digitalWrite(LED, HIGH);
+    delay(50);
+    digitalWrite(LED, LOW);
+    delay(50);
+  }
 }
 
 void loop()
 {
-  if (myEEPROM.vtxMode == TRAMP)
-  {
-    trampProcessSerial();
-  }
-  else
-  {
-    smartaudioProcessSerial();
-  }
+  Serial_write(0);
+  Serial_write(1);
+  Serial_write(2);
+  Serial_write(4);
+  Serial_write(8);
+  Serial_write(16);
+  Serial_write(32);
 
-  writeEEPROM();
+  pwm_out_write(outputPowerTimer, 2999);
+
+  digitalWrite(LED, HIGH);
+  delay(100);
+
+  digitalWrite(LED, LOW);
+  delay(100);
+
+  // if (myEEPROM.vtxMode == TRAMP)
+  // {
+  //   trampProcessSerial();
+  // }
+  // else
+  // {
+  //   smartaudioProcessSerial();
+  // }
+
+  // writeEEPROM();
 }
