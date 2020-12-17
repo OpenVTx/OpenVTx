@@ -129,6 +129,8 @@ enum {
 void pinMode(uint32_t pin, uint8_t type);
 void digitalWrite(uint32_t pin, uint8_t val);
 
+void pinAlternateConfig(uint32_t pin, uint8_t af, int8_t pud);
+
 /***********************************************************/
 
 void Serial_begin(uint32_t baud);

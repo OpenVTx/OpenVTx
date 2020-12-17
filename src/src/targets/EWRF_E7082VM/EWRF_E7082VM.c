@@ -11,7 +11,7 @@ void rfPowerAmpPinSetup(void)
 {
   pinMode(VREF, OUTPUT);
   digitalWrite(VREF, LOW); // Power amp OFF
-  
+
   outputPowerTimer = pwm_init(RTC_BIAS);
   setPowermW(0);
 }
@@ -30,11 +30,11 @@ void setPowermW(uint16_t power)
     digitalWrite(VREF, LOW); // Power amp OFF
     break;
   case 25:
-    pwm_out_write(outputPowerTimer, 2452);
+    pwm_out_write(outputPowerTimer, 2453);
     digitalWrite(VREF, HIGH); // Power amp ON
     break;
   case 100:
-    pwm_out_write(outputPowerTimer, 2413);
+    pwm_out_write(outputPowerTimer, 2414);
     digitalWrite(VREF, HIGH); // Power amp ON
     break;
   case 400:

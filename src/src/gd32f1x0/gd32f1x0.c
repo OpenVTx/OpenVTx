@@ -13,7 +13,7 @@ void systick_config(void) {
     if (SysTick_Config(SystemCoreClock / 1000)) {
         /* capture error */
         while (1)
-        ;
+            ;
     }
     /* configure the systick handler priority */
     NVIC_SetPriority(SysTick_IRQn, 0x00);
@@ -57,6 +57,7 @@ void delayMicroseconds(uint32_t us)
 
 int main(void)
 {
+    //SystemCoreClockUpdate(); ??
     systick_config();
 
     extern void setup(void);

@@ -12,7 +12,7 @@
 
 struct pwms {
     uint32_t periph;
-    uint32_t pin;
+    uint16_t pin;
     uint8_t ch, af;
 };
 struct pwms pwm_config[] = {
@@ -79,66 +79,66 @@ void timer_power_on(uint32_t timer_periph)
 
 struct timeout pwm_init(uint32_t pin)
 {
-    // uint8_t pwmConfigIndex = 0;
-    // for (pwmConfigIndex = 0; pwmConfigIndex < ARRAY_SIZE(pwm_config); pwmConfigIndex++)
-    // {
-    //     if (pin == pwm_config[pwmConfigIndex].pin)
-    //         break;
-    // }
+    uint8_t index = 0;
+    for (index = 0; index < ARRAY_SIZE(pwm_config); index++) {
+        if (pin == pwm_config[index].pin)
+            break;
+    }
+    if (ARRAY_SIZE(pwm_config) <= index)
+        return (struct timeout){.tim = 0, .ch = (uint16_t)-1};
 
-    uint32_t timer = TIMER2;
-    // uint32_t timer = pwm_config[pwmConfigIndex].periph;
-    uint8_t channel = 1;
-    // uint8_t channel = pwm_config[pwmConfigIndex].ch;
+    //uint32_t timer = TIMER2;
+    uint32_t timer = pwm_config[index].periph;
+    //uint8_t channel = 1;
+    uint8_t channel = pwm_config[index].ch;
 
-    rcu_periph_clock_enable(RCU_GPIOB);
-    gpio_mode_set(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO_PIN_5);
-    gpio_output_options_set(GPIOB, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_5);
-    gpio_af_set(GPIOB, GPIO_AF_1, GPIO_PIN_5);
+    //rcu_periph_clock_enable(RCU_GPIOB);
+    //gpio_mode_set(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO_PIN_5);
+    //gpio_output_options_set(GPIOB, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_5);
+    //gpio_af_set(GPIOB, GPIO_AF_1, GPIO_PIN_5);
+    pinAlternateConfig(pin, 1, 0);
 
     timer_oc_parameter_struct timer_ocintpara;
     timer_parameter_struct timer_initpara;
 
-    // if (channel < ARRAY_SIZE(pwm_config))
-    // {
-        /* Init timer if not done yet */
-        // if (!(TIMER_CTL0(timer) & TIMER_COUNTER_ENABLE))
-        // {
-            timer_power_on(timer);
-            timer_deinit(timer);
-            /* TIMERx configuration */
-            timer_initpara.prescaler = 1;  // High clk required to provide the PWM resolution required.
-            timer_initpara.alignedmode = TIMER_COUNTER_EDGE;
-            timer_initpara.counterdirection = TIMER_COUNTER_UP;
-            timer_initpara.period = 2999; // Results in ~12kHz PWM
-            timer_initpara.clockdivision = TIMER_CKDIV_DIV1;
-            timer_initpara.repetitioncounter = 0;
-            timer_init(timer, &timer_initpara);
-        // }
+    /* Init timer if not done yet */
+    // if (!(TIMER_CTL0(timer) & TIMER_COUNTER_ENABLE))
+    {
+        timer_power_on(timer);
+        timer_deinit(timer);
+        /* TIMERx configuration */
+        timer_initpara.prescaler = 1;  // High clk required to provide the PWM resolution required.
+        timer_initpara.alignedmode = TIMER_COUNTER_EDGE;
+        timer_initpara.counterdirection = TIMER_COUNTER_UP;
+        timer_initpara.period = 2999; // Results in ~12kHz PWM
+        timer_initpara.clockdivision = TIMER_CKDIV_DIV1;
+        timer_initpara.repetitioncounter = 0;
+        timer_init(timer, &timer_initpara);
+    }
 
-        /* Init timer channel PWM0 mode */
-        timer_ocintpara.ocpolarity = TIMER_OC_POLARITY_HIGH;
-        timer_ocintpara.outputstate = TIMER_CCX_ENABLE;
-        
-        timer_channel_output_config(timer, channel, &timer_ocintpara);
+    /* Init timer channel PWM0 mode */
+    timer_ocintpara.ocpolarity = TIMER_OC_POLARITY_HIGH;
+    timer_ocintpara.outputstate = TIMER_CCX_ENABLE;
 
-        timer_channel_output_pulse_value_config(timer, channel, timer_initpara.period);
-        timer_channel_output_mode_config(timer, channel, TIMER_OC_MODE_PWM0);
-        timer_channel_output_shadow_config(timer, channel, TIMER_OC_SHADOW_DISABLE);
+    timer_channel_output_config(timer, channel, &timer_ocintpara);
 
-        /* auto-reload preload enable */
-        timer_auto_reload_shadow_enable(timer);
-        /* auto-reload preload enable */
-        timer_enable(timer);
+    timer_channel_output_pulse_value_config(timer, channel, timer_initpara.period);
+    timer_channel_output_mode_config(timer, channel, TIMER_OC_MODE_PWM0);
+    timer_channel_output_shadow_config(timer, channel, TIMER_OC_SHADOW_DISABLE);
 
-    // }
+    /* auto-reload preload enable */
+    timer_auto_reload_shadow_enable(timer);
+    /* auto-reload preload enable */
+    timer_enable(timer);
+
     return (struct timeout){.tim = timer, .ch = channel};
 }
 
 void pwm_out_write(struct timeout pwm, int val)
 {
-    // if (pwm.tim) {
-    //     val = (val <= 0) ? 0 : ((val <= 100) ? (val - 1) : 100);
+    if (pwm.tim) {
+        // Register value is target-1
+        val = (val <= 0) ? 0 : (val-1);
         timer_channel_output_pulse_value_config(pwm.tim, pwm.ch, val);
-    // }
+    }
 }
