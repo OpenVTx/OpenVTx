@@ -4,6 +4,8 @@
 #include "gd32f1x0.h"
 #include <stdint.h>
 #include <string.h>
+#include "adc.h"
+#include "printf.h"
 
 uint32_t millis(void);
 void delay(uint32_t ms);
@@ -137,6 +139,7 @@ void Serial_begin(uint32_t baud);
 uint8_t Serial_available(void);
 uint8_t Serial_read(void);
 void Serial_write(uint8_t data);
+void Serial_write_len(uint8_t *data, uint32_t size);
 void Serial_flush(void);
 
 #endif /* __ARDUINO_H_ */

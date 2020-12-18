@@ -7,9 +7,12 @@
 #include <Arduino.h>
 
 uint16_t dCycle;
+struct adc adc_pin;
 
-void setup()
+void setup(void)
 {
+  /* TODO: Configure WDG, fwdgt_config() */
+
   rfPowerAmpPinSetup();
 //   setPowerdB(0);
 
@@ -35,22 +38,31 @@ void setup()
 //   // clear any uart garbage
 //   clearSerialBuffer();
 
+  adc_pin = adc_config(VPD);
 
   Serial_begin(SMARTAUDIO_BAUD);
 
   // Below flashing is just for testing. Delete later.
   pinMode(LED, OUTPUT);
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i < 10; i++)
   {
-    digitalWrite(LED, LOW);
-    delay(50);
-    digitalWrite(LED, HIGH);
+    digitalWrite(LED, (i & 1));
+    fwdgt_counter_reload();
     delay(50);
   }
 }
 
-void loop()
+static uint32_t temp;
+void loop(void)
 {
+  uint32_t now = millis();
+  if (1000 <= (now - temp)) {
+    char buff[32];
+    int len = snprintf(buff, sizeof(buff), "a:%u\n", adc_read(adc_pin));
+    Serial_write_len((uint8_t*)buff, len);
+    temp = now;
+  }
+
   // pwm_out_write(outputPowerTimer, 2999); // Here just for testing. 2999 = low mW, 0 = Max mW
 
   // digitalWrite(LED, HIGH);
@@ -69,4 +81,7 @@ void loop()
   // }
 
   // writeEEPROM();
+
+  /* Reset WD */
+  fwdgt_counter_reload();
 }

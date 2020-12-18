@@ -9,7 +9,7 @@ void SysTick_Handler(void)
 }
 
 void systick_config(void) {
-    /* setup systick timer for 1000Hz interrupts  */
+    /* setup systick timer for 1ms interrupts  */
     if (SysTick_Config(SystemCoreClock / 1000)) {
         /* capture error */
         while (1)
@@ -21,17 +21,12 @@ void systick_config(void) {
 
 uint32_t millis(void)
 {
-    //uint32_t ms = read_u32(&_ms_cntr);
-    //return ms;
     return _ms_cntr;
 }
 
 void delay(uint32_t const ms)
 {
     uint32_t const start = millis();
-    //ms += millis();
-    //while (timer_is_before(millis(), ms))
-    //    ;
     while((millis() - start) < ms);
 }
 
@@ -57,7 +52,7 @@ void delayMicroseconds(uint32_t us)
 
 int main(void)
 {
-    //SystemCoreClockUpdate(); ??
+    SystemCoreClockUpdate();
     systick_config();
 
     extern void setup(void);

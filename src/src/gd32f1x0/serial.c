@@ -2,6 +2,7 @@
 #define SKIP_CODE
 #include "targets.h"
 #undef SKIP_CODE
+#include "printf.h"
 #include <gd32f1x0_gpio.h>
 #include <gd32f1x0_usart.h>
 #include <gd32f1x0_rcu.h>
@@ -139,7 +140,36 @@ void Serial_write(uint8_t data)
     }
 }
 
+void Serial_write_len(uint8_t *data, uint32_t size)
+{
+    uint32_t usart_periph = usart_periph_selected;
+    uint8_t halfduplex = usart_periph_halfduplex;
+    if (halfduplex) {
+        usart_transmit_config(usart_periph, USART_TRANSMIT_ENABLE);
+        usart_receive_config(usart_periph, USART_RECEIVE_DISABLE);
+    }
+
+    while(size--) {
+        usart_data_transmit(usart_periph, *data++);
+        while (RESET == usart_flag_get(usart_periph, USART_FLAG_TBE))
+            ;
+    }
+    /* wait until end of transmit */
+    while (RESET == usart_flag_get(usart_periph, USART_FLAG_TC))
+        ;
+
+    if (halfduplex) {
+        usart_transmit_config(usart_periph, USART_TRANSMIT_DISABLE);
+        usart_receive_config(usart_periph, USART_RECEIVE_ENABLE);
+    }
+}
+
 void Serial_flush(void)
 {
     // not needed...
+}
+
+void _putchar(char character)
+{
+    Serial_write((uint8_t)character);
 }
