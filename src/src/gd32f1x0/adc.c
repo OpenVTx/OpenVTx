@@ -34,12 +34,14 @@ static void init_adc(void)
 {
     if (init_done)
         return;
+    init_done = 1;
 
     /* enable ADC clock */
     rcu_periph_clock_enable(RCU_ADC);
     /* config ADC clock */
     rcu_adc_clock_config(RCU_ADCCK_APB2_DIV6);
 
+#if 0
     /* Stop ADC */
     adc_disable();
     /* Disable discontinue mode */
@@ -57,6 +59,8 @@ static void init_adc(void)
     adc_enable();
     delay(1);
     adc_calibration_enable();
+#else
+#endif
 }
 
 struct adc adc_config(uint32_t pin)
@@ -109,6 +113,36 @@ struct adc adc_config(uint32_t pin)
     (void)adc_ch_cnt;
 
     init_adc();
+
+#if 1
+    /* ADC regular channel length config */
+    adc_channel_length_config(ADC_REGULAR_CHANNEL,1);
+    /* ADC regular channel config */
+    adc_regular_channel_config(0, adc_ch, ADC_SAMPLETIME_239POINT5);
+    /* ADC external trigger enable */
+    adc_external_trigger_config(ADC_REGULAR_CHANNEL,ENABLE);
+    /* ADC external trigger source config */
+    adc_external_trigger_source_config(ADC_REGULAR_CHANNEL,ADC_EXTTRIG_REGULAR_SWRCST);
+    /* ADC data alignment config */
+    adc_data_alignment_config(ADC_DATAALIGN_RIGHT);
+    /* enable ADC interface */
+    adc_enable();
+    /* ADC calibration and reset calibration */
+    adc_calibration_enable();
+    /* ADC contineous function enable */
+    adc_special_function_config(ADC_CONTINUOUS_MODE,ENABLE);
+
+    /* ADC analog watchdog threshold config */
+    //adc_watchdog_threshold_config(0x0400,0x0A00);
+    /* ADC analog watchdog single channel config */
+    //adc_watchdog_single_channel_enable(adc_ch);
+    /* ADC interrupt config */
+    //adc_interrupt_enable(ADC_INT_WDE);
+
+    /* ADC software trigger enable */
+    adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
+#endif
+
 #endif
     return (struct adc){.ch = adc_ch};
 }
@@ -116,6 +150,7 @@ struct adc adc_config(uint32_t pin)
 uint32_t adc_read(struct adc config)
 {
     if (config.ch < 0xff) {
+#if 0
         /* Set channel */
         //adc_channel_length_config(ADC_REGULAR_CHANNEL, config.ch);
         adc_regular_channel_config(
@@ -124,6 +159,10 @@ uint32_t adc_read(struct adc config)
         adc_flag_clear(ADC_FLAG_EOC);
         /* Trigger conversion */
         adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
+#else
+        /* Clear flag */
+        adc_flag_clear(ADC_FLAG_EOC);
+#endif
         /* Wait ready */
         while(SET != adc_flag_get(ADC_FLAG_EOC));
         /* Read value */
