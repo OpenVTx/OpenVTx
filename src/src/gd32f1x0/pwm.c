@@ -118,7 +118,7 @@ struct timeout pwm_init(uint32_t pin)
 
     timer_channel_output_config(timer, channel, &timer_ocintpara);
 
-    timer_channel_output_pulse_value_config(timer, channel, PWM_PERIOD);
+    timer_channel_output_pulse_value_config(timer, channel, (PWM_PERIOD-1));
     timer_channel_output_mode_config(timer, channel, TIMER_OC_MODE_PWM0);
     timer_channel_output_shadow_config(timer, channel, TIMER_OC_SHADOW_DISABLE);
 

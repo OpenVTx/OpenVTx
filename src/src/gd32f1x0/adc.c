@@ -4,6 +4,8 @@
 #include "gd32f1x0_gpio.h"
 #include "gd32f1x0_rcu.h"
 
+#define ADC_REF_VOLT_mW 3100
+
 struct adc_pins {
     uint16_t pin;
     uint8_t adc;
@@ -28,7 +30,7 @@ struct adc_pins adc_pins[] = {
     {PC5, ADC_CHANNEL_15},
 };
 
-static uint8_t adc_ch_cnt, init_done;
+static uint8_t init_done;
 
 static void init_adc(void)
 {
@@ -41,26 +43,24 @@ static void init_adc(void)
     /* config ADC clock */
     rcu_adc_clock_config(RCU_ADCCK_APB2_DIV6);
 
-#if 0
-    /* Stop ADC */
-    adc_disable();
-    /* Disable discontinue mode */
-    adc_discontinuous_mode_config(ADC_REGULAR_CHANNEL, 1);
-    adc_special_function_config(ADC_CONTINUOUS_MODE, DISABLE);
-    /* ADC software trigger config */
+    /* ADC regular channel length config */
+    adc_channel_length_config(ADC_REGULAR_CHANNEL, 1);
+    /* ADC external trigger enable */
+    adc_external_trigger_config(ADC_REGULAR_CHANNEL, ENABLE);
+    /* ADC external trigger source config */
     adc_external_trigger_source_config(
         ADC_REGULAR_CHANNEL, ADC_EXTTRIG_REGULAR_SWRCST);
     /* ADC data alignment config */
     adc_data_alignment_config(ADC_DATAALIGN_RIGHT);
-
-    adc_external_trigger_config(ADC_REGULAR_CHANNEL, ENABLE);
-    //adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
-
+    /* enable ADC interface */
     adc_enable();
-    delay(1);
+    /* ADC calibration and reset calibration */
     adc_calibration_enable();
-#else
-#endif
+    /* ADC contineous function enable */
+    adc_special_function_config(ADC_CONTINUOUS_MODE, ENABLE);
+
+    /* ADC software trigger enable */
+    adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
 }
 
 struct adc adc_config(uint32_t pin)
@@ -73,100 +73,28 @@ struct adc adc_config(uint32_t pin)
     if (ARRAY_SIZE(adc_pins) <= adc_ch)
         return (struct adc){.ch = 0xff};
 
-    adc_ch = adc_pins[adc_ch].adc;
+    //adc_ch = adc_pins[adc_ch].adc;
 
     pinMode(pin, ANALOG);
 
-#if 0
-    if (!adc_ch_cnt) {
-        /* enable ADC clock */
-        rcu_periph_clock_enable(RCU_ADC);
-        /* config ADC clock */
-        rcu_adc_clock_config(RCU_ADCCK_APB2_DIV6);
-
-        /* Stop ADC */
-        adc_disable();
-        /* ADC contineous function enable */
-        adc_special_function_config(ADC_CONTINUOUS_MODE, ENABLE);
-        /* ADC software trigger config */
-        adc_external_trigger_source_config(
-            ADC_REGULAR_CHANNEL, ADC_EXTTRIG_REGULAR_SWRCST);
-        /* ADC data alignment config */
-        adc_data_alignment_config(ADC_DATAALIGN_RIGHT);
-    }
-
-    /* ADC channel length config */
-    adc_channel_length_config(ADC_REGULAR_CHANNEL, adc_ch_cnt+1);
-    /* ADC regular channel config */
-    adc_regular_channel_config(
-        adc_ch_cnt, adc_ch, ADC_SAMPLETIME_55POINT5);
-    adc_external_trigger_config(ADC_REGULAR_CHANNEL, ENABLE);
-    adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
-
-    if (!adc_ch_cnt) {
-        adc_enable();
-        delay(1);
-        adc_calibration_enable();
-    }
-    adc_ch_cnt++;
-#else
-    (void)adc_ch_cnt;
-
     init_adc();
 
-#if 1
-    /* ADC regular channel length config */
-    adc_channel_length_config(ADC_REGULAR_CHANNEL,1);
-    /* ADC regular channel config */
-    adc_regular_channel_config(0, adc_ch, ADC_SAMPLETIME_239POINT5);
-    /* ADC external trigger enable */
-    adc_external_trigger_config(ADC_REGULAR_CHANNEL,ENABLE);
-    /* ADC external trigger source config */
-    adc_external_trigger_source_config(ADC_REGULAR_CHANNEL,ADC_EXTTRIG_REGULAR_SWRCST);
-    /* ADC data alignment config */
-    adc_data_alignment_config(ADC_DATAALIGN_RIGHT);
-    /* enable ADC interface */
-    adc_enable();
-    /* ADC calibration and reset calibration */
-    adc_calibration_enable();
-    /* ADC contineous function enable */
-    adc_special_function_config(ADC_CONTINUOUS_MODE,ENABLE);
-
-    /* ADC analog watchdog threshold config */
-    //adc_watchdog_threshold_config(0x0400,0x0A00);
-    /* ADC analog watchdog single channel config */
-    //adc_watchdog_single_channel_enable(adc_ch);
-    /* ADC interrupt config */
-    //adc_interrupt_enable(ADC_INT_WDE);
-
-    /* ADC software trigger enable */
-    adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
-#endif
-
-#endif
     return (struct adc){.ch = adc_ch};
 }
 
 uint32_t adc_read(struct adc config)
 {
     if (config.ch < 0xff) {
-#if 0
-        /* Set channel */
-        //adc_channel_length_config(ADC_REGULAR_CHANNEL, config.ch);
-        adc_regular_channel_config(
-            15, config.ch, ADC_SAMPLETIME_55POINT5);
+        adc_regular_channel_config(0, config.ch, ADC_SAMPLETIME_239POINT5);
         /* Clear flag */
         adc_flag_clear(ADC_FLAG_EOC);
-        /* Trigger conversion */
-        adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
-#else
-        /* Clear flag */
-        adc_flag_clear(ADC_FLAG_EOC);
-#endif
         /* Wait ready */
         while(SET != adc_flag_get(ADC_FLAG_EOC));
         /* Read value */
-        return adc_regular_data_read();
+        uint32_t val = adc_regular_data_read();
+        val *= ADC_REF_VOLT_mW;
+        val /= 4096;
+        return val;
     }
     return 0;
 }
