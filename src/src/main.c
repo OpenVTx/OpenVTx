@@ -58,6 +58,13 @@ void setup(void)
     //fwdgt_counter_reload();
     delay(50);
   }
+
+#if DEBUG
+  setPowermW(0); // 0mV
+  //setPowermW(25); // 1170mV
+  //setPowermW(100); // 1225mV
+  //setPowermW(400);
+#endif /* DEBUG */
 }
 
 

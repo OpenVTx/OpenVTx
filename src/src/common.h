@@ -18,3 +18,5 @@ extern uint8_t pitMode;
 void clearSerialBuffer(void);
 void zeroRxPacket(void);
 void zeroTxPacket(void);
+
+void setPowerdB(uint16_t currPowerdB);

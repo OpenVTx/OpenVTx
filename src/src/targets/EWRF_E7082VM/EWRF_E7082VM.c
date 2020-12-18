@@ -57,28 +57,6 @@ void setPowermW(uint16_t power)
   gpio_out_write(vref_pin, amp_state);
 }
 
-void setPowerdB(uint16_t currPowerdB)
-{
-  switch (currPowerdB)
-  {
-  case 0:
-    setPowermW(0);
-    break;
-  case 14:
-    setPowermW(25);
-    break;
-  case 20:
-    setPowermW(100);
-    break;
-  case 26:
-    setPowermW(400);
-    break;
-  default:
-    return; // power value not recognised and no change
-    break;
-  }
-}
-
 
 void taget_setup(void)
 {

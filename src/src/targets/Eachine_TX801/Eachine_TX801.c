@@ -73,25 +73,3 @@ void setPowermW(uint16_t power)
   // digitalWrite(POWER_AMP_6, pinOutput & 0b100000);
 
 }
-
-void setPowerdB(uint16_t currPowerdB)
-{
-  switch (currPowerdB)
-  {
-  case 0:
-    setPowermW(0);
-    break;
-  case 14:
-    setPowermW(25);
-    break;
-  case 20:
-    setPowermW(100);
-    break;
-  case 23:
-    setPowermW(200);
-    break;
-  default:
-    return; // power value not recognised and no change
-    break;
-  }
-}

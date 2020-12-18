@@ -13,7 +13,7 @@ void rfPowerAmpPinSetup(void)
 
 void setPowermW(uint16_t power)
 {
-  if (pitMode)
+  if (pitMode || power < 1)
   {
     power = 1;
   }
@@ -33,25 +33,6 @@ void setPowermW(uint16_t power)
   case 200:
     digitalWrite(POWER_AMP_2, 1);
     digitalWrite(POWER_AMP_5, 1);
-    break;
-  default:
-    return; // power value not recognised and no change
-    break;
-  }
-}
-
-void setPowerdB(uint16_t currPowerdB)
-{
-  switch (currPowerdB)
-  {
-  case 0:
-    setPowermW(1);
-    break;
-  case 14:
-    setPowermW(25);
-    break;
-  case 23:
-    setPowermW(200);
     break;
   default:
     return; // power value not recognised and no change
