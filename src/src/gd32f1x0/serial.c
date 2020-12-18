@@ -61,16 +61,6 @@ static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfdu
     usart_periph_selected = usart_periph;
     usart_periph_halfduplex = halfduplex;
 
-    /* enable USART and GPIOA clock */
-    //rcu_periph_clock_disable(RCU_DMA);
-    //rcu_periph_clock_enable(RCU_GPIOA);
-    //rcu_periph_clock_enable(RCU_USART0);
-
-    /* configure the USART0 Tx pin and USART1 Tx pin */
-    //gpio_af_set(GPIOA, GPIO_AF_1, GPIO_PIN_9);
-    //gpio_mode_set(GPIOA, GPIO_MODE_AF, GPIO_PUPD_PULLUP, GPIO_PIN_9);
-    //gpio_output_options_set(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_9);
-
     /* enable USART clock */
     rcu_periph_clock_enable((usart_periph == USART1) ? RCU_USART1 : RCU_USART0);
 

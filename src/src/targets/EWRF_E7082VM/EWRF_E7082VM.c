@@ -13,7 +13,7 @@ void rfPowerAmpPinSetup(void)
   digitalWrite(VREF, LOW); // Power amp OFF
 
   outputPowerTimer = pwm_init(RTC_BIAS);
-  setPowermW(0);
+  pwm_out_write(outputPowerTimer, 3000);
 }
 
 void setPowermW(uint16_t power)

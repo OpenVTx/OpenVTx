@@ -10,6 +10,8 @@
 #error "Too high PWM freq!"
 #endif
 
+#define PWM_PERIOD 3000 // Results in ~12kHz PWM
+
 struct pwms {
     uint32_t periph;
     uint16_t pin;
@@ -87,15 +89,9 @@ struct timeout pwm_init(uint32_t pin)
     if (ARRAY_SIZE(pwm_config) <= index)
         return (struct timeout){.tim = 0, .ch = (uint16_t)-1};
 
-    //uint32_t timer = TIMER2;
     uint32_t timer = pwm_config[index].periph;
-    //uint8_t channel = 1;
     uint8_t channel = pwm_config[index].ch;
 
-    //rcu_periph_clock_enable(RCU_GPIOB);
-    //gpio_mode_set(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO_PIN_5);
-    //gpio_output_options_set(GPIOB, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_5);
-    //gpio_af_set(GPIOB, GPIO_AF_1, GPIO_PIN_5);
     pinAlternateConfig(pin, 1, 0);
 
     timer_oc_parameter_struct timer_ocintpara;
@@ -110,7 +106,7 @@ struct timeout pwm_init(uint32_t pin)
         timer_initpara.prescaler = 1;  // High clk required to provide the PWM resolution required.
         timer_initpara.alignedmode = TIMER_COUNTER_EDGE;
         timer_initpara.counterdirection = TIMER_COUNTER_UP;
-        timer_initpara.period = 2999; // Results in ~12kHz PWM
+        timer_initpara.period = PWM_PERIOD - 1;
         timer_initpara.clockdivision = TIMER_CKDIV_DIV1;
         timer_initpara.repetitioncounter = 0;
         timer_init(timer, &timer_initpara);
@@ -122,7 +118,7 @@ struct timeout pwm_init(uint32_t pin)
 
     timer_channel_output_config(timer, channel, &timer_ocintpara);
 
-    timer_channel_output_pulse_value_config(timer, channel, timer_initpara.period);
+    timer_channel_output_pulse_value_config(timer, channel, PWM_PERIOD);
     timer_channel_output_mode_config(timer, channel, TIMER_OC_MODE_PWM0);
     timer_channel_output_shadow_config(timer, channel, TIMER_OC_SHADOW_DISABLE);
 
@@ -138,7 +134,7 @@ void pwm_out_write(struct timeout pwm, int val)
 {
     if (pwm.tim) {
         // Register value is target-1
-        val = (val <= 0) ? 0 : (val-1);
+        val = (val <= 0) ? 0 : (PWM_PERIOD < val) ? PWM_PERIOD : (val);
         timer_channel_output_pulse_value_config(pwm.tim, pwm.ch, val);
     }
 }
