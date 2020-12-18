@@ -1,39 +1,5 @@
-#ifndef __ARDUINO_H_
-#define __ARDUINO_H_
-
-#include "gd32f1x0.h"
-#include <stdint.h>
-#include <string.h>
-#include "adc.h"
-#include "printf.h"
-
-uint32_t millis(void);
-void delay(uint32_t ms);
-void delayMicroseconds(uint32_t us);
-
-/***********************************************************/
-
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-
-#define true 1
-#define false 0
-
-#define LOW 0
-#define HIGH 1
-
-#define bitSet(value, bit) ((value) |= (1UL << (bit)))
-#define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
-#define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))
-#define bitRead(value, bit) (((value) >> (bit)) & 0x01)
-
-/***********************************************************/
-
-#define GPIO_NUM_PINS   16
-#define GPIO(PORT, NUM) (((PORT) - 'A') * GPIO_NUM_PINS + (NUM))
-#define GPIO2PORT(PIN)  ((PIN) / GPIO_NUM_PINS)
-#define GPIO2BIT(PIN)   (1U << GPIO2IDX(PIN))
-#define GPIO2IDX(PIN)   ((PIN) % GPIO_NUM_PINS)
-
+#ifndef __PINS_H_
+#define __PINS_H_
 
 #define PA0  GPIO('A', 0)
 #define PA1  GPIO('A', 1)
@@ -116,30 +82,4 @@ void delayMicroseconds(uint32_t us);
 #define PF14 GPIO('F', 14)
 #define PF15 GPIO('F', 15)
 
-/***********************************************************/
-
-enum {
-    OUTPUT = 0,
-    INPUT,
-    INPUT_PULLUP,
-    ANALOG,
-    ALTERNATE = 0x80,
-};
-
-#define ALTERNATE_CREATE(_a) (ALTERNATE | (_a))
-
-void pinMode(uint32_t pin, uint8_t type);
-void digitalWrite(uint32_t pin, uint8_t val);
-
-void pinAlternateConfig(uint32_t pin, uint8_t af, int8_t pud);
-
-/***********************************************************/
-
-void Serial_begin(uint32_t baud);
-uint8_t Serial_available(void);
-uint8_t Serial_read(void);
-void Serial_write(uint8_t data);
-void Serial_write_len(uint8_t *data, uint32_t size);
-void Serial_flush(void);
-
-#endif /* __ARDUINO_H_ */
+#endif /* __PINS_H_ */

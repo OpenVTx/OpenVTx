@@ -21,18 +21,18 @@ void setPowermW(uint16_t power)
   switch (power)
   {
   case 1:
-    digitalWrite(POWER_AMP_2, LOW);
-    digitalWrite(POWER_AMP_3, LOW);
-    digitalWrite(POWER_AMP_5, HIGH);
+    digitalWrite(POWER_AMP_2, 0);
+    digitalWrite(POWER_AMP_3, 0);
+    digitalWrite(POWER_AMP_5, 1);
     break;
   case 25:
-    digitalWrite(POWER_AMP_2, LOW);
-    digitalWrite(POWER_AMP_3, HIGH);
-    digitalWrite(POWER_AMP_5, HIGH);
+    digitalWrite(POWER_AMP_2, 0);
+    digitalWrite(POWER_AMP_3, 1);
+    digitalWrite(POWER_AMP_5, 1);
     break;
   case 200:
-    digitalWrite(POWER_AMP_2, HIGH);
-    digitalWrite(POWER_AMP_5, HIGH);
+    digitalWrite(POWER_AMP_2, 1);
+    digitalWrite(POWER_AMP_5, 1);
     break;
   default:
     return; // power value not recognised and no change

@@ -19,6 +19,11 @@
 #endif
 
 // These are target specific functions and need to implemented per target!
+
+void taget_setup(void);
+void taget_loop(void);
+
 void setPowermW(uint16_t power);
 void setPowerdB(uint16_t currPowerdB);
 void rfPowerAmpPinSetup(void);
+uint32_t vpd_value_get(void);

@@ -3,9 +3,9 @@
 #include "openVTxEEPROM.h"
 #include "rtc6705.h"
 #include "targets.h"
-#include <Arduino.h>
+#include "helpers.h"
 
-uint16_t channelFreqTable[48] = {
+const uint16_t channelFreqTable[48] = {
     5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // A
     5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866, // B
     5705, 5685, 5665, 5645, 5885, 5905, 5925, 5945, // E
@@ -18,9 +18,9 @@ void switchToTramp(void)
 {
     if (!vtxModeLocked)
     {
-        Serial_begin(TRAMP_BAUD);
+        Serial_begin(TRAMP_BAUD, UART_TX, UART_RX);
         myEEPROM.vtxMode = TRAMP;
-        updateEEPROM = true;
+        updateEEPROM = 1;
     }
 }
 
@@ -52,10 +52,9 @@ uint8_t smartadioCalcCrc(const uint8_t *data, uint8_t len)
 
 void smartaudioSendPacket(void)
 {
-    for (int i = 0; i < (5 + txPacket[3]); i++)
-    {
-        Serial_write(txPacket[i]);
-    }
+    uint8_t len = txPacket[3] + 4;
+    txPacket[(len-1)] = smartadioCalcCrc(&txPacket[2], (len - 3)); // Fill CRC
+    Serial_write_len(txPacket, len);
     Serial_flush();
 }
 
@@ -83,7 +82,8 @@ void smartaudioBuildSettingsPacket(void)
     txPacket[12] = 14;                                              // 25mW
     txPacket[13] = 20;                                              // 100mW
     txPacket[14] = 23;                                              // 200mW
-    txPacket[15] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
+    //txPacket[15] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
+    smartaudioSendPacket();
 }
 
 void smartaudioProcessFrequencyPacket(void)
@@ -113,16 +113,19 @@ void smartaudioProcessFrequencyPacket(void)
     txPacket[4] = (returnFreq >> 8) & 0xFF;
     txPacket[5] = returnFreq & 0xFF;
     txPacket[6] = RESERVE_BYTE;
-    txPacket[7] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
+    //txPacket[7] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
 
     myEEPROM.freqMode = 1;
-    updateEEPROM = true;
+    updateEEPROM = 1;
+
+    smartaudioSendPacket();
 }
 
 void smartaudioProcessChannelPacket(void)
 {
-    myEEPROM.channel = rxPacket[4];
-    myEEPROM.currFreq = channelFreqTable[myEEPROM.channel];
+    const uint8_t channel = rxPacket[4];
+    myEEPROM.channel = channel;
+    myEEPROM.currFreq = channelFreqTable[channel];
 
     rtc6705WriteFrequency(myEEPROM.currFreq);
 
@@ -130,12 +133,14 @@ void smartaudioProcessChannelPacket(void)
     txPacket[1] = SMARTAUDIO_HEADER;
     txPacket[2] = SET_CHANNEL;
     txPacket[3] = 0x03; // Length
-    txPacket[4] = myEEPROM.channel;
+    txPacket[4] = channel;
     txPacket[5] = RESERVE_BYTE;
-    txPacket[6] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
+    //txPacket[6] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
 
     myEEPROM.freqMode = 0;
-    updateEEPROM = true;
+    updateEEPROM = 1;
+
+    smartaudioSendPacket();
 }
 
 void smartaudioProcessPowerPacket(void)
@@ -143,7 +148,7 @@ void smartaudioProcessPowerPacket(void)
     bitWrite(rxPacket[4], 7, 0); // SA2.1 sets the MSB to indicate power is in dB. Set MSB to zero and currPower will now be in dB.
     setPowerdB(rxPacket[4]);
     myEEPROM.currPowerdB = rxPacket[4];
-    updateEEPROM = true;
+    updateEEPROM = 1;
 
     txPacket[0] = SMARTAUDIO_SYNC;
     txPacket[1] = SMARTAUDIO_HEADER;
@@ -151,7 +156,8 @@ void smartaudioProcessPowerPacket(void)
     txPacket[3] = 0x03; // Length
     txPacket[4] = myEEPROM.currPowerdB;
     txPacket[5] = RESERVE_BYTE;
-    txPacket[6] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
+    //txPacket[6] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
+    smartaudioSendPacket();
 }
 
 void smartaudioProcessModePacket(void)
@@ -170,7 +176,7 @@ void smartaudioProcessModePacket(void)
     // Unlocked bit
     myEEPROM.unlocked = bitRead(rxPacket[4], 3);
 
-    updateEEPROM = true;
+    updateEEPROM = 1;
 
     uint8_t operationMode = 0;
     bitWrite(operationMode, 0, myEEPROM.pitmodeInRange);
@@ -184,71 +190,84 @@ void smartaudioProcessModePacket(void)
     txPacket[3] = 0x03; // Length
     txPacket[4] = operationMode;
     txPacket[5] = RESERVE_BYTE;
-    txPacket[6] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
+    //txPacket[6] = smartadioCalcCrc(&txPacket[2], txPacket[3] + 1); // CRC
+    smartaudioSendPacket();
 }
+
+enum {
+    SA_SYNC = 0,
+    SA_HEADER,
+    SA_COMMAND,
+    SA_LENGTH,
+    SA_DATA,
+    SA_CRC,
+    SA_INVALID = 0xff
+};
+
+static uint8_t state, in_idx, in_len;
 
 void smartaudioProcessSerial(void)
 {
-    if (Serial_available())
-    {
-        // delay to allow all bytes to be received
-        delay(30);
+    uint8_t data, state_next = SA_INVALID;
+    if (Serial_available()) {
+        data = Serial_read();
 
-        Serial_read();               // blanking frame
-        rxPacket[0] = Serial_read(); // SMARTAUDIO_SYNC
-        rxPacket[1] = Serial_read(); // SMARTAUDIO_HEADER
+        rxPacket[in_idx++] = data;
 
-        if (rxPacket[0] == SMARTAUDIO_SYNC && rxPacket[1] == SMARTAUDIO_HEADER)
-        {
-            rxPacket[2] = Serial_read(); // Commands
-            rxPacket[3] = Serial_read(); // Data​​Length
+        switch (state) {
+            case SA_SYNC:
+                if (data == SMARTAUDIO_SYNC)
+                    state_next = SA_HEADER;
+                break;
+            case SA_HEADER:
+                if (data == SMARTAUDIO_HEADER)
+                    state_next = SA_COMMAND;
+                break;
+            case SA_COMMAND:
+                state_next = SA_LENGTH;
+                break;
+            case SA_LENGTH:
+                state_next = SA_DATA;
+                in_len = in_idx + data;
+                break;
+            case SA_DATA:
+                if (in_len <= in_idx)
+                    state_next = SA_CRC;
+                break;
+            case SA_CRC:
+                // CRC check and packet processing
+                if (smartadioCalcCrc(rxPacket, in_len) == data) {
+                    vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
 
-            for (uint8_t i = 0; i < rxPacket[3]; i++)
-            {
-                rxPacket[4 + i] = Serial_read(); // Payload
-            }
-
-            uint8_t crc = Serial_read();
-
-            if (smartadioCalcCrc(rxPacket, 4 + rxPacket[3]) == crc) // CRC check
-            {
-                vtxModeLocked = true; // Successfully got a packet so lock VTx mode.
-
-                zeroTxPacket();
-
-                switch (rxPacket[2] >> 1) // Commands
-                {
-                case GET_SETTINGS:
-                    smartaudioBuildSettingsPacket();
-                    break;
-                case SET_POWER:
-                    smartaudioProcessPowerPacket();
-                    break;
-                case SET_CHANNEL:
-                    smartaudioProcessChannelPacket();
-                    break;
-                case SET_FREQUENCY:
-                    smartaudioProcessFrequencyPacket();
-                    break;
-                case SET_OPERATION_MODE:
-                    smartaudioProcessModePacket();
-                    break;
+                    switch (rxPacket[2] >> 1) // Commands
+                    {
+                    case GET_SETTINGS:
+                        smartaudioBuildSettingsPacket();
+                        break;
+                    case SET_POWER:
+                        smartaudioProcessPowerPacket();
+                        break;
+                    case SET_CHANNEL:
+                        smartaudioProcessChannelPacket();
+                        break;
+                    case SET_FREQUENCY:
+                        smartaudioProcessFrequencyPacket();
+                        break;
+                    case SET_OPERATION_MODE:
+                        smartaudioProcessModePacket();
+                        break;
+                    }
                 }
-                smartaudioSendPacket();
-            }
-            else
-            {
-                switchToTramp();
-            }
-        }
-        else
-        {
-            switchToTramp();
+                break;
+            default:
+                break;
         }
 
-        clearSerialBuffer();
+        if (state_next == SA_INVALID) {
+            // Restart
+            in_idx = 0;
+        }
 
-        // return to make serial monitor readable when debuging
-        //     Serial_print_c('\n');
+        state = state_next;
     }
 }

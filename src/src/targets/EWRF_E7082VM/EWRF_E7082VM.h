@@ -41,4 +41,13 @@ If you have made it this far and have the equipment to check these outputs, plea
 
 #define RTC_BIAS      PB5
 
+/******* Target specific declarations *******/
+#include <gd32f1x0.h>
+#include "gpio.h"
+#include "serial.h"
+
+uint32_t millis(void);
+void delay(uint32_t ms);
+void delayMicroseconds(uint32_t us);
+
 #endif /* __TARGET_DEF_H_ */

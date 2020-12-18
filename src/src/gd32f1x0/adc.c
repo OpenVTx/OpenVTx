@@ -1,33 +1,15 @@
-#include "adc.h"
-#include "Arduino.h"
+#include "gpio.h"
+#include "helpers.h"
 #include "gd32f1x0_adc.h"
 #include "gd32f1x0_gpio.h"
 #include "gd32f1x0_rcu.h"
 
 #define ADC_REF_VOLT_mW 3100
 
-struct adc_pins {
-    uint16_t pin;
-    uint8_t adc;
-};
-
-struct adc_pins adc_pins[] = {
-    {PA0, ADC_CHANNEL_0},
-    {PA1, ADC_CHANNEL_1},
-    {PA2, ADC_CHANNEL_2},
-    {PA3, ADC_CHANNEL_3},
-    {PA4, ADC_CHANNEL_4},
-    {PA5, ADC_CHANNEL_5},
-    {PA6, ADC_CHANNEL_6},
-    {PA7, ADC_CHANNEL_7},
-    {PB0, ADC_CHANNEL_8},
-    {PB1, ADC_CHANNEL_9},
-    {PC0, ADC_CHANNEL_10},
-    {PC1, ADC_CHANNEL_11},
-    {PC2, ADC_CHANNEL_12},
-    {PC3, ADC_CHANNEL_13},
-    {PC4, ADC_CHANNEL_14},
-    {PC5, ADC_CHANNEL_15},
+uint16_t adc_pins[] = {
+    PA0, PA1, PA2, PA3, PA4, PA5, PA6, PA7,
+    PB0, PB1,
+    PC0, PC1, PC2, PC3, PC4, PC5,
 };
 
 static uint8_t init_done;
@@ -67,15 +49,18 @@ struct adc adc_config(uint32_t pin)
 {
     uint32_t adc_ch;
     for (adc_ch = 0; adc_ch < ARRAY_SIZE(adc_pins); adc_ch++)
-        if (adc_pins[adc_ch].pin == pin)
+        if (adc_pins[adc_ch] == pin)
             break;
 
     if (ARRAY_SIZE(adc_pins) <= adc_ch)
         return (struct adc){.ch = 0xff};
 
-    //adc_ch = adc_pins[adc_ch].adc;
-
-    pinMode(pin, ANALOG);
+    uint32_t gpio_periph = GPIO_BASE + 0x400 * GPIO2PORT(pin);
+    uint32_t gpio_pin = GPIO2BIT(pin);
+    /* Enable the clock */
+    rcu_periph_clock_enable(RCU_REGIDX_BIT(IDX_AHBEN, (17U + GPIO2PORT(pin))));
+    /* Config pin to analog input */
+    gpio_mode_set(gpio_periph, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, gpio_pin);
 
     init_adc();
 

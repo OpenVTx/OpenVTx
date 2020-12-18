@@ -4,17 +4,31 @@
 #include "rtc6705.h"
 #include "smartAudio.h"
 #include "tramp.h"
-#include <Arduino.h>
+#include "printf.h"
 
-uint16_t dCycle;
-struct adc adc_pin;
+
+static uint32_t protocol_checked;
+static struct gpio_out led_pin;
+
+
+void start_tramp(void)
+{
+  Serial_begin(TRAMP_BAUD, UART_TX, UART_RX);
+  myEEPROM.vtxMode = TRAMP;
+  updateEEPROM = 1;
+}
+
+void start_smart_audio(void)
+{
+  Serial_begin(SMARTAUDIO_BAUD, UART_TX, UART_RX);
+  myEEPROM.vtxMode = SMARTAUDIO;
+  updateEEPROM = 1;
+}
+
 
 void setup(void)
 {
-  /* TODO: Configure WDG, fwdgt_config() */
-
   rfPowerAmpPinSetup();
-//   setPowerdB(0);
 
 //   readEEPROM();
 //   pitMode = (myEEPROM.pitmodeInRange || myEEPROM.pitmodeOutRange) ? 1 : 0;
@@ -25,7 +39,6 @@ void setup(void)
 //   rtc6705WriteFrequency(myEEPROM.currFreq);
 
 //   Serial_begin(myEEPROM.vtxMode == TRAMP ? TRAMP_BAUD : SMARTAUDIO_BAUD);
-
 // #ifdef ARDUINO
 //   while (!Serial)
 //     ;
@@ -35,53 +48,39 @@ void setup(void)
 // #endif
 // #endif
 
-//   // clear any uart garbage
-//   clearSerialBuffer();
-
-  adc_pin = adc_config(VPD);
-
-  Serial_begin(SMARTAUDIO_BAUD);
+  start_smart_audio();
 
   // Below flashing is just for testing. Delete later.
-  pinMode(LED, OUTPUT);
+  led_pin = gpio_out_setup(LED, 0);
   for (int i = 0; i < 10; i++)
   {
-    digitalWrite(LED, (i & 1));
-    fwdgt_counter_reload();
+    gpio_out_write(led_pin, (i & 1));
+    //fwdgt_counter_reload();
     delay(50);
   }
 }
 
-static uint32_t temp;
+
 void loop(void)
 {
-  uint32_t now = millis();
-  if (1000 <= (now - temp)) {
-    char buff[32];
-    int len = snprintf(buff, sizeof(buff), "a:%u\n", adc_read(adc_pin));
-    Serial_write_len((uint8_t*)buff, len);
-    temp = now;
+  if (!DEBUG && !vtxModeLocked) {
+    uint32_t now = millis();
+    if (PROTOCOL_CHECK_TIMEOUT <= (now - protocol_checked)) {
+      if (myEEPROM.vtxMode == TRAMP)
+        start_smart_audio();
+      else
+        start_tramp();
+      protocol_checked = now;
+    }
   }
 
-  // pwm_out_write(outputPowerTimer, 2999); // Here just for testing. 2999 = low mW, 0 = Max mW
-
-  // digitalWrite(LED, HIGH);
-  // delay(50);
-
-  // digitalWrite(LED, LOW);
-  // delay(50);
-
-  // if (myEEPROM.vtxMode == TRAMP)
-  // {
-  //   trampProcessSerial();
-  // }
-  // else
-  // {
+  /* Process uart data */
+  if (myEEPROM.vtxMode == TRAMP)
+    trampProcessSerial();
+  else
     smartaudioProcessSerial();
-  // }
 
   // writeEEPROM();
 
-  /* Reset WD */
-  fwdgt_counter_reload();
+  taget_loop();
 }

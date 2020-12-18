@@ -1,14 +1,7 @@
-#include "pwm.h"
-#include "Arduino.h"
+#include "gpio.h"
+#include "helpers.h"
 #include "gd32f1x0_timer.h"
 #include "gd32f1x0_rcu.h"
-#define SKIP_CODE
-#include "targets.h"
-#undef SKIP_CODE
-
-#if PWM_BIAS_FREQ > 1000000
-#error "Too high PWM freq!"
-#endif
 
 #define PWM_PERIOD 3000 // Results in ~12kHz PWM
 

@@ -1,8 +1,7 @@
-#include "Arduino.h"
-#define SKIP_CODE
-#include "targets.h"
-#undef SKIP_CODE
+#include "serial.h"
+#include "gpio.h"
 #include "printf.h"
+#include "helpers.h"
 #include <gd32f1x0_gpio.h>
 #include <gd32f1x0_usart.h>
 #include <gd32f1x0_rcu.h>
@@ -84,13 +83,13 @@ static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfdu
     nvic_irq_enable((usart_periph == USART1) ? USART1_IRQn : USART0_IRQn, 0, 0);
 }
 
-void Serial_begin(uint32_t baud)
+void Serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin)
 {
-    uint8_t iter, halfduplex = (UART_TX == UART_RX);
+    uint8_t iter, halfduplex = (tx_pin == rx_pin);
 
     for (iter = 0; iter < ARRAY_SIZE(usart_config); iter++)
     {
-        if (usart_config[iter].pin_tx == UART_TX && (halfduplex || usart_config[iter].pin_rx == UART_RX))
+        if (usart_config[iter].pin_tx == tx_pin && (halfduplex || usart_config[iter].pin_rx == rx_pin))
         {
             config_uart(&usart_config[iter], baud, halfduplex);
             break;
@@ -114,6 +113,8 @@ void Serial_write(uint8_t data)
 {
     uint32_t usart_periph = usart_periph_selected;
     uint8_t halfduplex = usart_periph_halfduplex;
+    if (!usart_periph)
+        return;
     if (halfduplex) {
         usart_transmit_config(usart_periph, USART_TRANSMIT_ENABLE);
         usart_receive_config(usart_periph, USART_RECEIVE_DISABLE);
@@ -134,6 +135,8 @@ void Serial_write_len(uint8_t *data, uint32_t size)
 {
     uint32_t usart_periph = usart_periph_selected;
     uint8_t halfduplex = usart_periph_halfduplex;
+    if (!usart_periph)
+        return;
     if (halfduplex) {
         usart_transmit_config(usart_periph, USART_TRANSMIT_ENABLE);
         usart_receive_config(usart_periph, USART_RECEIVE_DISABLE);

@@ -28,7 +28,7 @@
 # python:
 #     - "2.7"
 #
-# sudo: false
+# sudo: 0
 # cache:
 #     directories:
 #         - "~/.platformio"
@@ -49,7 +49,7 @@
 # python:
 #     - "2.7"
 #
-# sudo: false
+# sudo: 0
 # cache:
 #     directories:
 #         - "~/.platformio"

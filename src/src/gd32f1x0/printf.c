@@ -177,7 +177,7 @@ static inline unsigned int _strnlen_s(const char* str, size_t maxsize)
 
 
 // internal test if char is a digit (0-9)
-// \return true if char is a digit
+// \return 1 if char is a digit
 static inline bool _is_digit(char ch)
 {
   return (ch >= '0') && (ch <= '9');
@@ -364,9 +364,9 @@ static size_t  _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, 
   }
 
   // test for negative
-  bool negative = false;
+  bool negative = 0;
   if (value < 0) {
-    negative = true;
+    negative = 1;
     value = 0 - value;
   }
 
@@ -740,15 +740,15 @@ static int  _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, cons
           // unsigned
           if (flags & FLAGS_LONG_LONG) {
 #if defined(PRINTF_SUPPORT_LONG_LONG)
-            idx = _ntoa_long_long(out, buffer, idx, maxlen, va_arg(va, unsigned long long), false, base, precision, width, flags);
+            idx = _ntoa_long_long(out, buffer, idx, maxlen, va_arg(va, unsigned long long), 0, base, precision, width, flags);
 #endif
           }
           else if (flags & FLAGS_LONG) {
-            idx = _ntoa_long(out, buffer, idx, maxlen, va_arg(va, unsigned long), false, base, precision, width, flags);
+            idx = _ntoa_long(out, buffer, idx, maxlen, va_arg(va, unsigned long), 0, base, precision, width, flags);
           }
           else {
             const unsigned int value = (flags & FLAGS_CHAR) ? (unsigned char)va_arg(va, unsigned int) : (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) : va_arg(va, unsigned int);
-            idx = _ntoa_long(out, buffer, idx, maxlen, value, false, base, precision, width, flags);
+            idx = _ntoa_long(out, buffer, idx, maxlen, value, 0, base, precision, width, flags);
           }
         }
         format++;
@@ -825,11 +825,11 @@ static int  _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, cons
 #if defined(PRINTF_SUPPORT_LONG_LONG)
         const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
         if (is_ll) {
-          idx = _ntoa_long_long(out, buffer, idx, maxlen, (uintptr_t)va_arg(va, void*), false, 16U, precision, width, flags);
+          idx = _ntoa_long_long(out, buffer, idx, maxlen, (uintptr_t)va_arg(va, void*), 0, 16U, precision, width, flags);
         }
         else {
 #endif
-          idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)((uintptr_t)va_arg(va, void*)), false, 16U, precision, width, flags);
+          idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)((uintptr_t)va_arg(va, void*)), 0, 16U, precision, width, flags);
 #if defined(PRINTF_SUPPORT_LONG_LONG)
         }
 #endif

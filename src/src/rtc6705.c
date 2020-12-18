@@ -2,38 +2,40 @@
 #include "targets.h"
 #include "common.h"
 #include "openVTxEEPROM.h"
-#include <Arduino.h>
+#include "gpio.h"
+
+static struct gpio_out ss_pin;
+static struct gpio_out sck_pin;
+static struct gpio_out mosi_pin;
+
 
 void spiPinSetup(void)
 {
-  pinMode(SPI_CLOCK, OUTPUT);
-  digitalWrite(SPI_CLOCK, LOW);
-  pinMode(SPI_MOSI, OUTPUT);
-  digitalWrite(SPI_MOSI, LOW);
-  pinMode(SPI_SS, OUTPUT);
-  digitalWrite(SPI_SS, HIGH);
+  ss_pin = gpio_out_setup(SPI_SS, 1);
+  sck_pin = gpio_out_setup(SPI_CLOCK, 0);
+  mosi_pin = gpio_out_setup(SPI_MOSI, 0);
 }
 
 void sendBits(uint32_t data)
 {
-  digitalWrite(SPI_SS, LOW);
+  gpio_out_write(ss_pin, 0);
   delayMicroseconds(1);
 
   for (uint8_t i = 0; i < 25; i++)
   {
-    digitalWrite(SPI_CLOCK, LOW);
+    gpio_out_write(sck_pin, 0);
     delayMicroseconds(1);
-    digitalWrite(SPI_MOSI, data & 0x1);
+    gpio_out_write(mosi_pin, data & 0x1);
     delayMicroseconds(1);
-    digitalWrite(SPI_CLOCK, HIGH);
+    gpio_out_write(sck_pin, 1);
     delayMicroseconds(1);
 
     data >>= 1;
   }
 
-  digitalWrite(SPI_CLOCK, LOW);
-  digitalWrite(SPI_MOSI, LOW);
-  digitalWrite(SPI_SS, HIGH);
+  gpio_out_write(sck_pin, 0);
+  gpio_out_write(mosi_pin, 0);
+  gpio_out_write(ss_pin, 1);
   delayMicroseconds(1);
 }
 

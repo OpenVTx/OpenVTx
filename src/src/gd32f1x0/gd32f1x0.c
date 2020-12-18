@@ -1,5 +1,5 @@
-#include "Arduino.h"
 #include <gd32f1x0.h>
+#include "targets.h"
 
 static volatile uint32_t _ms_cntr;
 
