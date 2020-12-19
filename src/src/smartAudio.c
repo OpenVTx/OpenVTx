@@ -208,8 +208,10 @@ void smartaudioProcessSerial(void)
 
         switch (state) {
             case SA_SYNC:
-                if (data == SMARTAUDIO_SYNC)
+                if (data == SMARTAUDIO_SYNC) {
                     state_next = SA_HEADER;
+                    status_led3(1);
+                }
                 break;
             case SA_HEADER:
                 if (data == SMARTAUDIO_HEADER)
@@ -229,12 +231,8 @@ void smartaudioProcessSerial(void)
             case SA_CRC:
                 // CRC check and packet processing
                 if (smartadioCalcCrc(rxPacket, in_len) == data) {
-                    if (!vtxModeLocked)
-                    {
-                        vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
-                        gpio_out_setup(LED2, vtxModeLocked);
-                    }
-					
+                    vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
+
                     switch (rxPacket[2] >> 1) // Commands
                     {
                     case GET_SETTINGS:
@@ -253,10 +251,6 @@ void smartaudioProcessSerial(void)
                         smartaudioProcessModePacket();
                         break;
                     }
-                    
-					gpio_out_setup(LED3, 1);
-                    delay(5);
-                    gpio_out_setup(LED3, 0);
                 }
                 break;
             default:
@@ -266,6 +260,7 @@ void smartaudioProcessSerial(void)
         if (state_next == SA_SYNC) {
             // Restart
             in_idx = 0;
+            status_led3(0);
         }
 
         state = state_next;

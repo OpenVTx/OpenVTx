@@ -107,6 +107,8 @@ void trampProcessSerial(void)
 
         if (rxPacket[0] == TRAMP_HEADER)
         {
+            status_led3(1);
+
             // read in buffer
             for (int i = 1; i < 15; i++)
             {
@@ -139,6 +141,7 @@ void trampProcessSerial(void)
                     break;
                 }
             }
+            status_led3(0);
         }
 
         clearSerialBuffer();

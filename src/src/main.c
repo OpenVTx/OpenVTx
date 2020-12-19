@@ -11,7 +11,6 @@
 #if !DEBUG
 static uint32_t protocol_checked;
 #endif /* !DEBUG */
-static gpio_out_t led_pin;
 
 
 static void start_serial(uint8_t type)
@@ -39,14 +38,7 @@ void setup(void)
 
   start_serial(myEEPROM.vtxMode);
 
-// #ifdef LED
-  led_pin = gpio_out_setup(LED1, 1);
-  // for (int i = 0; i < 10; i++) {
-  //   gpio_out_write(led_pin, (i & 1));
-  //   //fwdgt_counter_reload();
-  //   delay(50);
-  // }
-// #endif // LED
+  status_leds_init();
 
   // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
@@ -81,4 +73,5 @@ void loop(void)
   writeEEPROM();
 
   taget_loop();
+  status_led2(vtxModeLocked);
 }

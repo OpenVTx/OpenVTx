@@ -20,3 +20,8 @@ void zeroRxPacket(void);
 void zeroTxPacket(void);
 
 void setPowerdB(uint16_t currPowerdB);
+
+void status_leds_init(void);
+void status_led1(uint8_t state);
+void status_led2(uint8_t state);
+void status_led3(uint8_t state);
