@@ -194,14 +194,13 @@ enum {
     SA_LENGTH,
     SA_DATA,
     SA_CRC,
-    SA_INVALID = 0xff
 };
 
 static uint8_t state, in_idx, in_len;
 
 void smartaudioProcessSerial(void)
 {
-    uint8_t data, state_next = SA_INVALID;
+    uint8_t data, state_next = SA_SYNC;
     if (serial_available()) {
         data = serial_read();
 
@@ -220,7 +219,7 @@ void smartaudioProcessSerial(void)
                 state_next = SA_LENGTH;
                 break;
             case SA_LENGTH:
-                state_next = SA_DATA;
+                state_next = data ? SA_DATA : SA_CRC;
                 in_len = in_idx + data;
                 break;
             case SA_DATA:
@@ -256,7 +255,7 @@ void smartaudioProcessSerial(void)
                 break;
         }
 
-        if (state_next == SA_INVALID) {
+        if (state_next == SA_SYNC) {
             // Restart
             in_idx = 0;
         }
