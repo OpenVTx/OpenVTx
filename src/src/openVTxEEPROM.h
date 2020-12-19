@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#define versionEEPROM 0
+#define versionEEPROM 0x100
 
 extern uint8_t updateEEPROM;
 

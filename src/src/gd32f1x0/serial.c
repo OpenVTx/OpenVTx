@@ -83,7 +83,7 @@ static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfdu
     nvic_irq_enable((usart_periph == USART1) ? USART1_IRQn : USART0_IRQn, 0, 0);
 }
 
-void Serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin)
+void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin)
 {
     uint8_t iter, halfduplex = (tx_pin == rx_pin);
 
@@ -97,19 +97,19 @@ void Serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin)
     }
 }
 
-uint8_t Serial_available(void)
+uint8_t serial_available(void)
 {
     return (uint32_t)(sizeof(rx_buffer) + rx_head - rx_tail) % sizeof(rx_buffer);
 }
 
-uint8_t Serial_read(void)
+uint8_t serial_read(void)
 {
     uint8_t data = rx_buffer[rx_tail++];
     rx_tail %= sizeof(rx_buffer);
     return data;
 }
 
-void Serial_write(uint8_t data)
+void serial_write(uint8_t data)
 {
     uint32_t usart_periph = usart_periph_selected;
     uint8_t halfduplex = usart_periph_halfduplex;
@@ -157,12 +157,12 @@ void Serial_write_len(uint8_t *data, uint32_t size)
     }
 }
 
-void Serial_flush(void)
+void serial_flush(void)
 {
     // not needed...
 }
 
 void _putchar(char character)
 {
-    Serial_write((uint8_t)character);
+    serial_write((uint8_t)character);
 }

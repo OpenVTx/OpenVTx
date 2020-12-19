@@ -4,6 +4,8 @@
 #include "rtc6705.h"
 #include "targets.h"
 #include "helpers.h"
+#include "serial.h"
+
 
 const uint16_t channelFreqTable[48] = {
     5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // A
@@ -14,15 +16,6 @@ const uint16_t channelFreqTable[48] = {
     5362, 5399, 5436, 5473, 5510, 5547, 5584, 5621  // L
 };
 
-void switchToTramp(void)
-{
-    if (!vtxModeLocked)
-    {
-        Serial_begin(TRAMP_BAUD, UART_TX, UART_RX);
-        myEEPROM.vtxMode = TRAMP;
-        updateEEPROM = 1;
-    }
-}
 
 // https://github.com/betaflight/betaflight/blob/287741b816fb5bdac1f72a825846303454765fac/src/main/io/vtx_smartaudio.c#L152
 uint8_t smartadioCalcCrc(const uint8_t *data, uint8_t len)
@@ -55,7 +48,7 @@ void smartaudioSendPacket(void)
     uint8_t len = txPacket[3] + 4;
     txPacket[(len-1)] = smartadioCalcCrc(&txPacket[2], (len - 3)); // Fill CRC
     Serial_write_len(txPacket, len);
-    Serial_flush();
+    serial_flush();
 }
 
 void smartaudioBuildSettingsPacket(void)
@@ -209,8 +202,8 @@ static uint8_t state, in_idx, in_len;
 void smartaudioProcessSerial(void)
 {
     uint8_t data, state_next = SA_INVALID;
-    if (Serial_available()) {
-        data = Serial_read();
+    if (serial_available()) {
+        data = serial_read();
 
         rxPacket[in_idx++] = data;
 

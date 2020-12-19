@@ -26,16 +26,14 @@ void readEEPROM(void)
 {
     EEPROM_get(0, myEEPROM);
 
-    if (myEEPROM.version != versionEEPROM)
-    {
+    if (myEEPROM.version != versionEEPROM) {
         defaultEEPROM();
     }
 }
 
 void writeEEPROM(void)
 {
-    if (updateEEPROM)
-    {
+    if (updateEEPROM) {
         EEPROM_put(0, myEEPROM);
         updateEEPROM = 0;
     }

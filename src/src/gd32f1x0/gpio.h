@@ -14,27 +14,27 @@
 
 void pinAlternateConfig(uint32_t pin, uint8_t af, int8_t pud);
 
-struct gpio_out
+typedef struct
 {
     uint32_t regs;
     uint32_t bit;
-};
-struct gpio_out gpio_out_setup(uint32_t pin, uint32_t val);
-void gpio_out_toggle(struct gpio_out g);
-void gpio_out_write(struct gpio_out g, uint32_t val);
-uint8_t gpio_out_read(struct gpio_out g);
-static inline uint8_t gpio_out_valid(struct gpio_out g) {
+} gpio_out_t;
+gpio_out_t gpio_out_setup(uint32_t pin, uint32_t val);
+void gpio_out_toggle(gpio_out_t g);
+void gpio_out_write(gpio_out_t g, uint32_t val);
+uint8_t gpio_out_read(gpio_out_t g);
+static inline uint8_t gpio_out_valid(gpio_out_t g) {
     return (!!g.regs);
 }
 
-struct gpio_in
+typedef struct
 {
     uint32_t regs;
     uint32_t bit;
-};
-struct gpio_in gpio_in_setup(uint32_t pin, int32_t pull_up);
-uint8_t gpio_in_read(struct gpio_in g);
-static inline uint8_t gpio_in_valid(struct gpio_in g) {
+} gpio_in_t;
+gpio_in_t gpio_in_setup(uint32_t pin, int32_t pull_up);
+uint8_t gpio_in_read(gpio_in_t g);
+static inline uint8_t gpio_in_valid(gpio_in_t g) {
     return (!!g.regs);
 }
 

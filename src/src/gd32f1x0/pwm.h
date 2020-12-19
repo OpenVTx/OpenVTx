@@ -3,11 +3,11 @@
 
 #include <stdint.h>
 
-struct timeout {
+typedef struct {
     uint32_t tim;
     uint16_t ch;
-};
-struct timeout pwm_init(uint32_t pin);
-void pwm_out_write(struct timeout pwm, int val);
+} gpio_pwm_t;
+gpio_pwm_t pwm_init(uint32_t pin);
+void pwm_out_write(gpio_pwm_t pwm, int val);
 
 #endif /* __PWM_H_ */

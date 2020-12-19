@@ -39,3 +39,13 @@ void setPowermW(uint16_t power)
     break;
   }
 }
+
+
+void taget_setup(void)
+{
+}
+
+
+void taget_loop(void)
+{
+}

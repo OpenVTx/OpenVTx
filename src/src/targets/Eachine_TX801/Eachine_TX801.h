@@ -44,8 +44,12 @@ pinOutput value and mW measured
 #ifndef __TARGET_DEF_H_
 #define __TARGET_DEF_H_
 
+#include <Arduino.h>
+
 #define MAX_POWER 200 // mW
 
+#define UART_TX 0
+#define UART_RX 0
 #define SERIAL_PIN PD5
 
 #define SPI_SS PC6

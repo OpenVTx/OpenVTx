@@ -4,24 +4,20 @@
 #include "rtc6705.h"
 #include "smartAudio.h"
 #include "tramp.h"
-#include "printf.h"
+#include "serial.h"
+#include "gpio.h"
 
 
+#if !DEBUG
 static uint32_t protocol_checked;
-static struct gpio_out led_pin;
+#endif /* !DEBUG */
+static gpio_out_t led_pin;
 
 
-void start_tramp(void)
+static void start_serial(uint8_t type)
 {
-  Serial_begin(TRAMP_BAUD, UART_TX, UART_RX);
-  myEEPROM.vtxMode = TRAMP;
-  updateEEPROM = 1;
-}
-
-void start_smart_audio(void)
-{
-  Serial_begin(SMARTAUDIO_BAUD, UART_TX, UART_RX);
-  myEEPROM.vtxMode = SMARTAUDIO;
+  serial_begin(((type == TRAMP) ? TRAMP_BAUD : SMARTAUDIO_BAUD), UART_TX, UART_RX);
+  myEEPROM.vtxMode = type;
   updateEEPROM = 1;
 }
 
@@ -30,35 +26,29 @@ void setup(void)
 {
   rfPowerAmpPinSetup();
 
-//   readEEPROM();
-//   pitMode = (myEEPROM.pitmodeInRange || myEEPROM.pitmodeOutRange) ? 1 : 0;
+  readEEPROM();
+
+  /* TODO DEBUG! */
+  myEEPROM.vtxMode = SMARTAUDIO;
+
+  //pitMode = (myEEPROM.pitmodeInRange || myEEPROM.pitmodeOutRange) ? 1 : 0;
 
   spiPinSetup();
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
-  rtc6705WriteFrequency(5800);
-//   rtc6705WriteFrequency(myEEPROM.currFreq);
+  rtc6705WriteFrequency(myEEPROM.currFreq);
 
-//   Serial_begin(myEEPROM.vtxMode == TRAMP ? TRAMP_BAUD : SMARTAUDIO_BAUD);
-// #ifdef ARDUINO
-//   while (!Serial)
-//     ;
-//   UART1_HalfDuplexCmd(ENABLE);
-// #ifdef SERIAL_PIN
-//   pinMode(SERIAL_PIN, INPUT_PULLUP);
-// #endif
-// #endif
+  start_serial(myEEPROM.vtxMode);
 
-  start_smart_audio();
-
-  // Below flashing is just for testing. Delete later.
+#ifdef LED
   led_pin = gpio_out_setup(LED, 0);
-  for (int i = 0; i < 10; i++)
-  {
+  for (int i = 0; i < 10; i++) {
     gpio_out_write(led_pin, (i & 1));
     //fwdgt_counter_reload();
     delay(50);
   }
+#endif // LED
 
+  // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
   setPowermW(0); // 0mV
   //setPowermW(25); // 1170mV
@@ -70,24 +60,25 @@ void setup(void)
 
 void loop(void)
 {
-  if (!DEBUG && !vtxModeLocked) {
+  uint8_t const mode = myEEPROM.vtxMode;
+#if !DEBUG
+  if (!vtxModeLocked) {
     uint32_t now = millis();
     if (PROTOCOL_CHECK_TIMEOUT <= (now - protocol_checked)) {
-      if (myEEPROM.vtxMode == TRAMP)
-        start_smart_audio();
-      else
-        start_tramp();
+      start_serial((mode == TRAMP ? SMARTAUDIO: TRAMP));
       protocol_checked = now;
+      return;
     }
   }
+#endif /* DEBUG */
 
   /* Process uart data */
-  if (myEEPROM.vtxMode == TRAMP)
+  if (mode == TRAMP)
     trampProcessSerial();
   else
     smartaudioProcessSerial();
 
-  // writeEEPROM();
+  writeEEPROM();
 
   taget_loop();
 }

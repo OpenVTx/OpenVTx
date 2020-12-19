@@ -45,7 +45,7 @@ static void init_adc(void)
     adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
 }
 
-struct adc adc_config(uint32_t pin)
+gpio_adc_t adc_config(uint32_t pin)
 {
     uint32_t adc_ch;
     for (adc_ch = 0; adc_ch < ARRAY_SIZE(adc_pins); adc_ch++)
@@ -53,7 +53,7 @@ struct adc adc_config(uint32_t pin)
             break;
 
     if (ARRAY_SIZE(adc_pins) <= adc_ch)
-        return (struct adc){.ch = 0xff};
+        return (gpio_adc_t){.ch = 0xff};
 
     uint32_t gpio_periph = GPIO_BASE + 0x400 * GPIO2PORT(pin);
     uint32_t gpio_pin = GPIO2BIT(pin);
@@ -64,10 +64,10 @@ struct adc adc_config(uint32_t pin)
 
     init_adc();
 
-    return (struct adc){.ch = adc_ch};
+    return (gpio_adc_t){.ch = adc_ch};
 }
 
-uint32_t adc_read(struct adc config)
+uint32_t adc_read(gpio_adc_t config)
 {
     if (config.ch < 0xff) {
         adc_regular_channel_config(0, config.ch, ADC_SAMPLETIME_239POINT5);

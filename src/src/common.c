@@ -10,8 +10,8 @@ uint8_t pitMode = 0;
 
 void clearSerialBuffer(void)
 {
-    while (Serial_available()) {
-        Serial_read();
+    while (serial_available()) {
+        serial_read();
     }
 }
 

@@ -4,9 +4,9 @@
 #include "openVTxEEPROM.h"
 #include "gpio.h"
 
-static struct gpio_out ss_pin;
-static struct gpio_out sck_pin;
-static struct gpio_out mosi_pin;
+static gpio_out_t ss_pin;
+static gpio_out_t sck_pin;
+static gpio_out_t mosi_pin;
 
 
 void spiPinSetup(void)

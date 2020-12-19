@@ -3,10 +3,10 @@
 
 #include <stdint.h>
 
-struct adc {
+typedef struct {
     uint32_t ch;
-};
-struct adc adc_config(uint32_t pin);
-uint32_t adc_read(struct adc config);
+} gpio_adc_t;
+gpio_adc_t adc_config(uint32_t pin);
+uint32_t adc_read(gpio_adc_t config);
 
 #endif /* __ADC_H_ */

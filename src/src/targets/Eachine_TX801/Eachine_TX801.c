@@ -73,3 +73,13 @@ void setPowermW(uint16_t power)
   // digitalWrite(POWER_AMP_6, pinOutput & 0b100000);
 
 }
+
+
+void taget_setup(void)
+{
+}
+
+
+void taget_loop(void)
+{
+}

@@ -72,7 +72,7 @@ void timer_power_on(uint32_t timer_periph)
     }
 }
 
-struct timeout pwm_init(uint32_t pin)
+gpio_pwm_t pwm_init(uint32_t pin)
 {
     uint8_t index = 0;
     for (index = 0; index < ARRAY_SIZE(pwm_config); index++) {
@@ -80,7 +80,7 @@ struct timeout pwm_init(uint32_t pin)
             break;
     }
     if (ARRAY_SIZE(pwm_config) <= index)
-        return (struct timeout){.tim = 0, .ch = (uint16_t)-1};
+        return (gpio_pwm_t){.tim = 0, .ch = (uint16_t)-1};
 
     uint32_t timer = pwm_config[index].periph;
     uint8_t channel = pwm_config[index].ch;
@@ -120,10 +120,10 @@ struct timeout pwm_init(uint32_t pin)
     /* auto-reload preload enable */
     timer_enable(timer);
 
-    return (struct timeout){.tim = timer, .ch = channel};
+    return (gpio_pwm_t){.tim = timer, .ch = channel};
 }
 
-void pwm_out_write(struct timeout pwm, int val)
+void pwm_out_write(gpio_pwm_t pwm, int val)
 {
     if (pwm.tim) {
         // Register value is target-1

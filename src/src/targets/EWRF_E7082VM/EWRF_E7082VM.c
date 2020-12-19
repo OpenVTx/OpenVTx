@@ -6,9 +6,9 @@
 #include "pwm.h"
 #include "printf.h"
 
-struct timeout outputPowerTimer;
-struct gpio_out vref_pin;
-struct adc vpd_pin;
+gpio_pwm_t outputPowerTimer;
+gpio_out_t vref_pin;
+gpio_adc_t vpd_pin;
 
 void rfPowerAmpPinSetup(void)
 {

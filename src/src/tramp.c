@@ -3,21 +3,12 @@
 #include "openVTxEEPROM.h"
 #include "rtc6705.h"
 #include "targets.h"
+#include "serial.h"
 
 uint16_t temperature; // Dummy value.
 
 #define TRAMP_HEADER    0x0F // 15
 
-
-void switchToSmartAudio(void)
-{
-    if (!vtxModeLocked)
-    {
-        Serial_begin(SMARTAUDIO_BAUD, UART_TX, UART_RX);
-        myEEPROM.vtxMode = SMARTAUDIO;
-        updateEEPROM = 1;
-    }
-}
 
 uint8_t trampCalcCrc(uint8_t *packet)
 {
@@ -34,7 +25,7 @@ uint8_t trampCalcCrc(uint8_t *packet)
 void trampSendPacket(void)
 {
     Serial_write_len(txPacket, 16);
-    Serial_flush();
+    serial_flush();
 }
 
 void trampBuildrPacket(void)
@@ -110,16 +101,16 @@ void trampProcessIPacket(void)
 void trampProcessSerial(void)
 {
     // wait all bytes to be received
-    if (Serial_available() == 15)
+    if (15 <= serial_available())
     {
-        rxPacket[0] = Serial_read();
+        rxPacket[0] = serial_read();
 
         if (rxPacket[0] == TRAMP_HEADER)
         {
             // read in buffer
             for (int i = 1; i < 15; i++)
             {
-                rxPacket[i] = Serial_read();
+                rxPacket[i] = serial_read();
             }
 
             if (rxPacket[14] == trampCalcCrc(rxPacket))
@@ -148,14 +139,6 @@ void trampProcessSerial(void)
                     break;
                 }
             }
-            else
-            {
-                switchToSmartAudio();
-            }
-        }
-        else
-        {
-            switchToSmartAudio();
         }
 
         clearSerialBuffer();
