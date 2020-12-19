@@ -229,8 +229,12 @@ void smartaudioProcessSerial(void)
             case SA_CRC:
                 // CRC check and packet processing
                 if (smartadioCalcCrc(rxPacket, in_len) == data) {
-                    vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
-
+                    if (!vtxModeLocked)
+                    {
+                        vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
+                        gpio_out_setup(LED2, vtxModeLocked);
+                    }
+					
                     switch (rxPacket[2] >> 1) // Commands
                     {
                     case GET_SETTINGS:
@@ -249,6 +253,10 @@ void smartaudioProcessSerial(void)
                         smartaudioProcessModePacket();
                         break;
                     }
+                    
+					gpio_out_setup(LED3, 1);
+                    delay(5);
+                    gpio_out_setup(LED3, 0);
                 }
                 break;
             default:

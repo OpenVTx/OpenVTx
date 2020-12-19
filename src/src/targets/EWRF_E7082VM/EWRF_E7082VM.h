@@ -35,7 +35,9 @@ If you have made it this far and have the equipment to check these outputs, plea
 #define SPI_CLOCK     PA15
 #define SPI_MOSI      PB4
 
-#define LED           PA4
+#define LED1          PA4
+#define LED2          PA3
+#define LED3          PA2
 #define VREF          PA0
 #define VPD           PA1
 

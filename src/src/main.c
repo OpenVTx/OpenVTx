@@ -39,14 +39,14 @@ void setup(void)
 
   start_serial(myEEPROM.vtxMode);
 
-#ifdef LED
-  led_pin = gpio_out_setup(LED, 0);
-  for (int i = 0; i < 10; i++) {
-    gpio_out_write(led_pin, (i & 1));
-    //fwdgt_counter_reload();
-    delay(50);
-  }
-#endif // LED
+// #ifdef LED
+  led_pin = gpio_out_setup(LED1, 1);
+  // for (int i = 0; i < 10; i++) {
+  //   gpio_out_write(led_pin, (i & 1));
+  //   //fwdgt_counter_reload();
+  //   delay(50);
+  // }
+// #endif // LED
 
   // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
