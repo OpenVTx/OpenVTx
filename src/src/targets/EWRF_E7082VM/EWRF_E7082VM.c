@@ -12,13 +12,12 @@ gpio_adc_t vpd_pin;
 
 void rfPowerAmpPinSetup(void)
 {
-  vpd_pin = adc_config(VPD);
   vref_pin = gpio_out_setup(VREF, 0); // Power amp OFF
 
   outputPowerTimer = pwm_init(RTC_BIAS);
   pwm_out_write(outputPowerTimer, 3000);
 
-
+  vpd_pin = adc_config(VPD);
 }
 
 uint32_t vpd_value_get(void)

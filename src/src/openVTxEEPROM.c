@@ -14,9 +14,9 @@ void defaultEEPROM(void)
     myEEPROM.freqMode = 0;
     myEEPROM.pitmodeInRange = 0;
     myEEPROM.pitmodeOutRange = 0;
-    myEEPROM.currPowermW = 25;
-    myEEPROM.currPowerdB = 14;
-    myEEPROM.currPowerIndex = 1;
+    myEEPROM.currPowermW = 0;
+    myEEPROM.currPowerdB = 0;
+    myEEPROM.currPowerIndex = 0;
     myEEPROM.unlocked = 1;
 
     EEPROM_put(0, myEEPROM);

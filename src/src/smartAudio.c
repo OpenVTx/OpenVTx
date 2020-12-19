@@ -210,7 +210,6 @@ void smartaudioProcessSerial(void)
             case SA_SYNC:
                 if (data == SMARTAUDIO_SYNC) {
                     state_next = SA_HEADER;
-                    status_led3(1);
                 }
                 break;
             case SA_HEADER:
@@ -231,6 +230,7 @@ void smartaudioProcessSerial(void)
             case SA_CRC:
                 // CRC check and packet processing
                 if (smartadioCalcCrc(rxPacket, in_len) == data) {
+                    status_led3(1);
                     vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
 
                     switch (rxPacket[2] >> 1) // Commands
@@ -260,9 +260,10 @@ void smartaudioProcessSerial(void)
         if (state_next == SA_SYNC) {
             // Restart
             in_idx = 0;
-            status_led3(0);
         }
 
         state = state_next;
     }
+    
+    status_led3(0);
 }
