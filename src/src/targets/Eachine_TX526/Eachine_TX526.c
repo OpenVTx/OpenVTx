@@ -1,41 +1,51 @@
 #include "targets.h"
 #include "common.h"
-#include "openVTxEEPROM.h"
-#include "rtc6705.h"
+#include "helpers.h"
 #include <Arduino.h>
 
-void rfPowerAmpPinSetup()
+struct PowerMapping power_mapping[] = {
+  {0, 0}, {25, 14}, {200, 23},
+};
+uint8_t power_mapping_size = ARRAY_SIZE(power_mapping);
+
+
+void target_rfPowerAmpPinSetup(void)
 {
   pinMode(POWER_AMP_2, OUTPUT);
   pinMode(POWER_AMP_3, OUTPUT);
   pinMode(POWER_AMP_5, OUTPUT);
 }
 
-void setPowermW(uint16_t power)
+void target_set_power_mW(uint16_t power)
 {
-  if (pitMode)
-  {
-    power = 1;
-  }
-
   switch (power)
   {
+  case 0:
   case 1:
-    digitalWrite(POWER_AMP_2, LOW);
-    digitalWrite(POWER_AMP_3, LOW);
-    digitalWrite(POWER_AMP_5, HIGH);
+    digitalWrite(POWER_AMP_2, 0);
+    digitalWrite(POWER_AMP_3, 0);
+    digitalWrite(POWER_AMP_5, 1);
     break;
   case 25:
-    digitalWrite(POWER_AMP_2, LOW);
-    digitalWrite(POWER_AMP_3, HIGH);
-    digitalWrite(POWER_AMP_5, HIGH);
+    digitalWrite(POWER_AMP_2, 0);
+    digitalWrite(POWER_AMP_3, 1);
+    digitalWrite(POWER_AMP_5, 1);
     break;
   case 200:
-    digitalWrite(POWER_AMP_2, HIGH);
-    digitalWrite(POWER_AMP_5, HIGH);
+    digitalWrite(POWER_AMP_2, 1);
+    digitalWrite(POWER_AMP_5, 1);
     break;
   default:
-    return; // power value not recognised and no change
     break;
   }
+}
+
+
+void taget_setup(void)
+{
+}
+
+
+void taget_loop(void)
+{
 }

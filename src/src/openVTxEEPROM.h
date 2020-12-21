@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#define versionEEPROM 0
+#define versionEEPROM 0x100
 
 extern uint8_t updateEEPROM;
 
@@ -21,9 +21,7 @@ typedef struct
     uint8_t freqMode;
     uint8_t pitmodeInRange;
     uint8_t pitmodeOutRange;
-    uint16_t currPowermW;
     uint8_t currPowerdB;
-    uint8_t currPowerIndex;
     uint8_t unlocked;
 } openVTxEEPROM;
 

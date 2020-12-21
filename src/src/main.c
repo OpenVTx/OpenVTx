@@ -4,78 +4,75 @@
 #include "rtc6705.h"
 #include "smartAudio.h"
 #include "tramp.h"
-#include <Arduino.h>
+#include "serial.h"
+#include "gpio.h"
 
-uint16_t dCycle;
 
-void setup()
+#if !DEBUG
+static uint32_t protocol_checked;
+#endif /* !DEBUG */
+
+
+static void start_serial(uint8_t type)
 {
-  rfPowerAmpPinSetup();
-  setPowerdB(0);
+  serial_begin(((type == TRAMP) ? TRAMP_BAUD : SMARTAUDIO_BAUD), UART_TX, UART_RX);
+  myEEPROM.vtxMode = type;
+  updateEEPROM = 1;
+}
 
-  readEEPROM();
-  pitMode = (myEEPROM.pitmodeInRange || myEEPROM.pitmodeOutRange) ? 1 : 0;
+
+void setup(void)
+{
+  // Force pitmode enabled after boot
+  pitMode = 1;
 
   spiPinSetup();
+  target_rfPowerAmpPinSetup();
+
+  readEEPROM();
+
+  /* TODO DEBUG! */
+  myEEPROM.vtxMode = SMARTAUDIO;
+
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
   rtc6705WriteFrequency(myEEPROM.currFreq);
 
-  Serial_begin(myEEPROM.vtxMode == TRAMP ? TRAMP_BAUD : SMARTAUDIO_BAUD);
+  start_serial(myEEPROM.vtxMode);
 
-  while (!Serial)
-  {
-    ;
-  }
-  UART1_HalfDuplexCmd(ENABLE);
-  pinMode(SERIAL_PIN, INPUT_PULLUP);
+  status_leds_init();
 
-  // clear any uart garbage
-  clearSerialBuffer();
-
-
-// pinMode(POWER_AMP_6, OUTPUT);
-// uint16_t AutoReloadRegister = 255;//1591; // 10khz
-// TIM1->PSCRL = 0x00; // 62kHz
-// TIM1->ARRH = (uint8_t)(AutoReloadRegister >> 8);
-// TIM1->ARRL = (uint8_t)(AutoReloadRegister);
-// unsigned char tmp = TIM1->CCER2 & (uint8_t)(~(TIM1_CCER2_CC4E | TIM1_CCER2_CC4P));
-// TIM1->CCER2 = tmp | TIM1_CCER2_CC4E;
-// TIM1->CCMR4 = TIM1_OCMODE_PWM1 | TIM1_CCMR_OCxPE;
-// TIM1->CCR4H = 0x00; // init with 0 duty cycle e.g. 0 volts
-// TIM1->CCR4L = 0x00; // init with 0 duty cycle e.g. 0 volts
-
-
-// dCycle = 1590; // 20dBm 100mW
-// dCycle = 1321; // 17dBm 50mW
-// dCycle = 1150; // 14dBm 25mW
-// dCycle = 1024; // 2.9V
-// dCycle = 1; // 0V
-// dCycle = AutoReloadRegister / 2;
-// dCycle = 155; // 1.463V
-// dCycle = 160; // 1.510V 27mW
-// dCycle = 170; // 1.600V 33mW
-// dCycle = 175; // 1.643V 34mW
-// dCycle = 180; // 1.690V 35mW
-// dCycle = 200; // 1.867V 36mW
-// dCycle = 210; // 1.962V
-// dCycle = 220; // 2.047V
-// dCycle = 230; // 2.137V
-// dCycle = 255; // 2.344V 44mW
-
-// TIM1->CCR4H = (uint8_t)(dCycle >> 8);
-// TIM1->CCR4L = (uint8_t)(dCycle);
+  // TODO DEBUG! Below flashing is just for testing. Delete later.
+#if DEBUG
+  setPowermW(0); // 0mV
+  //setPowermW(25); // 1170mV
+  //setPowermW(100); // 1225mV
+  //setPowermW(400);
+#endif /* DEBUG */
 }
 
-void loop()
+
+void loop(void)
 {
-  if (myEEPROM.vtxMode == TRAMP)
-  {
+  uint8_t const mode = myEEPROM.vtxMode;
+#if !DEBUG
+  if (!vtxModeLocked) {
+    uint32_t now = millis();
+    if (PROTOCOL_CHECK_TIMEOUT <= (now - protocol_checked)) {
+      start_serial((mode == TRAMP ? SMARTAUDIO: TRAMP));
+      protocol_checked = now;
+      return;
+    }
+  }
+#endif /* DEBUG */
+
+  /* Process uart data */
+  if (mode == TRAMP)
     trampProcessSerial();
-  }
   else
-  {
     smartaudioProcessSerial();
-  }
 
   writeEEPROM();
+
+  taget_loop();
+  status_led2(vtxModeLocked);
 }

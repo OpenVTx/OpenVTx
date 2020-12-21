@@ -2,60 +2,71 @@
 #include "targets.h"
 #include "common.h"
 #include "openVTxEEPROM.h"
-#include <Arduino.h>
+#include "gpio.h"
+
+static gpio_out_t ss_pin;
+static gpio_out_t sck_pin;
+static gpio_out_t mosi_pin;
+static uint_fast8_t amp_state;
+
 
 void spiPinSetup(void)
 {
-  pinMode(SPI_CLOCK, OUTPUT);
-  digitalWrite(SPI_CLOCK, LOW);
-  pinMode(SPI_DATA, OUTPUT);
-  digitalWrite(SPI_DATA, LOW);
-  pinMode(SPI_SS, OUTPUT);
-  digitalWrite(SPI_SS, HIGH);
+  ss_pin = gpio_out_setup(SPI_SS, 1);
+  sck_pin = gpio_out_setup(SPI_CLOCK, 0);
+  mosi_pin = gpio_out_setup(SPI_MOSI, 0);
+  amp_state = 0;
 }
 
 void sendBits(uint32_t data)
 {
-  digitalWrite(SPI_SS, LOW);
+  gpio_out_write(ss_pin, 0);
   delayMicroseconds(1);
 
   for (uint8_t i = 0; i < 25; i++)
   {
-    digitalWrite(SPI_CLOCK, LOW);
+    gpio_out_write(sck_pin, 0);
     delayMicroseconds(1);
-    digitalWrite(SPI_DATA, data & 0x1);
+    gpio_out_write(mosi_pin, data & 0x1);
     delayMicroseconds(1);
-    digitalWrite(SPI_CLOCK, HIGH);
+    gpio_out_write(sck_pin, 1);
     delayMicroseconds(1);
 
     data >>= 1;
   }
 
-  digitalWrite(SPI_CLOCK, LOW);
-  digitalWrite(SPI_DATA, LOW);
-  digitalWrite(SPI_SS, HIGH);
+  gpio_out_write(sck_pin, 0);
+  gpio_out_write(mosi_pin, 0);
+  gpio_out_write(ss_pin, 1);
   delayMicroseconds(1);
 }
 
 void rtc6705ResetState(void)
 {
-  uint32_t data = StateRegister | (1 << 4) | (0b0 << 5);
+  uint32_t data = StateRegister | (1 << 4);
 
   sendBits(data);
+
+  amp_state = 0;
 }
 
 void rtc6705PowerAmpOn(void)
 {
-  uint32_t data = PredriverandPAControlRegister | (1 << 4) | (0b00000100111110111111 << 5);
+  if (amp_state) return;
+  uint32_t data = PredriverandPAControlRegister | (1 << 4) | (0b10011111011111100000);
 
   sendBits(data);
+  amp_state = 1;
 }
 
 void rtc6705PowerAmpOff(void)
 {
-  uint32_t data = PredriverandPAControlRegister | (1 << 4) | (0b00000000000000000000 << 5);
+  if (!amp_state) return;
+
+  uint32_t data = PredriverandPAControlRegister | (1 << 4);
 
   sendBits(data);
+  amp_state = 0;
 }
 
 void rtc6705WriteFrequency(uint32_t newFreq)
@@ -67,14 +78,14 @@ void rtc6705WriteFrequency(uint32_t newFreq)
 
   uint32_t data = SynthesizerRegisterB | (1 << 4) | (SYN_RF_A_REG << 5) | (SYN_RF_N_REG << 12);
 
+  /* Switch off */
+  amp_state = 1; // Force off cmd rewrite
   rtc6705PowerAmpOff();
-  setPowermW(0);
+  target_set_power_mW(0);
 
+  /* Set frequency */
   sendBits(data);
 
-  if (!pitMode)
-  {
-    rtc6705PowerAmpOn();
-    setPowerdB(myEEPROM.currPowerdB);
-  }
+  /* Restore state */
+  setPowerdB(myEEPROM.currPowerdB);
 }

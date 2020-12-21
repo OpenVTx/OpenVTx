@@ -41,15 +41,20 @@ pinOutput value and mW measured
 63 = 200 <-- 200 mW
 
 */
-#pragma once
+#ifndef __TARGET_DEF_H_
+#define __TARGET_DEF_H_
+
+#include <Arduino.h>
 
 #define MAX_POWER 200 // mW
 
+#define UART_TX 0
+#define UART_RX 0
 #define SERIAL_PIN PD5
 
 #define SPI_SS PC6
 #define SPI_CLOCK PC5
-#define SPI_DATA PC7
+#define SPI_MOSI PC7
 
 #define POWER_AMP_1 PA2
 #define POWER_AMP_2 PD4
@@ -57,3 +62,5 @@ pinOutput value and mW measured
 #define POWER_AMP_4 PD2
 #define POWER_AMP_5 PC3
 #define POWER_AMP_6 PC4
+
+#endif /* __TARGET_DEF_H_ */

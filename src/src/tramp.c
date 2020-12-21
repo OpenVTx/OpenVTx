@@ -3,23 +3,19 @@
 #include "openVTxEEPROM.h"
 #include "rtc6705.h"
 #include "targets.h"
-#include <Arduino.h>
+#include "serial.h"
 
-void switchToSmartAudio(void)
-{
-    if (!vtxModeLocked)
-    {
-        Serial_begin(SMARTAUDIO_BAUD);
-        myEEPROM.vtxMode = SMARTAUDIO;
-        updateEEPROM = true;
-    }
-}
+uint16_t temperature; // Dummy value.
+
+#define TRAMP_HEADER    0x0F // 15
+#define TRAMP_MSG_SIZE  15
+
 
 uint8_t trampCalcCrc(uint8_t *packet)
 {
     uint8_t crc = 0;
 
-    for (int i = 1; i < 14; i++)
+    for (int i = 1; i < (TRAMP_MSG_SIZE - 1); i++)
     {
         crc += packet[i];
     }
@@ -29,17 +25,16 @@ uint8_t trampCalcCrc(uint8_t *packet)
 
 void trampSendPacket(void)
 {
-    for (int i = 0; i < 16; i++)
-    {
-        Serial_write(txPacket[i]);
-    }
-    Serial_flush();
+    txPacket[TRAMP_MSG_SIZE-1] = trampCalcCrc(txPacket);
+    txPacket[TRAMP_MSG_SIZE] = 0;
+    Serial_write_len(txPacket, (TRAMP_MSG_SIZE+1));
+    serial_flush();
 }
 
 void trampBuildrPacket(void)
 {
     zeroTxPacket();
-    txPacket[0] = 15;
+    txPacket[0] = TRAMP_HEADER;
     txPacket[1] = 'r';
     txPacket[2] = MIN_FREQ & 0xff;
     txPacket[3] = (MIN_FREQ >> 8) & 0xff;
@@ -47,33 +42,34 @@ void trampBuildrPacket(void)
     txPacket[5] = (MAX_FREQ >> 8) & 0xff;
     txPacket[6] = MAX_POWER & 0xff;
     txPacket[7] = (MAX_POWER >> 8) & 0xff;
-    txPacket[14] = trampCalcCrc(txPacket);
+    trampSendPacket();
 }
 
 void trampBuildvPacket(void)
 {
+    uint16_t mW = get_power_mW_by_dB(myEEPROM.currPowerdB);
     zeroTxPacket();
-    txPacket[0] = 15;
+    txPacket[0] = TRAMP_HEADER;
     txPacket[1] = 'v';
     txPacket[2] = myEEPROM.currFreq & 0xff;
     txPacket[3] = (myEEPROM.currFreq >> 8) & 0xff;
-    txPacket[4] = myEEPROM.currPowermW & 0xff;          // Configured transmitting power
-    txPacket[5] = (myEEPROM.currPowermW >> 8) & 0xff;   // Configured transmitting power
-    txPacket[6] = 0;                                    // trampControlMode
-    txPacket[7] = pitMode;                              // trampPitMode
-    txPacket[8] = myEEPROM.currPowermW & 0xff;          // Actual transmitting power
-    txPacket[9] = (myEEPROM.currPowermW >> 8) & 0xff;   // Actual transmitting power
-    txPacket[14] = trampCalcCrc(txPacket);
+    txPacket[4] = mW & 0xff;          // Configured transmitting power
+    txPacket[5] = (mW >> 8) & 0xff;   // Configured transmitting power
+    txPacket[6] = 0;                  // trampControlMode
+    txPacket[7] = pitMode;            // trampPitMode
+    txPacket[8] = mW & 0xff;          // Actual transmitting power
+    txPacket[9] = (mW >> 8) & 0xff;   // Actual transmitting power
+    trampSendPacket();
 }
 
 void trampBuildsPacket(void)
 {
     zeroTxPacket();
-    txPacket[0] = 15;
+    txPacket[0] = TRAMP_HEADER;
     txPacket[1] = 's';
     txPacket[6] = temperature & 0xff;
     txPacket[7] = (temperature >> 8) & 0xff;
-    txPacket[14] = trampCalcCrc(txPacket);
+    trampSendPacket();
 }
 
 void trampProcessFPacket(void)
@@ -81,46 +77,49 @@ void trampProcessFPacket(void)
     myEEPROM.currFreq = rxPacket[2] | (rxPacket[3] << 8);
     rtc6705WriteFrequency(myEEPROM.currFreq);
 
-    updateEEPROM = true;
+    updateEEPROM = 1;
 }
 
 void trampProcessPPacket(void)
 {
-    myEEPROM.currPowermW = rxPacket[2] | (rxPacket[3] << 8);
-    setPowermW(myEEPROM.currPowermW);
+    uint16_t mW = rxPacket[3];
+    mW <<= 8;
+    mW += rxPacket[2];
+    setPowermW(mW);
 
-    updateEEPROM = true;
+    updateEEPROM = 1;
 }
 
 void trampProcessIPacket(void)
 {
     pitMode = !rxPacket[2];
-    setPowermW(myEEPROM.currPowermW);   // Regardless of input mW, pitmode will force output to 0mW.
+    setPowerdB(myEEPROM.currPowerdB);   // Regardless of input mW, pitmode will force output to 0mW.
 
     myEEPROM.pitmodeInRange = pitMode;  // Pitmode set via CMS is not remembered with Tramp, but I have forced it here to be useful like SA pitmode.
     myEEPROM.pitmodeOutRange = 0;       // Set to 0 so only one of PIR or POR is set for smartaudio
 
-    updateEEPROM = true;
+    updateEEPROM = 1;
 }
 
 void trampProcessSerial(void)
 {
     // wait all bytes to be received
-    if (Serial_available() == 15)
+    if (TRAMP_MSG_SIZE <= serial_available())
     {
-        rxPacket[0] = Serial_read();
+        rxPacket[0] = serial_read();
 
-        if (rxPacket[0] == 15) // 0x0F - tramp header
+        if (rxPacket[0] == TRAMP_HEADER)
         {
             // read in buffer
-            for (int i = 1; i < 15; i++)
+            for (int i = 1; i < TRAMP_MSG_SIZE; i++)
             {
-                rxPacket[i] = Serial_read();
+                rxPacket[i] = serial_read();
             }
 
-            if (rxPacket[14] == trampCalcCrc(rxPacket))
+            if (rxPacket[(TRAMP_MSG_SIZE - 1)] == trampCalcCrc(rxPacket))
             {
-                vtxModeLocked = true; // Successfully got a packet so lock VTx mode.
+                status_led3(1);
+                vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
 
                 switch (rxPacket[1]) // command
                 {
@@ -135,31 +134,19 @@ void trampProcessSerial(void)
                     break;
                 case 'r': // 0x72 - Max min freq and power packet
                     trampBuildrPacket();
-                    trampSendPacket();
                     break;
                 case 'v': // 0x76 - Verify
                     trampBuildvPacket();
-                    trampSendPacket();
                     break;
                 case 's': // 0x73 - Temperature
                     trampBuildsPacket();
-                    trampSendPacket();
                     break;
                 }
+
+                status_led3(0);
             }
-            else
-            {
-                switchToSmartAudio();
-            }
-        }
-        else
-        {
-            switchToSmartAudio();
         }
 
         clearSerialBuffer();
-
-        // return to make serial monitor readable when debuging
-        //     Serial_print_c('\n');
     }
 }

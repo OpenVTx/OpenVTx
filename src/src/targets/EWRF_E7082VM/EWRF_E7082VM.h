@@ -20,32 +20,36 @@ The below measurements are done hot on the bench.  However mW output does increa
 If you have made it this far and have the equipment to check these outputs, please do and report back on their accuracy :)
 
 */
+
 #ifndef __TARGET_DEF_H_
 #define __TARGET_DEF_H_
 
-#include <Arduino.h>
+#define MAX_POWER     25 // mW
 
-#define MAX_POWER 200 // mW
+//#define SERIAL_PIN    -1
 
-#define UART_TX 0
-#define UART_RX 0
-//#define SERIAL_PIN -1
+#define UART_RX       PA9 //PA10
+#define UART_TX       PA9
 
-#define SPI_SS PC6
-#define SPI_CLOCK PC5
-#define SPI_MOSI PC7
+#define SPI_SS        PB3
+#define SPI_CLOCK     PA15
+#define SPI_MOSI      PB4
 
-#define POWER_AMP_1 PA2
-#define POWER_AMP_2 PD4
-#define POWER_AMP_3 PD3
-#define POWER_AMP_4 PD2
-#define POWER_AMP_5 PC3
-#define POWER_AMP_6 PC4
+#define LED1          PA4 // Red (power)
+#define LED2          PA3 // Green (connected)
+#define LED3          PA2 // Blue (SA message)
+#define VREF          PA0
+#define VPD           PA1
 
-#define POWER_AMP_7 PA2
-#define POWER_AMP_8 PA3
-#define POWER_AMP_9 PB5
-#define POWER_AMP_10 PB4
-#define POWER_AMP_11 PD1
+#define RTC_BIAS      PB5
+
+/******* Target specific declarations *******/
+#include <gd32f1x0.h>
+#include "gpio.h"
+#include "serial.h"
+
+uint32_t millis(void);
+void delay(uint32_t ms);
+void delayMicroseconds(uint32_t us);
 
 #endif /* __TARGET_DEF_H_ */
