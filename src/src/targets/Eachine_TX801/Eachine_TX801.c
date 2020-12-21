@@ -25,28 +25,23 @@ void target_rfPowerAmpPinSetup(void)
   // pinMode(POWER_AMP_6, OUTPUT);
 }
 
-uint8_t target_set_power_mW(uint16_t power)
+void target_set_power_mW(uint16_t power)
 {
   uint8_t pinOutput = 0;
-  uint8_t index = 0xff;
 
   switch (power)
   {
   case 0:
     pinOutput = 1; // Setting to 0 does not reduce power for some reason :|
-    index = 0;
     break;
   case 25:
     pinOutput = 18;
-    index = 1;
     break;
   case 100:
     pinOutput = 50;
-    index = 2;
     break;
   case 200:
     pinOutput = 63;
-    index = 3;
     break;
   default:
     break;
@@ -60,7 +55,6 @@ uint8_t target_set_power_mW(uint16_t power)
     // digitalWrite(POWER_AMP_5, pinOutput & 0b010000);
     // digitalWrite(POWER_AMP_6, pinOutput & 0b100000);
   }
-  return index;
 }
 
 

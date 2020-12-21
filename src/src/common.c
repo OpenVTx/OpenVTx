@@ -137,23 +137,26 @@ void setPowerdB(uint8_t dB)
 void setPowermW(uint16_t mW)
 {
   uint8_t index;
-
-  if (pitMode)
-    // Pit mode set => force output power to zero
-    mW = 0;
-
-  if (mW <= 1)
-    rtc6705PowerAmpOff();
-  else
-    rtc6705PowerAmpOn();
-
-  index = target_set_power_mW(mW);
-
+  for (index = 0; index < power_mapping_size; index++) {
+    if (power_mapping[index].mW == mW)
+      break;
+  }
   /* Update database values */
   if (index < power_mapping_size) {
     myEEPROM.currPowerIndex = index;
     myEEPROM.currPowermW = power_mapping[index].mW;
     myEEPROM.currPowerdB = power_mapping[index].dB;
     updateEEPROM = 1;
+
+    if (pitMode)
+      // Pit mode set => force output power to zero
+      mW = 0;
+
+    if (mW <= 1)
+      rtc6705PowerAmpOff();
+    else
+      rtc6705PowerAmpOn();
+
+    target_set_power_mW(mW);
   }
 }

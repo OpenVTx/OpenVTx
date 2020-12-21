@@ -23,6 +23,10 @@ static void start_serial(uint8_t type)
 
 void setup(void)
 {
+  // Force pitmode enabled after boot
+  pitMode = 1;
+
+  spiPinSetup();
   target_rfPowerAmpPinSetup();
 
   readEEPROM();
@@ -30,7 +34,6 @@ void setup(void)
   /* TODO DEBUG! */
   myEEPROM.vtxMode = SMARTAUDIO;
 
-  spiPinSetup();
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
   rtc6705WriteFrequency(myEEPROM.currFreq);
 

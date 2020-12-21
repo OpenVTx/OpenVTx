@@ -33,41 +33,30 @@ uint32_t vpd_value_get(void)
   return adc_read(vpd_pin);
 }
 
-uint8_t target_set_power_mW(uint16_t power)
+void target_set_power_mW(uint16_t power)
 {
   uint16_t pwm_val = 3000;
   uint8_t amp_state = 1;
-  uint8_t index = 0xff;
 
   switch (power)
   {
   case 25:
     pwm_val = 2460;
-    myEEPROM.currPowerIndex = 1;
-    index = 1;
     break;
   case 100:
     pwm_val = 2430;
-    myEEPROM.currPowerIndex = 2;
-    index = 1;
     break;
   case 400:
     pwm_val = 0;
-    myEEPROM.currPowerIndex = 3;
-    index = 1;
     break;
   case 0:
   default:
     amp_state = 0;
-    myEEPROM.currPowerIndex = 0;
-    index = 0;
     break;
   }
 
   pwm_out_write(outputPowerTimer, pwm_val);
   gpio_out_write(vref_pin, amp_state);
-
-  return index;
 }
 
 
