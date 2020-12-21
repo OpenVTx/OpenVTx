@@ -32,13 +32,12 @@ enum {
     SA_CMD_GET_SETTINGS_V21 = 0x11,
 };
 
-#define SA_SYNC_BYTE 0xAA
-#define SA_HEADER_BYTE 0x55
+#define PIT_MODE_FREQ_REQUEST   (0x1 << 14)
+#define PIT_MODE_FREQ_SET       (0x1 << 15)
 
-#define PIT_MODE_FREQ_REQUEST 0x4000
-#define PIT_MODE_FREQ_SET 0x8000
-
-#define RESERVE_BYTE 0x01
+#define SA_SYNC_BYTE    0xAA
+#define SA_HEADER_BYTE  0x55
+#define RESERVE_BYTE    0x01
 
 
 typedef struct {
@@ -46,27 +45,27 @@ typedef struct {
     uint8_t header;
     uint8_t command;
     uint8_t length;
-} PACKED sa_header_t;
+} sa_header_t;
 
 typedef struct {
     uint8_t  channel;
     uint8_t  power;
     uint8_t  operationMode;
-    uint16_t frequency;
+    uint8_t  frequency[2];
     uint8_t  rawPowerValue;
     uint8_t  num_pwr_levels;
     uint8_t  levels[SA_NUM_POWER_LEVELS];
-} PACKED sa_settings_resp_t;
+} sa_settings_resp_t;
 
 typedef struct {
     uint8_t data_u8;
     uint8_t reserved;
-} PACKED sa_u8_resp_t;
+} sa_u8_resp_t;
 
 typedef struct {
-    uint16_t data_u16;
-    uint8_t  reserved;
-} PACKED sa_u16_resp_t;
+    uint8_t data_u16[2];
+    uint8_t reserved;
+} sa_u16_resp_t;
 
 
 uint8_t* fill_resp_header(uint8_t cmd, uint8_t len)
@@ -128,9 +127,10 @@ void smartaudioBuildSettingsPacket(void)
     payload->channel = myEEPROM.channel;
     payload->power = myEEPROM.currPowerIndex;
     payload->operationMode = operationMode;
-    payload->frequency = BYTE_SWAP_U16(myEEPROM.currFreq);
+    payload->frequency[0] = (uint8_t)(myEEPROM.currFreq >> 8);
+    payload->frequency[1] = (uint8_t)(myEEPROM.currFreq);
     payload->rawPowerValue = myEEPROM.currPowerdB;
-    payload->num_pwr_levels = powerValuesGet(payload->levels);
+    payload->num_pwr_levels = get_power_db_values(payload->levels);
 
     smartaudioSendPacket();
 }
@@ -140,29 +140,28 @@ void smartaudioProcessFrequencyPacket(void)
     sa_u16_resp_t * payload =
         (sa_u16_resp_t*)fill_resp_header(
             SA_CMD_SET_FREQ, sizeof(sa_u16_resp_t));
-    int returnFreq;
-    int newFreq = rxPacket[4];
-    newFreq <<= 8;
-    newFreq |= rxPacket[5];
+    uint16_t freq = rxPacket[4];
+    freq <<= 8;
+    freq |= rxPacket[5];
 
-    if (newFreq & PIT_MODE_FREQ_REQUEST)
+    if (freq & PIT_MODE_FREQ_REQUEST)
     {
         // POR is not supported in SA2.1 so return currFreq
-        returnFreq = myEEPROM.currFreq;
+        freq = myEEPROM.currFreq;
     }
-    else if (newFreq & PIT_MODE_FREQ_SET)
+    else if (freq & PIT_MODE_FREQ_SET)
     {
         // POR is not supported in SA2.1 so do not set a POR freq
-        returnFreq = myEEPROM.currFreq;
+        freq = myEEPROM.currFreq;
     }
     else
     {
-        myEEPROM.currFreq = newFreq;
-        returnFreq = myEEPROM.currFreq;
-        rtc6705WriteFrequency(myEEPROM.currFreq);
+        myEEPROM.currFreq = freq;
+        rtc6705WriteFrequency(freq);
     }
 
-    payload->data_u16 = BYTE_SWAP_U16(returnFreq);
+    payload->data_u16[0] = (uint8_t)(freq >> 8);
+    payload->data_u16[1] = (uint8_t)(freq);
     payload->reserved = RESERVE_BYTE;
 
     myEEPROM.freqMode = 1;
@@ -176,18 +175,20 @@ void smartaudioProcessChannelPacket(void)
     sa_u8_resp_t * payload =
         (sa_u8_resp_t*)fill_resp_header(
             SA_CMD_SET_CHAN, sizeof(sa_u8_resp_t));
-    const uint8_t channel = rxPacket[4];
+    uint8_t channel = rxPacket[4];
 
-    myEEPROM.channel = channel;
-    myEEPROM.currFreq = channelFreqTable[channel];
-
-    rtc6705WriteFrequency(myEEPROM.currFreq);
+    if (channel < ARRAY_SIZE(channelFreqTable)) {
+        myEEPROM.channel = channel;
+        myEEPROM.currFreq = channelFreqTable[channel];
+        rtc6705WriteFrequency(myEEPROM.currFreq);
+        myEEPROM.freqMode = 0;
+        updateEEPROM = 1;
+    } else {
+        channel = myEEPROM.channel;
+    }
 
     payload->data_u8 = channel;
     payload->reserved = RESERVE_BYTE;
-
-    myEEPROM.freqMode = 0;
-    updateEEPROM = 1;
 
     smartaudioSendPacket();
 }
@@ -203,11 +204,9 @@ void smartaudioProcessPowerPacket(void)
         /* SA2.1 sets the MSB to indicate power is in dB.
          * Set MSB to zero and currPower will now be in dB. */
         setPowerdB(data & 0x7F);
-        myEEPROM.currPowerdB = data;
     } else {
         setPowermW(data);
     }
-    updateEEPROM = 1;
 
     payload->data_u8 = myEEPROM.currPowerdB;
     payload->reserved = RESERVE_BYTE;

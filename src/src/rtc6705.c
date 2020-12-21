@@ -69,14 +69,9 @@ void rtc6705WriteFrequency(uint32_t newFreq)
 
   uint32_t data = SynthesizerRegisterB | (1 << 4) | (SYN_RF_A_REG << 5) | (SYN_RF_N_REG << 12);
 
-  rtc6705PowerAmpOff();
   setPowermW(0);
 
   sendBits(data);
 
-  if (!pitMode)
-  {
-    rtc6705PowerAmpOn();
-    setPowerdB(myEEPROM.currPowerdB);
-  }
+  setPowerdB(myEEPROM.currPowerdB);
 }

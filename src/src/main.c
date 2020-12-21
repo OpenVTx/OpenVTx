@@ -23,14 +23,12 @@ static void start_serial(uint8_t type)
 
 void setup(void)
 {
-  rfPowerAmpPinSetup();
+  target_rfPowerAmpPinSetup();
 
   readEEPROM();
 
   /* TODO DEBUG! */
   myEEPROM.vtxMode = SMARTAUDIO;
-
-  //pitMode = (myEEPROM.pitmodeInRange || myEEPROM.pitmodeOutRange) ? 1 : 0;
 
   spiPinSetup();
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!

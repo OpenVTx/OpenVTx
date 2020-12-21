@@ -1,7 +1,12 @@
 #include "common.h"
 #include "serial.h"
 #include "targets.h"
+#include "openVTxEEPROM.h"
+#include "rtc6705.h"
 #include <string.h>
+
+extern struct PowerMapping * power_mapping;
+extern uint8_t power_mapping_size;
 
 uint8_t rxPacket[16];
 uint8_t txPacket[18];
@@ -25,30 +30,6 @@ void zeroTxPacket(void)
     memset(txPacket, 0, sizeof(txPacket));
 }
 
-void setPowerdB(uint16_t currPowerdB)
-{
-  switch (currPowerdB)
-  {
-  case 0:
-    setPowermW(0);
-    break;
-  case 14:
-    setPowermW(25);
-    break;
-  case 20:
-    setPowermW(100);
-    break;
-  case 23:
-    setPowermW(200);
-    break;
-  case 26:
-    setPowermW(400);
-    break;
-  default:
-    return; // power value not recognised and no change
-    break;
-  }
-}
 
 #if !defined(LED1) && defined(LED)
 #define LED1 LED
@@ -81,6 +62,8 @@ void status_led1(uint8_t state)
 {
 #ifdef LED1
   gpio_out_write(led1_pin, state);
+#else
+  (void)state;
 #endif
 }
 
@@ -88,6 +71,8 @@ void status_led2(uint8_t state)
 {
 #ifdef LED2
   gpio_out_write(led2_pin, state);
+#else
+  (void)state;
 #endif
 }
 
@@ -95,5 +80,80 @@ void status_led3(uint8_t state)
 {
 #ifdef LED3
   gpio_out_write(led3_pin, state);
+#else
+  (void)state;
 #endif
+}
+
+
+uint8_t get_power_dB_by_index(uint8_t idx)
+{
+  if (idx < power_mapping_size)
+    return power_mapping[idx].dB;
+  return 0;
+}
+
+uint8_t get_power_dB_by_mW(uint16_t mW)
+{
+  uint_fast8_t iter = power_mapping_size;
+  while(iter--) {
+    if (power_mapping[iter].mW == mW)
+      return power_mapping[iter].dB;
+  }
+  return 0;
+}
+
+uint16_t get_power_mW_by_index(uint8_t idx)
+{
+  if (idx < power_mapping_size)
+    return power_mapping[idx].mW;
+  return 0;
+}
+
+uint16_t get_power_mW_by_dB(uint8_t dB)
+{
+  uint_fast8_t iter = power_mapping_size;
+  while(iter--) {
+    if (power_mapping[iter].dB == dB)
+      return power_mapping[iter].mW;
+  }
+  return 0;
+}
+
+uint8_t get_power_db_values(uint8_t * const list)
+{
+  uint8_t cnt = 0;
+  for (cnt = 0; cnt < power_mapping_size; cnt++) {
+    list[cnt] = power_mapping[cnt].dB;
+  }
+  return cnt;
+}
+
+void setPowerdB(uint8_t dB)
+{
+  setPowermW(get_power_mW_by_dB(dB));
+}
+
+void setPowermW(uint16_t mW)
+{
+  uint8_t index;
+
+  if (pitMode)
+    // Pit mode set => force output power to zero
+    mW = 0;
+
+  if (mW <= 1)
+    rtc6705PowerAmpOff();
+  else
+    rtc6705PowerAmpOn();
+
+  index = target_set_power_mW(mW);
+
+  /* Update database values */
+  if (index < power_mapping_size) {
+    myEEPROM.currPowerIndex = index;
+    myEEPROM.currPowermW = power_mapping[index].mW;
+    myEEPROM.currPowerdB = power_mapping[index].dB;
+    updateEEPROM = 1;
+  }
 }

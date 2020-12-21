@@ -5,13 +5,20 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "printf.h"
+#include "helpers.h"
 
 gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;
 gpio_adc_t vpd_pin;
 
 
-void rfPowerAmpPinSetup(void)
+struct PowerMapping power_mapping[] = {
+  {0, 0}, {25, 14}, {100, 20}, {400, 26},
+};
+uint8_t power_mapping_size = ARRAY_SIZE(power_mapping);
+
+
+void target_rfPowerAmpPinSetup(void)
 {
   vref_pin = gpio_out_setup(VREF, 0); // Power amp OFF
 
@@ -26,51 +33,41 @@ uint32_t vpd_value_get(void)
   return adc_read(vpd_pin);
 }
 
-uint8_t powerValuesGet(uint8_t * const list)
-{
-  uint8_t cnt = 0;
-  if (list) {
-    list[cnt++] = 0;
-    list[cnt++] = 14; // 25mW
-    list[cnt++] = 20; // 100mW
-    list[cnt++] = 26; // 400mW
-  }
-  return cnt;
-}
-
-void setPowermW(uint16_t power)
+uint8_t target_set_power_mW(uint16_t power)
 {
   uint16_t pwm_val = 3000;
   uint8_t amp_state = 1;
-
-  if (pitMode)
-  {
-    power = 0;
-  }
+  uint8_t index = 0xff;
 
   switch (power)
   {
   case 25:
     pwm_val = 2460;
     myEEPROM.currPowerIndex = 1;
+    index = 1;
     break;
   case 100:
     pwm_val = 2430;
     myEEPROM.currPowerIndex = 2;
+    index = 1;
     break;
   case 400:
     pwm_val = 0;
     myEEPROM.currPowerIndex = 3;
+    index = 1;
     break;
   case 0:
   default:
     amp_state = 0;
     myEEPROM.currPowerIndex = 0;
+    index = 0;
     break;
   }
 
   pwm_out_write(outputPowerTimer, pwm_val);
   gpio_out_write(vref_pin, amp_state);
+
+  return index;
 }
 
 

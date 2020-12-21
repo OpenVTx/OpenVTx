@@ -19,9 +19,20 @@ void clearSerialBuffer(void);
 void zeroRxPacket(void);
 void zeroTxPacket(void);
 
-void setPowerdB(uint16_t currPowerdB);
-
 void status_leds_init(void);
 void status_led1(uint8_t state);
 void status_led2(uint8_t state);
 void status_led3(uint8_t state);
+
+struct PowerMapping {
+    uint16_t mW;
+    uint8_t dB;
+};
+uint8_t get_power_dB_by_index(uint8_t idx);
+uint8_t get_power_dB_by_mW(uint16_t mW);
+uint16_t get_power_mW_by_index(uint8_t idx);
+uint16_t get_power_mW_by_dB(uint8_t dB);
+uint8_t get_power_db_values(uint8_t * const list);
+
+void setPowerdB(uint8_t dB);
+void setPowermW(uint16_t mW);

@@ -1,10 +1,15 @@
 #include "targets.h"
 #include "common.h"
-#include "openVTxEEPROM.h"
-#include "rtc6705.h"
+#include "helpers.h"
 #include <Arduino.h>
 
-void rfPowerAmpPinSetup(void)
+struct PowerMapping power_mapping[4] = {
+  {0, 0}, {25, 14}, {100, 20}, {200, 23},
+};
+uint8_t power_mapping_size = ARRAY_SIZE(power_mapping);
+
+
+void target_rfPowerAmpPinSetup(void)
 {
   // pinMode(POWER_AMP_1, INPUT);
   // pinMode(POWER_AMP_2, INPUT);
@@ -20,70 +25,42 @@ void rfPowerAmpPinSetup(void)
   // pinMode(POWER_AMP_6, OUTPUT);
 }
 
-uint8_t powerValuesGet(uint8_t * const list)
-{
-  uint8_t cnt = 0;
-  if (list) {
-    list[cnt++] = 0;
-    list[cnt++] = 14; // 25mW
-    list[cnt++] = 20; // 100mW
-    list[cnt++] = 23; // 200mW
-  }
-  return cnt;
-}
-
-void setPowermW(uint16_t power)
+uint8_t target_set_power_mW(uint16_t power)
 {
   uint8_t pinOutput = 0;
+  uint8_t index = 0xff;
 
   switch (power)
   {
   case 0:
     pinOutput = 1; // Setting to 0 does not reduce power for some reason :|
-    myEEPROM.currPowerIndex = 0;
-    myEEPROM.currPowermW = 0;
-    myEEPROM.currPowerdB = 0;
+    index = 0;
     break;
   case 25:
     pinOutput = 18;
-    myEEPROM.currPowerIndex = 1;
-    myEEPROM.currPowermW = 25;
-    myEEPROM.currPowerdB = 14;
+    index = 1;
     break;
   case 100:
     pinOutput = 50;
-    myEEPROM.currPowerIndex = 2;
-    myEEPROM.currPowermW = 100;
-    myEEPROM.currPowerdB = 20;
+    index = 2;
     break;
   case 200:
     pinOutput = 63;
-    myEEPROM.currPowerIndex = 3;
-    myEEPROM.currPowermW = 200;
-    myEEPROM.currPowerdB = 23;
+    index = 3;
     break;
   default:
-    return; // power value not recognised and no change
     break;
   }
 
-  if (pitMode)
-  {
-    pinOutput = 1; // Setting to 0 does not reduce power for some reason :|
-    rtc6705PowerAmpOff();
+  if (pinOutput) {
+    // digitalWrite(POWER_AMP_1, pinOutput & 0b000001);
+    // digitalWrite(POWER_AMP_2, pinOutput & 0b000010);
+    // digitalWrite(POWER_AMP_3, pinOutput & 0b000100);
+    // digitalWrite(POWER_AMP_4, pinOutput & 0b001000);
+    // digitalWrite(POWER_AMP_5, pinOutput & 0b010000);
+    // digitalWrite(POWER_AMP_6, pinOutput & 0b100000);
   }
-  else
-  {
-    rtc6705PowerAmpOn();
-  }
-
-  // digitalWrite(POWER_AMP_1, pinOutput & 0b000001);
-  // digitalWrite(POWER_AMP_2, pinOutput & 0b000010);
-  // digitalWrite(POWER_AMP_3, pinOutput & 0b000100);
-  // digitalWrite(POWER_AMP_4, pinOutput & 0b001000);
-  // digitalWrite(POWER_AMP_5, pinOutput & 0b010000);
-  // digitalWrite(POWER_AMP_6, pinOutput & 0b100000);
-
+  return index;
 }
 
 
