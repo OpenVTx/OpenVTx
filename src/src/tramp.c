@@ -25,8 +25,9 @@ uint8_t trampCalcCrc(uint8_t *packet)
 
 void trampSendPacket(void)
 {
-    txPacket[14] = trampCalcCrc(txPacket);
-    Serial_write_len(txPacket, TRAMP_MSG_SIZE);
+    txPacket[TRAMP_MSG_SIZE-1] = trampCalcCrc(txPacket);
+    txPacket[TRAMP_MSG_SIZE] = 0;
+    Serial_write_len(txPacket, (TRAMP_MSG_SIZE+1));
     serial_flush();
 }
 
