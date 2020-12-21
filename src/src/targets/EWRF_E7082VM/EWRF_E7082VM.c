@@ -10,6 +10,7 @@ gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;
 gpio_adc_t vpd_pin;
 
+
 void rfPowerAmpPinSetup(void)
 {
   vref_pin = gpio_out_setup(VREF, 0); // Power amp OFF
@@ -23,6 +24,18 @@ void rfPowerAmpPinSetup(void)
 uint32_t vpd_value_get(void)
 {
   return adc_read(vpd_pin);
+}
+
+uint8_t powerValuesGet(uint8_t * const list)
+{
+  uint8_t cnt = 0;
+  if (list) {
+    list[cnt++] = 0;
+    list[cnt++] = 14; // 25mW
+    list[cnt++] = 20; // 100mW
+    list[cnt++] = 26; // 400mW
+  }
+  return cnt;
 }
 
 void setPowermW(uint16_t power)

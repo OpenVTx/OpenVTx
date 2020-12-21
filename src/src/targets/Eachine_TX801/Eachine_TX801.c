@@ -20,6 +20,18 @@ void rfPowerAmpPinSetup(void)
   // pinMode(POWER_AMP_6, OUTPUT);
 }
 
+uint8_t powerValuesGet(uint8_t * const list)
+{
+  uint8_t cnt = 0;
+  if (list) {
+    list[cnt++] = 0;
+    list[cnt++] = 14; // 25mW
+    list[cnt++] = 20; // 100mW
+    list[cnt++] = 23; // 200mW
+  }
+  return cnt;
+}
+
 void setPowermW(uint16_t power)
 {
   uint8_t pinOutput = 0;

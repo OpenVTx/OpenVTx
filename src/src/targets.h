@@ -23,6 +23,8 @@
 void taget_setup(void);
 void taget_loop(void);
 
+uint8_t powerValuesGet(uint8_t * const list);
 void setPowermW(uint16_t power);
 void rfPowerAmpPinSetup(void);
 uint32_t vpd_value_get(void);
+

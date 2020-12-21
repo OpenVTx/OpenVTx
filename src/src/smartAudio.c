@@ -55,7 +55,7 @@ typedef struct {
     uint16_t frequency;
     uint8_t  rawPowerValue;
     uint8_t  num_pwr_levels;
-    uint8_t  levels[4];
+    uint8_t  levels[SA_NUM_POWER_LEVELS];
 } PACKED sa_settings_resp_t;
 
 typedef struct {
@@ -130,11 +130,7 @@ void smartaudioBuildSettingsPacket(void)
     payload->operationMode = operationMode;
     payload->frequency = BYTE_SWAP_U16(myEEPROM.currFreq);
     payload->rawPowerValue = myEEPROM.currPowerdB;
-    payload->num_pwr_levels = 3;
-    payload->levels[0] = 0;         // 1mW
-    payload->levels[1] = 14;        // 25mW
-    payload->levels[2] = 20;        // 100mW
-    payload->levels[3] = 26;        // 400mW
+    payload->num_pwr_levels = powerValuesGet(payload->levels);
 
     smartaudioSendPacket();
 }
@@ -203,16 +199,14 @@ void smartaudioProcessPowerPacket(void)
             SA_CMD_SET_POWER, sizeof(sa_u8_resp_t));
     uint8_t data = rxPacket[4];
 
-    if (bitRead(data, 7))  // SA2.1 sets the MSB to indicate power is in dB.
-    {
-        bitWrite(data, 7, 0);
-        setPowerdB(data);
+    if (data & 0x80) {
+        /* SA2.1 sets the MSB to indicate power is in dB.
+         * Set MSB to zero and currPower will now be in dB. */
+        setPowerdB(data & 0x7F);
         myEEPROM.currPowerdB = data;
-    } else
-    {
+    } else {
         setPowermW(data);
     }
-
     updateEEPROM = 1;
 
     payload->data_u8 = myEEPROM.currPowerdB;
