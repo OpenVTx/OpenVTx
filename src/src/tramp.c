@@ -8,13 +8,14 @@
 uint16_t temperature; // Dummy value.
 
 #define TRAMP_HEADER    0x0F // 15
+#define TRAMP_MSG_SIZE  15
 
 
 uint8_t trampCalcCrc(uint8_t *packet)
 {
     uint8_t crc = 0;
 
-    for (int i = 1; i < 14; i++)
+    for (int i = 1; i < (TRAMP_MSG_SIZE - 1); i++)
     {
         crc += packet[i];
     }
@@ -24,7 +25,8 @@ uint8_t trampCalcCrc(uint8_t *packet)
 
 void trampSendPacket(void)
 {
-    Serial_write_len(txPacket, 16);
+    txPacket[14] = trampCalcCrc(txPacket);
+    Serial_write_len(txPacket, TRAMP_MSG_SIZE);
     serial_flush();
 }
 
@@ -39,7 +41,6 @@ void trampBuildrPacket(void)
     txPacket[5] = (MAX_FREQ >> 8) & 0xff;
     txPacket[6] = MAX_POWER & 0xff;
     txPacket[7] = (MAX_POWER >> 8) & 0xff;
-    txPacket[14] = trampCalcCrc(txPacket);
     trampSendPacket();
 }
 
@@ -56,7 +57,6 @@ void trampBuildvPacket(void)
     txPacket[7] = pitMode;                              // trampPitMode
     txPacket[8] = myEEPROM.currPowermW & 0xff;          // Actual transmitting power
     txPacket[9] = (myEEPROM.currPowermW >> 8) & 0xff;   // Actual transmitting power
-    txPacket[14] = trampCalcCrc(txPacket);
     trampSendPacket();
 }
 
@@ -67,7 +67,6 @@ void trampBuildsPacket(void)
     txPacket[1] = 's';
     txPacket[6] = temperature & 0xff;
     txPacket[7] = (temperature >> 8) & 0xff;
-    txPacket[14] = trampCalcCrc(txPacket);
     trampSendPacket();
 }
 
@@ -101,22 +100,21 @@ void trampProcessIPacket(void)
 void trampProcessSerial(void)
 {
     // wait all bytes to be received
-    if (15 <= serial_available())
+    if (TRAMP_MSG_SIZE <= serial_available())
     {
         rxPacket[0] = serial_read();
 
         if (rxPacket[0] == TRAMP_HEADER)
         {
-            status_led3(1);
-
             // read in buffer
-            for (int i = 1; i < 15; i++)
+            for (int i = 1; i < TRAMP_MSG_SIZE; i++)
             {
                 rxPacket[i] = serial_read();
             }
 
-            if (rxPacket[14] == trampCalcCrc(rxPacket))
+            if (rxPacket[(TRAMP_MSG_SIZE - 1)] == trampCalcCrc(rxPacket))
             {
+                status_led3(1);
                 vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
 
                 switch (rxPacket[1]) // command
@@ -140,13 +138,11 @@ void trampProcessSerial(void)
                     trampBuildsPacket();
                     break;
                 }
+
+                status_led3(0);
             }
-            status_led3(0);
         }
 
         clearSerialBuffer();
-
-        // return to make serial monitor readable when debuging
-        //     Serial_print_c('\n');
     }
 }
