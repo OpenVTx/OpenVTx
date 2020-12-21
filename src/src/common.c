@@ -5,7 +5,7 @@
 #include "rtc6705.h"
 #include <string.h>
 
-extern struct PowerMapping * power_mapping;
+extern struct PowerMapping power_mapping[];
 extern uint8_t power_mapping_size;
 
 uint8_t rxPacket[16];
@@ -95,8 +95,8 @@ uint8_t get_power_dB_by_index(uint8_t idx)
 
 uint8_t get_power_dB_by_mW(uint16_t mW)
 {
-  uint_fast8_t iter = power_mapping_size;
-  while(iter--) {
+  uint_fast8_t iter;
+  for (iter = 0; iter < power_mapping_size; iter++) {
     if (power_mapping[iter].mW == mW)
       return power_mapping[iter].dB;
   }
@@ -112,8 +112,8 @@ uint16_t get_power_mW_by_index(uint8_t idx)
 
 uint16_t get_power_mW_by_dB(uint8_t dB)
 {
-  uint_fast8_t iter = power_mapping_size;
-  while(iter--) {
+  uint_fast8_t iter;
+  for (iter = 0; iter < power_mapping_size; iter++) {
     if (power_mapping[iter].dB == dB)
       return power_mapping[iter].mW;
   }
@@ -129,34 +129,45 @@ uint8_t get_power_db_values(uint8_t * const list)
   return cnt;
 }
 
+static void setPowerIndex(uint8_t index)
+{
+    /* Update database values */
+    if (index < power_mapping_size) {
+        uint16_t mW = power_mapping[index].mW;
+        myEEPROM.currPowerIndex = index;
+        myEEPROM.currPowermW = mW;
+        myEEPROM.currPowerdB = power_mapping[index].dB;
+        updateEEPROM = 1;
+
+        if (pitMode)
+            // Pit mode set => force output power to zero
+            mW = 0;
+
+        if (mW <= 1)
+            rtc6705PowerAmpOff();
+        else
+            rtc6705PowerAmpOn();
+
+        target_set_power_mW(mW);
+    }
+}
+
 void setPowerdB(uint8_t dB)
 {
-  setPowermW(get_power_mW_by_dB(dB));
+    uint8_t index;
+    for (index = 0; index < power_mapping_size; index++) {
+        if (power_mapping[index].dB == dB)
+            break;
+    }
+    setPowerIndex(index);
 }
 
 void setPowermW(uint16_t mW)
 {
-  uint8_t index;
-  for (index = 0; index < power_mapping_size; index++) {
-    if (power_mapping[index].mW == mW)
-      break;
-  }
-  /* Update database values */
-  if (index < power_mapping_size) {
-    myEEPROM.currPowerIndex = index;
-    myEEPROM.currPowermW = power_mapping[index].mW;
-    myEEPROM.currPowerdB = power_mapping[index].dB;
-    updateEEPROM = 1;
-
-    if (pitMode)
-      // Pit mode set => force output power to zero
-      mW = 0;
-
-    if (mW <= 1)
-      rtc6705PowerAmpOff();
-    else
-      rtc6705PowerAmpOn();
-
-    target_set_power_mW(mW);
-  }
+    uint8_t index;
+    for (index = 0; index < power_mapping_size; index++) {
+        if (power_mapping[index].mW == mW)
+            break;
+    }
+    setPowerIndex(index);
 }
