@@ -129,13 +129,31 @@ uint8_t get_power_db_values(uint8_t * const list)
   return cnt;
 }
 
+uint8_t get_power_index_by_mW(uint16_t mW)
+{
+    uint8_t index;
+    for (index = 0; index < power_mapping_size; index++) {
+        if (power_mapping[index].mW == mW)
+            return index;
+    }
+    return 0xff;
+}
+
+uint8_t get_power_index_by_dB(uint8_t dB)
+{
+    uint8_t index;
+    for (index = 0; index < power_mapping_size; index++) {
+        if (power_mapping[index].dB == dB)
+            return index;
+    }
+    return 0xff;
+}
+
 static void setPowerIndex(uint8_t index)
 {
     /* Update database values */
     if (index < power_mapping_size) {
         uint16_t mW = power_mapping[index].mW;
-        myEEPROM.currPowerIndex = index;
-        myEEPROM.currPowermW = mW;
         myEEPROM.currPowerdB = power_mapping[index].dB;
         updateEEPROM = 1;
 
@@ -154,20 +172,10 @@ static void setPowerIndex(uint8_t index)
 
 void setPowerdB(uint8_t dB)
 {
-    uint8_t index;
-    for (index = 0; index < power_mapping_size; index++) {
-        if (power_mapping[index].dB == dB)
-            break;
-    }
-    setPowerIndex(index);
+    setPowerIndex(get_power_index_by_dB(dB));
 }
 
 void setPowermW(uint16_t mW)
 {
-    uint8_t index;
-    for (index = 0; index < power_mapping_size; index++) {
-        if (power_mapping[index].mW == mW)
-            break;
-    }
-    setPowerIndex(index);
+    setPowerIndex(get_power_index_by_mW(mW));
 }

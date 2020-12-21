@@ -125,7 +125,7 @@ void smartaudioBuildSettingsPacket(void)
     bitWrite(operationMode, 4, myEEPROM.unlocked);
 
     payload->channel = myEEPROM.channel;
-    payload->power = myEEPROM.currPowerIndex;
+    payload->power = get_power_index_by_dB(myEEPROM.currPowerdB);
     payload->operationMode = operationMode;
     payload->frequency[0] = (uint8_t)(myEEPROM.currFreq >> 8);
     payload->frequency[1] = (uint8_t)(myEEPROM.currFreq);

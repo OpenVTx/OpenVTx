@@ -21,9 +21,7 @@ typedef struct
     uint8_t freqMode;
     uint8_t pitmodeInRange;
     uint8_t pitmodeOutRange;
-    uint16_t currPowermW;
     uint8_t currPowerdB;
-    uint8_t currPowerIndex;
     uint8_t unlocked;
 } openVTxEEPROM;
 

@@ -46,17 +46,18 @@ void trampBuildrPacket(void)
 
 void trampBuildvPacket(void)
 {
+    uint16_t mW = get_power_mW_by_dB(myEEPROM.currPowerdB);
     zeroTxPacket();
     txPacket[0] = TRAMP_HEADER;
     txPacket[1] = 'v';
     txPacket[2] = myEEPROM.currFreq & 0xff;
     txPacket[3] = (myEEPROM.currFreq >> 8) & 0xff;
-    txPacket[4] = myEEPROM.currPowermW & 0xff;          // Configured transmitting power
-    txPacket[5] = (myEEPROM.currPowermW >> 8) & 0xff;   // Configured transmitting power
-    txPacket[6] = 0;                                    // trampControlMode
-    txPacket[7] = pitMode;                              // trampPitMode
-    txPacket[8] = myEEPROM.currPowermW & 0xff;          // Actual transmitting power
-    txPacket[9] = (myEEPROM.currPowermW >> 8) & 0xff;   // Actual transmitting power
+    txPacket[4] = mW & 0xff;          // Configured transmitting power
+    txPacket[5] = (mW >> 8) & 0xff;   // Configured transmitting power
+    txPacket[6] = 0;                  // trampControlMode
+    txPacket[7] = pitMode;            // trampPitMode
+    txPacket[8] = mW & 0xff;          // Actual transmitting power
+    txPacket[9] = (mW >> 8) & 0xff;   // Actual transmitting power
     trampSendPacket();
 }
 
@@ -80,8 +81,10 @@ void trampProcessFPacket(void)
 
 void trampProcessPPacket(void)
 {
-    myEEPROM.currPowermW = rxPacket[2] | (rxPacket[3] << 8);
-    setPowermW(myEEPROM.currPowermW);
+    uint16_t mW = rxPacket[3];
+    mW <<= 8;
+    mW += rxPacket[2];
+    setPowermW(mW);
 
     updateEEPROM = 1;
 }
@@ -89,7 +92,7 @@ void trampProcessPPacket(void)
 void trampProcessIPacket(void)
 {
     pitMode = !rxPacket[2];
-    setPowermW(myEEPROM.currPowermW);   // Regardless of input mW, pitmode will force output to 0mW.
+    setPowerdB(myEEPROM.currPowerdB);   // Regardless of input mW, pitmode will force output to 0mW.
 
     myEEPROM.pitmodeInRange = pitMode;  // Pitmode set via CMS is not remembered with Tramp, but I have forced it here to be useful like SA pitmode.
     myEEPROM.pitmodeOutRange = 0;       // Set to 0 so only one of PIR or POR is set for smartaudio
