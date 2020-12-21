@@ -84,12 +84,12 @@ uint8_t smartadioCalcCrc(const uint8_t *data, uint8_t len)
 {
 #define POLYGEN 0xd5
     uint8_t crc = 0;
-    uint8_t currByte;
+    uint_fast8_t ii;
 
-    for (int i = 0; i < len; i++) {
-        currByte = data[i];
-        crc ^= currByte;
-        for (int i = 0; i < 8; i++) {
+    while (len--) {
+        crc ^= *data++;
+        ii = 8;
+        while (ii--) {
             if ((crc & 0x80) != 0)
                 crc = (crc << 1) ^ POLYGEN;
             else
