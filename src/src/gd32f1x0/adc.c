@@ -4,6 +4,9 @@
 #include "gd32f1x0_gpio.h"
 #include "gd32f1x0_rcu.h"
 
+#define ADC_USE_ISR 0
+#define ADC_RESULT_V2 0
+
 #define ADC_REF_VOLT_mW 3100
 
 uint16_t adc_pins[] = {
@@ -45,6 +48,41 @@ static void init_adc(void)
     adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
 }
 
+#if ADC_USE_ISR
+void adc_isr_config(uint32_t ch)
+{
+    adc_regular_channel_config(0, ch, ADC_SAMPLETIME_239POINT5);
+
+    /* Enable end of group conversion interrupt */
+    adc_interrupt_enable(ADC_INT_EOC);
+    /* Enable ISR */
+    nvic_irq_enable(ADC_CMP_IRQn, 0, 0);
+}
+
+static uint_fast16_t conv_averaged;
+static uint16_t conv_results[8];
+static uint_fast8_t conv_idx;
+
+/* Analog watchdog triggered */
+void ADC_CMP_IRQHandler(void)
+{
+    if (adc_flag_get(ADC_FLAG_EOC)) {
+        /* clear the ADC interrupt or status flag */
+        adc_interrupt_flag_clear(ADC_FLAG_EOC);
+
+        conv_results[conv_idx++] = adc_regular_data_read();
+        conv_idx %= ARRAY_SIZE(conv_results);
+
+        uint32_t temp = 0;
+        for (uint8_t iter = 0; iter < ARRAY_SIZE(conv_results); iter++) {
+            temp += conv_results[iter];
+        }
+        temp /= ARRAY_SIZE(conv_results);
+        conv_averaged = temp;
+    }
+}
+#endif
+
 gpio_adc_t adc_config(uint32_t pin)
 {
     uint32_t adc_ch;
@@ -64,22 +102,62 @@ gpio_adc_t adc_config(uint32_t pin)
 
     init_adc();
 
+#if ADC_USE_ISR
+    adc_isr_config(adc_ch);
+#elif ADC_RESULT_V2
+    adc_regular_channel_config(0, adc_ch, ADC_SAMPLETIME_239POINT5);
+#endif
+
     return (gpio_adc_t){.ch = adc_ch};
 }
 
 uint32_t adc_read(gpio_adc_t config)
 {
+#if !ADC_USE_ISR
     if (config.ch < 0xff) {
+#if ADC_RESULT_V2
+#else
         adc_regular_channel_config(0, config.ch, ADC_SAMPLETIME_239POINT5);
         /* Clear flag */
         adc_flag_clear(ADC_FLAG_EOC);
+#endif
         /* Wait ready */
         while(SET != adc_flag_get(ADC_FLAG_EOC));
         /* Read value */
         uint32_t val = adc_regular_data_read();
         val *= ADC_REF_VOLT_mW;
         val /= 4096;
+#if ADC_RESULT_V2
+        /* Clear flag */
+        adc_flag_clear(ADC_FLAG_EOC);
+#endif
         return val;
     }
     return 0;
+#else
+    return conv_averaged;
+#endif
 }
+
+
+#if 0
+void adc_watchdog_init(uint16_t min, uint16_t max, uint8_t channel)
+{
+    /* ADC analog watchdog threshold config */
+    adc_watchdog_threshold_config(min, max);
+    /* ADC analog watchdog single channel config */
+    adc_watchdog_single_channel_enable(channel);
+
+    /* Enable analog watchdog interrupt */
+    adc_interrupt_enable(ADC_INT_WDE);
+
+    nvic_irq_enable(ADC_CMP_IRQn, 0, 0);
+}
+
+/* Analog watchdog triggered */
+void ADC_CMP_IRQHandler(void)
+{
+    /* clear the ADC interrupt or status flag */
+    adc_interrupt_flag_clear(ADC_FLAG_WDE);
+}
+#endif
