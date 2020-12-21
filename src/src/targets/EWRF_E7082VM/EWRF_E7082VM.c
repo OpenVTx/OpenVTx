@@ -38,17 +38,21 @@ void setPowermW(uint16_t power)
   switch (power)
   {
   case 25:
-    pwm_val = 2453;
+    pwm_val = 2460;
+    myEEPROM.currPowerIndex = 1;
     break;
   case 100:
-    pwm_val = 2414;
+    pwm_val = 2430;
+    myEEPROM.currPowerIndex = 2;
     break;
   case 400:
     pwm_val = 0;
+    myEEPROM.currPowerIndex = 3;
     break;
   case 0:
   default:
     amp_state = 0;
+    myEEPROM.currPowerIndex = 0;
     break;
   }
 

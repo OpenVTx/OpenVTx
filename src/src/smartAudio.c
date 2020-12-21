@@ -134,7 +134,7 @@ void smartaudioBuildSettingsPacket(void)
     payload->levels[0] = 0;         // 1mW
     payload->levels[1] = 14;        // 25mW
     payload->levels[2] = 20;        // 100mW
-    payload->levels[3] = 23;        // 200mW
+    payload->levels[3] = 26;        // 400mW
 
     smartaudioSendPacket();
 }
@@ -203,9 +203,16 @@ void smartaudioProcessPowerPacket(void)
             SA_CMD_SET_POWER, sizeof(sa_u8_resp_t));
     uint8_t data = rxPacket[4];
 
-    bitWrite(data, 7, 0); // SA2.1 sets the MSB to indicate power is in dB. Set MSB to zero and currPower will now be in dB.
-    setPowerdB(data);
-    myEEPROM.currPowerdB = data;
+    if (bitRead(data, 7))  // SA2.1 sets the MSB to indicate power is in dB.
+    {
+        bitWrite(data, 7, 0);
+        setPowerdB(data);
+        myEEPROM.currPowerdB = data;
+    } else
+    {
+        setPowermW(data);
+    }
+
     updateEEPROM = 1;
 
     payload->data_u8 = myEEPROM.currPowerdB;
