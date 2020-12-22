@@ -203,9 +203,21 @@ void smartaudioProcessPowerPacket(void)
     if (data & 0x80) {
         /* SA2.1 sets the MSB to indicate power is in dB.
          * Set MSB to zero and currPower will now be in dB. */
-        setPowerdB(data & 0x7F);
+        data &= 0x7F;
+        if (!data) {
+            /* 0Db is pit mode enable */
+            pitMode = 1;
+            data = myEEPROM.currPowerdB;
+        }
+        setPowerdB(data);
     } else {
-        setPowermW(data);
+        if (!data) {
+            /* 0Db is pit mode enable */
+            pitMode = 1;
+            setPowerdB(myEEPROM.currPowerdB);
+        } else {
+            setPowermW(data);
+        }
     }
 
     payload->data_u8 = myEEPROM.currPowerdB;
