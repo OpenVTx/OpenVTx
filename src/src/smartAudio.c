@@ -17,6 +17,8 @@ const uint16_t channelFreqTable[48] = {
 };
 
 
+
+/**** SmartAudio definitions ****/
 #define CRC_LEN         1
 #define LEGHT_CALC(len) (sizeof(sa_header_t) + CRC_LEN + (len))
 
@@ -32,8 +34,8 @@ enum {
     SA_CMD_GET_SETTINGS_V21 = 0x11,
 };
 
-#define PIT_MODE_FREQ_REQUEST   (0x1 << 14)
-#define PIT_MODE_FREQ_SET       (0x1 << 15)
+#define PIT_MODE_FREQ_GET   (0x1 << 14)
+#define PIT_MODE_FREQ_SET   (0x1 << 15)
 
 #define SA_SYNC_BYTE    0xAA
 #define SA_HEADER_BYTE  0x55
@@ -144,7 +146,7 @@ void smartaudioProcessFrequencyPacket(void)
     freq <<= 8;
     freq |= rxPacket[5];
 
-    if (freq & PIT_MODE_FREQ_REQUEST)
+    if (freq & PIT_MODE_FREQ_GET)
     {
         // POR is not supported in SA2.1 so return currFreq
         freq = myEEPROM.currFreq;
@@ -156,16 +158,12 @@ void smartaudioProcessFrequencyPacket(void)
     }
     else
     {
-        myEEPROM.currFreq = freq;
         rtc6705WriteFrequency(freq);
     }
 
     payload->data_u16[0] = (uint8_t)(freq >> 8);
     payload->data_u16[1] = (uint8_t)(freq);
     payload->reserved = RESERVE_BYTE;
-
-    myEEPROM.freqMode = 1;
-    updateEEPROM = 1;
 
     smartaudioSendPacket();
 }
@@ -179,10 +177,7 @@ void smartaudioProcessChannelPacket(void)
 
     if (channel < ARRAY_SIZE(channelFreqTable)) {
         myEEPROM.channel = channel;
-        myEEPROM.currFreq = channelFreqTable[channel];
-        rtc6705WriteFrequency(myEEPROM.currFreq);
-        myEEPROM.freqMode = 0;
-        updateEEPROM = 1;
+        rtc6705WriteFrequency(channelFreqTable[channel]);
     } else {
         channel = myEEPROM.channel;
     }
