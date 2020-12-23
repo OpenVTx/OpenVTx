@@ -237,10 +237,13 @@ void smartaudioProcessModePacket(void)
     myEEPROM.pitmodeInRange = bitRead(data, 0);
     myEEPROM.pitmodeOutRange = bitRead(data, 1);
 
-    // This bit is only for CLEARING pitmode.  It does not turn pitMode on and off!!!
-    if (bitRead(data, 2))
-    {
+    // This bit is only for CLEARING pitmode.
+    if (bitRead(data, 2)) {
         pitMode = 0;
+        setPowerdB(myEEPROM.currPowerdB);
+    } else if (bitRead(data, 0) || bitRead(data, 1)) {
+        /* Enable pitmode if PIR or POR is set */
+        pitMode = 1;
         setPowerdB(myEEPROM.currPowerdB);
     }
 
