@@ -71,10 +71,6 @@ void rtc6705PowerAmpOff(void)
 
 void rtc6705WriteFrequency(uint32_t newFreq)
 {
-  /* Update only if freq is changed */
-  if (myEEPROM.currFreq == newFreq)
-    return;
-
   uint32_t freq = newFreq * 1000U;
   freq /= 40;
   uint32_t SYN_RF_N_REG = freq / 64;

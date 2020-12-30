@@ -23,9 +23,6 @@ static void start_serial(uint8_t type)
 
 void setup(void)
 {
-  // Force pitmode enabled after boot
-  pitMode = 1;
-
   spiPinSetup();
   target_rfPowerAmpPinSetup();
 
@@ -43,10 +40,10 @@ void setup(void)
 
   // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
-  setPowermW(0); // 0mV
-  //setPowermW(25); // 1170mV
-  //setPowermW(100); // 1225mV
-  //setPowermW(400);
+  // target_set_power_mW(0); // 0mV
+  // target_set_power_mW(25); // 1170mV
+  // target_set_power_mW(100); // 1225mV
+  // target_set_power_mW(400);
 #endif /* DEBUG */
 }
 
