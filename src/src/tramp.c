@@ -74,10 +74,10 @@ void trampBuildsPacket(void)
 
 void trampProcessFPacket(void)
 {
-    myEEPROM.currFreq = rxPacket[2] | (rxPacket[3] << 8);
-    rtc6705WriteFrequency(myEEPROM.currFreq);
-
-    updateEEPROM = 1;
+    uint32_t freq = rxPacket[3];
+    freq <<= 8;
+    freq |= rxPacket[2];
+    rtc6705WriteFrequency(freq);
 }
 
 void trampProcessPPacket(void)

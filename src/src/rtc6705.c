@@ -78,6 +78,9 @@ void rtc6705WriteFrequency(uint32_t newFreq)
 
   uint32_t data = SynthesizerRegisterB | (1 << 4) | (SYN_RF_A_REG << 5) | (SYN_RF_N_REG << 12);
 
+  myEEPROM.currFreq = newFreq;
+  updateEEPROM = 1;
+
   /* Switch off */
   amp_state = 1; // Force off cmd rewrite
   rtc6705PowerAmpOff();
