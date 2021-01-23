@@ -24,7 +24,7 @@ struct PowerMapping power_mapping[] = {
   {25, 14, 2374, 530, 1},
   {50, 17, 2359, 740, 1},
   {100, 20, 2350, 1045, 1},
-  {400, 26, 0, 9999, 1},
+  {400, 26, 0, 9999, 1}, // This is max power and about 500mW
 };
 
 uint8_t power_mapping_size = ARRAY_SIZE(power_mapping);
@@ -65,11 +65,6 @@ void decreasePWMVal()
 
 void target_set_power_mW(uint16_t power)
 {
-  // // Default power output is zero if correct output has not been selected.
-  // pwm_val = 3000;
-  // VpdSetPoint = 0;
-  // amp_state = 0;
-
   uint8_t index = get_power_index_by_mW(power);
   if (index < 0xff)
   {
@@ -80,9 +75,6 @@ void target_set_power_mW(uint16_t power)
     pwm_out_write(outputPowerTimer, pwm_val);
     gpio_out_write(vref_pin, amp_state);
   }
-
-  // pwm_out_write(outputPowerTimer, pwm_val);
-  // gpio_out_write(vref_pin, amp_state);
 }
 
 void checkPowerOutput(void)
