@@ -12,7 +12,6 @@
 static uint32_t protocol_checked;
 #endif /* !DEBUG */
 
-
 static void start_serial(uint8_t type)
 {
   serial_begin(((type == TRAMP) ? TRAMP_BAUD : SMARTAUDIO_BAUD), UART_TX, UART_RX);
@@ -40,17 +39,17 @@ void setup(void)
 
   // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
-  // target_set_power_mW(0); // 0mV
-  // target_set_power_mW(25); // 1170mV
-  // target_set_power_mW(100); // 1225mV
+  // target_set_power_mW(0);
+  // target_set_power_mW(25);
+  // target_set_power_mW(100);
   // target_set_power_mW(400);
 #endif /* DEBUG */
 }
 
-
 void loop(void)
 {
   uint8_t const mode = myEEPROM.vtxMode;
+
 #if !DEBUG
   if (!vtxModeLocked) {
     uint32_t now = millis();
@@ -67,6 +66,8 @@ void loop(void)
     trampProcessSerial();
   else
     smartaudioProcessSerial();
+
+  checkPowerOutput();
 
   writeEEPROM();
 
