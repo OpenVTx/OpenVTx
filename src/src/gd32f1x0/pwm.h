@@ -8,6 +8,6 @@ typedef struct {
     uint16_t ch;
 } gpio_pwm_t;
 gpio_pwm_t pwm_init(uint32_t pin);
-void pwm_out_write(gpio_pwm_t pwm, int val);
+void pwm_out_write(gpio_pwm_t pwm, uint16_t val);
 
 #endif /* __PWM_H_ */

@@ -7,7 +7,7 @@
 #include "printf.h"
 #include "helpers.h"
 
-#define OUTPUT_POWER_INTERVAL 50 // ms
+#define OUTPUT_POWER_INTERVAL 5 // ms
 
 gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;
