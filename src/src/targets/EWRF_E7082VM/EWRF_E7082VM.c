@@ -7,7 +7,7 @@
 #include "printf.h"
 #include "helpers.h"
 
-#define OUTPUT_POWER_INTERVAL 5 // ms
+#define OUTPUT_POWER_INTERVAL 1 // ms
 
 gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;
@@ -21,9 +21,9 @@ uint8_t amp_state = 0;
 struct PowerMapping power_mapping[] = {
   // {mW, dBm, pwm_val, VpdSetPoint, amp_state}
   {0, 0, 3000, 0, 0},
-  {25, 14, 2374, 530, 1},
-  {50, 17, 2359, 740, 1},
-  {100, 20, 2350, 1045, 1},
+  {25, 14, 2374, 590, 1},
+  {50, 17, 2359, 830, 1},
+  {100, 20, 2350, 1200, 1},
   {400, 26, 0, 9999, 1}, // This is max power and about 500mW
 };
 
@@ -66,15 +66,16 @@ void decreasePWMVal()
 void target_set_power_mW(uint16_t power)
 {
   uint8_t index = get_power_index_by_mW(power);
-  if (index < 0xff)
-  {
-    pwm_val = power_mapping[index].pwm_val;
-    VpdSetPoint = power_mapping[index].VpdSetPoint;
-    amp_state = power_mapping[index].amp_state;
 
-    pwm_out_write(outputPowerTimer, pwm_val);
-    gpio_out_write(vref_pin, amp_state);
-  }
+  if (index == 0xff)
+    return;
+
+  pwm_val = power_mapping[index].pwm_val;
+  VpdSetPoint = power_mapping[index].VpdSetPoint;
+  amp_state = power_mapping[index].amp_state;
+
+  pwm_out_write(outputPowerTimer, pwm_val);
+  gpio_out_write(vref_pin, amp_state);
 }
 
 void checkPowerOutput(void)
