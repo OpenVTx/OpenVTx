@@ -26,7 +26,6 @@ void setup(void)
 
   readEEPROM();
 
-  myEEPROM.vtxMode = SMARTAUDIO;
   start_serial(myEEPROM.vtxMode);
 
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
