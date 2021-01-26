@@ -17,7 +17,7 @@ Flashing requires an [ST-LINK V2](https://www.aliexpress.com/wholesale?catId=0&i
 
 # Betaflight VTx Tables
 
-Copy and paste your choice of protocol [VTx table]() into the Betaflights CLI.
+Copy and paste your choice of protocol [VTx table](https://github.com/betaflight/betaflight/wiki/VTX-tables) into the Betaflights CLI.
 
 ```
 # SMARTAUDIO
