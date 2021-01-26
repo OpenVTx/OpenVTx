@@ -27,6 +27,9 @@ void status_led3(uint8_t state);
 struct PowerMapping {
     uint16_t mW;
     uint8_t dB;
+    uint16_t pwm_val;
+    uint16_t VpdSetPoint;
+    uint8_t amp_state;
 };
 uint8_t get_power_dB_by_index(uint8_t idx);
 uint8_t get_power_dB_by_mW(uint16_t mW);

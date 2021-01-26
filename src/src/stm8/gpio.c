@@ -45,7 +45,7 @@ gpio_pwm_t pwm_init(uint32_t pin)
     return g;
 }
 
-void pwm_out_write(gpio_pwm_t pwm, int val)
+void pwm_out_write(gpio_pwm_t pwm, uint16_t val)
 {
     analogWrite(pwm, val);
 }

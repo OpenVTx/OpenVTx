@@ -123,7 +123,7 @@ gpio_pwm_t pwm_init(uint32_t pin)
     return (gpio_pwm_t){.tim = timer, .ch = channel};
 }
 
-void pwm_out_write(gpio_pwm_t pwm, int val)
+void pwm_out_write(gpio_pwm_t pwm, uint16_t val)
 {
     if (pwm.tim) {
         // Register value is target-1

@@ -7,14 +7,26 @@
 #include "printf.h"
 #include "helpers.h"
 
+#define OUTPUT_POWER_INTERVAL 1 // ms
+
 gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;
 gpio_adc_t vpd_pin;
+uint32_t currentVpd = 0;
 
+uint16_t pwm_val = 3000;
+uint16_t VpdSetPoint = 0;
+uint8_t amp_state = 0;
 
 struct PowerMapping power_mapping[] = {
-  {0, 0}, {25, 14}, {100, 20}, {400, 26},
+  // {mW, dBm, pwm_val, VpdSetPoint, amp_state}
+  {0, 0, 3000, 0, 0},
+  {25, 14, 2374, 590, 1},
+  {50, 17, 2359, 830, 1},
+  {100, 20, 2350, 1200, 1},
+  {400, 26, 0, 9999, 1}, // This is max power and about 500mW
 };
+
 uint8_t power_mapping_size = ARRAY_SIZE(power_mapping);
 
 
@@ -33,49 +45,78 @@ uint32_t vpd_value_get(void)
   return adc_read(vpd_pin);
 }
 
+void increasePWMVal()
+{
+  if (pwm_val < 3000)
+  {
+    pwm_val++;
+    pwm_out_write(outputPowerTimer, pwm_val);
+  }
+}
+
+void decreasePWMVal()
+{
+  if (pwm_val > 0)
+  {
+    pwm_val--;
+    pwm_out_write(outputPowerTimer, pwm_val);
+  }
+}
+
 void target_set_power_mW(uint16_t power)
 {
-  uint16_t pwm_val = 3000;
-  uint8_t amp_state = 1;
+  uint8_t index = get_power_index_by_mW(power);
 
-  switch (power)
-  {
-  case 25:
-    pwm_val = 2460;
-    break;
-  case 100:
-    pwm_val = 2430;
-    break;
-  case 400:
-    pwm_val = 0;
-    break;
-  case 0:
-  default:
-    amp_state = 0;
-    break;
-  }
+  if (index == 0xff)
+    return;
+
+  pwm_val = power_mapping[index].pwm_val;
+  VpdSetPoint = power_mapping[index].VpdSetPoint;
+  amp_state = power_mapping[index].amp_state;
 
   pwm_out_write(outputPowerTimer, pwm_val);
   gpio_out_write(vref_pin, amp_state);
 }
 
+void checkPowerOutput(void)
+{
+  static uint32_t temp;
+  uint32_t now = millis();
+  if (OUTPUT_POWER_INTERVAL <= (now - temp))
+  {
+    temp = now;
+    currentVpd = vpd_value_get();
+
+    if (currentVpd > VpdSetPoint)
+    {
+      increasePWMVal();
+    }
+    else if (currentVpd < VpdSetPoint)
+    {
+      decreasePWMVal();
+    }
+  }
+}
 
 void taget_setup(void)
 {
   /* TODO: Configure WDG, fwdgt_config() */
 }
 
-
 void taget_loop(void)
 {
 #if DEBUG
   static uint32_t temp;
   static char buff[32];
+  int len;
   uint32_t now = millis();
+  currentVpd = vpd_value_get();
   if (1000 <= (now - temp)) {
-    int len = snprintf(buff, sizeof(buff), "a:%lu\n", vpd_value_get());
-    Serial_write_len((uint8_t*)buff, len);
     temp = now;
+    len = snprintf(buff, sizeof(buff), "a:%lu\n", currentVpd);
+    Serial_write_len((uint8_t*)buff, len);
+    len = snprintf(buff, sizeof(buff), "p:%lu\n", pwm_val);
+    Serial_write_len((uint8_t*)buff, len);  
   }
 #endif /* DEBUG */
 

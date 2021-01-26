@@ -1,34 +1,40 @@
 /*
 
-https://www.eachine.com/Eachine-TX526-5_8G-40CH-25MW-or-200MW-or-600MW-Switchable-AV-Wireless-FPV-Transmitter-RP-SMA-Female-p-543.html
-
-
-# vtxtable for Betaflight
+# SMARTAUDIO
+# vtxtable
 vtxtable bands 5
+vtxtable channels 8
+vtxtable band 1 BOSCAM_A A FACTORY 5865 5845 5825 5805 5785 5765 5745 5725
+vtxtable band 2 BOSCAM_B B FACTORY 5733 5752 5771 5790 5809 5828 5847 5866
+vtxtable band 3 BOSCAM_E E FACTORY 5705 5685 5665 5645 5885 5905 5925 5945
+vtxtable band 4 FATSHARK F FACTORY 5740 5760 5780 5800 5820 5840 5860 5880
+vtxtable band 5 RACEBAND R FACTORY 5658 5695 5732 5769 5806 5843 5880 5917
+vtxtable powerlevels 5
+vtxtable powervalues 0 14 17 20 26
+vtxtable powerlabels 0 25 50 100 400
+
+# TRAMP
+# vtxtable 
+vtxtable bands 6
 vtxtable channels 8
 vtxtable band 1 BOSCAM_A A CUSTOM  5865 5845 5825 5805 5785 5765 5745 5725
 vtxtable band 2 BOSCAM_B B CUSTOM  5733 5752 5771 5790 5809 5828 5847 5866
 vtxtable band 3 BOSCAM_E E CUSTOM  5705 5685 5665 5645 5885 5905 5925 5945
 vtxtable band 4 FATSHARK F CUSTOM  5740 5760 5780 5800 5820 5840 5860 5880
 vtxtable band 5 RACEBAND R CUSTOM  5658 5695 5732 5769 5806 5843 5880 5917
-vtxtable powerlevels 3
-vtxtable powervalues 1 25 200
-vtxtable powerlabels 1 25 200
-
-
-The below measurements are done hot on the bench.  However mW output does increase when the VTx is cooled.
-If you have made it this far and have the equipment to check these outputs, please do and report back on their accuracy :)
+vtxtable band 6 IMD6     I CUSTOM  5732 5765 5828 5840 5866 5740    0    0
+vtxtable powerlevels 5
+vtxtable powervalues 0 25 50 100 400
+vtxtable powerlabels 0 25 50 100 400
 
 */
 
 #ifndef __TARGET_DEF_H_
 #define __TARGET_DEF_H_
 
-#define MAX_POWER     25 // mW
+#define MAX_POWER     400 // mW
 
-//#define SERIAL_PIN    -1
-
-#define UART_RX       PA9 //PA10
+#define UART_RX       PA9
 #define UART_TX       PA9
 
 #define SPI_SS        PB3
@@ -51,5 +57,6 @@ If you have made it this far and have the equipment to check these outputs, plea
 uint32_t millis(void);
 void delay(uint32_t ms);
 void delayMicroseconds(uint32_t us);
+void checkPowerOutput(void);
 
 #endif /* __TARGET_DEF_H_ */

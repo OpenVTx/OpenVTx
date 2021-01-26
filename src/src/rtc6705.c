@@ -89,6 +89,8 @@ void rtc6705WriteFrequency(uint32_t newFreq)
   /* Set frequency */
   sendBits(data);
 
+  rtc6705PowerAmpOn();
+
   /* Restore state */
   setPowerdB(myEEPROM.currPowerdB);
 }

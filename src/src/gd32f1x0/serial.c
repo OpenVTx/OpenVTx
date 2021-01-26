@@ -64,7 +64,7 @@ static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfdu
     rcu_periph_clock_enable((usart_periph == USART1) ? RCU_USART1 : RCU_USART0);
 
     /* USART configure */
-    // usart_deinit(usart_periph);
+    usart_deinit(usart_periph);
     /* 8N1 (standard) */
     usart_baudrate_set(usart_periph, baud);
     // usart_parity_config(usart_periph, USART_PM_NONE);

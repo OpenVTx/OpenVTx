@@ -12,7 +12,6 @@
 static uint32_t protocol_checked;
 #endif /* !DEBUG */
 
-
 static void start_serial(uint8_t type)
 {
   serial_begin(((type == TRAMP) ? TRAMP_BAUD : SMARTAUDIO_BAUD), UART_TX, UART_RX);
@@ -20,53 +19,52 @@ static void start_serial(uint8_t type)
   updateEEPROM = 1;
 }
 
-
 void setup(void)
 {
-  spiPinSetup();
   target_rfPowerAmpPinSetup();
+  spiPinSetup();
 
   readEEPROM();
 
-  /* TODO DEBUG! */
   myEEPROM.vtxMode = SMARTAUDIO;
+  start_serial(myEEPROM.vtxMode);
 
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
   rtc6705WriteFrequency(myEEPROM.currFreq);
-
-  start_serial(myEEPROM.vtxMode);
 
   status_leds_init();
 
   // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
-  // target_set_power_mW(0); // 0mV
-  // target_set_power_mW(25); // 1170mV
-  // target_set_power_mW(100); // 1225mV
+  // target_set_power_mW(0);
+  // target_set_power_mW(25);
+  // target_set_power_mW(100);
   // target_set_power_mW(400);
 #endif /* DEBUG */
 }
 
-
 void loop(void)
 {
-  uint8_t const mode = myEEPROM.vtxMode;
+
 #if !DEBUG
-  if (!vtxModeLocked) {
+  if (!vtxModeLocked)
+  {
     uint32_t now = millis();
-    if (PROTOCOL_CHECK_TIMEOUT <= (now - protocol_checked)) {
-      start_serial((mode == TRAMP ? SMARTAUDIO: TRAMP));
+    if (PROTOCOL_CHECK_TIMEOUT <= (now - protocol_checked))
+    {
+      start_serial((myEEPROM.vtxMode == TRAMP ? SMARTAUDIO: TRAMP));  
       protocol_checked = now;
-      return;
     }
   }
 #endif /* DEBUG */
 
   /* Process uart data */
-  if (mode == TRAMP)
+  if (myEEPROM.vtxMode == TRAMP)
     trampProcessSerial();
   else
     smartaudioProcessSerial();
+
+  checkPowerOutput();
 
   writeEEPROM();
 
