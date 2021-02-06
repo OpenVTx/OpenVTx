@@ -30,6 +30,10 @@ struct PowerMapping {
     uint16_t pwm_val;
     uint16_t VpdSetPoint;
     uint8_t amp_state;
+    double a;
+    double b;
+    double c;
+    double d;
 };
 uint8_t get_power_dB_by_index(uint8_t idx);
 uint8_t get_power_dB_by_mW(uint16_t mW);

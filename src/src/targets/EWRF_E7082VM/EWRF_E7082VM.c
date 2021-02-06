@@ -7,7 +7,7 @@
 #include "printf.h"
 #include "helpers.h"
 
-#define OUTPUT_POWER_INTERVAL 1 // ms
+#define OUTPUT_POWER_INTERVAL 5 // ms
 
 gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;
@@ -19,13 +19,18 @@ uint16_t VpdSetPoint = 0;
 uint8_t amp_state = 0;
 
 struct PowerMapping power_mapping[] = {
-  // {mW, dBm, pwm_val, VpdSetPoint, amp_state}
-  {0, 0, 3000, 0, 0},
-  {25, 14, 2374, 590, 1},
-  {50, 17, 2359, 830, 1},
-  {100, 20, 2350, 1200, 1},
-  {400, 26, 0, 9999, 1}, // This is max power and about 500mW
+  // {mW, dBm, pwm_val, VpdSetPoint, amp_state, a, b, c, d}
+  {0, 0, 3000, 0, 0, 0, 0, 0, 0},
+  {25, 14, 2381, 590, 1, 922700, 473.3921, 0.08096176, 0.000004612795},
+  {50, 17, 2360, 830, 1, 1863792, 957.7339, 0.1640354, 0.000009360269},
+  {100, 20, 2344, 1200, 1, 2530390, 1295.161, 0.2209582, 0.00001255892},
+  {400, 26, 0, 9999, 1, 9999, 0, 0, 0}, // This is max power and about 500mW
 };
+
+// https://mycurvefit.com/
+// y = 922700 - 473.3921*x + 0.08096176*x^2 - 0.000004612795*x^3 25mW
+// y = 1863792 - 957.7339*x + 0.1640354*x^2 - 0.000009360269*x^3 50mw
+// y = 2530390 - 1295.161*x + 0.2209582*x^2 - 0.00001255892*x^3  100mW
 
 uint8_t power_mapping_size = ARRAY_SIZE(power_mapping);
 
@@ -70,12 +75,22 @@ void target_set_power_mW(uint16_t power)
   if (index == 0xff)
     return;
 
+  uint16_t tempFreq = myEEPROM.currFreq;
+  VpdSetPoint = power_mapping[index].a - power_mapping[index].b*tempFreq + power_mapping[index].c*tempFreq*tempFreq - power_mapping[index].d*tempFreq*tempFreq*tempFreq;
+
   pwm_val = power_mapping[index].pwm_val;
-  VpdSetPoint = power_mapping[index].VpdSetPoint;
   amp_state = power_mapping[index].amp_state;
 
   pwm_out_write(outputPowerTimer, pwm_val);
   gpio_out_write(vref_pin, amp_state);
+
+  #if OUTPUT_POWER_TESTING
+  VpdSetPoint = 0;
+  pwm_val = 3000;
+  pwm_out_write(outputPowerTimer, pwm_val);
+  amp_state = 1;
+  gpio_out_write(vref_pin, amp_state);
+  #endif /* OUTPUT_POWER_TESTING */
 }
 
 void checkPowerOutput(void)
@@ -111,12 +126,27 @@ void taget_loop(void)
   int len;
   uint32_t now = millis();
   currentVpd = vpd_value_get();
-  if (1000 <= (now - temp)) {
+  if (200 <= (now - temp)) {
     temp = now;
-    len = snprintf(buff, sizeof(buff), "a:%lu\n", currentVpd);
-    Serial_write_len((uint8_t*)buff, len);
-    len = snprintf(buff, sizeof(buff), "p:%lu\n", pwm_val);
+    
+    len = snprintf(buff, sizeof(buff), "%lu,%lu,%lu,%lu\n", myEEPROM.currFreq, pwm_val, VpdSetPoint, currentVpd);
     Serial_write_len((uint8_t*)buff, len);  
+
+    #if OUTPUT_POWER_TESTING
+    VpdSetPoint = VpdSetPoint + 5;
+    if (VpdSetPoint > 2000)
+    {
+      VpdSetPoint = 0;
+      pwm_val = 3000;
+      pwm_out_write(outputPowerTimer, pwm_val);
+      myEEPROM.currFreq = myEEPROM.currFreq + 50;
+      if (myEEPROM.currFreq > 6000)
+      {
+        myEEPROM.currFreq = 5600;
+      }
+      rtc6705WriteFrequency(myEEPROM.currFreq);
+    }
+    #endif /* OUTPUT_POWER_TESTING */
   }
 #endif /* DEBUG */
 
