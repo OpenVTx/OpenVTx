@@ -19,22 +19,6 @@ uint16_t pwm_val = 3000;
 uint16_t VpdSetPoint = 0;
 uint8_t amp_state = 0;
 
-struct PowerMapping power_mapping[] = {
-  // {mW, dBm, pwm_val, VpdSetPoint, amp_state, a, b, c, d}
-  {0, 0, 3000, 0, 0, 0, 0, 0, 0},
-  {25, 14, 2381, 590, 1, 922700, 473.3921, 0.08096176, 0.000004612795},
-  {50, 17, 2360, 830, 1, 1863792, 957.7339, 0.1640354, 0.000009360269},
-  {100, 20, 2344, 1200, 1, 2530390, 1295.161, 0.2209582, 0.00001255892},
-  {400, 26, 0, 9999, 1, 9999, 0, 0, 0}, // This is max power and about 500mW
-};
-
-// https://mycurvefit.com/
-// y = 922700 - 473.3921*x + 0.08096176*x^2 - 0.000004612795*x^3 25mW
-// y = 1863792 - 957.7339*x + 0.1640354*x^2 - 0.000009360269*x^3 50mw
-// y = 2530390 - 1295.161*x + 0.2209582*x^2 - 0.00001255892*x^3  100mW
-
-uint8_t power_mapping_size = ARRAY_SIZE(power_mapping);
-
 #define CAL_FREQ_SIZE 9
 #define CAL_DBM_SIZE 17
 uint16_t calFreqs[CAL_FREQ_SIZE] = {5600,	5650,	5700,	5750,	5800,	5850,	5900, 5950, 6000};
@@ -59,10 +43,8 @@ uint16_t calVpd[CAL_DBM_SIZE][CAL_FREQ_SIZE] = {
 {1450, 1450, 1450, 1455, 1465, 1460, 1460, 1450, 1445}
 };
 
-uint16_t bilinearInterpolation(uint8_t power)
+uint16_t bilinearInterpolation(uint8_t dB)
 {
-  float powerInDbm = 10 * log10(power);
-
   float tempFreq = myEEPROM.currFreq;
 
   if (tempFreq < 5600) tempFreq = 5600;
@@ -81,14 +63,14 @@ uint16_t bilinearInterpolation(uint8_t power)
   uint8_t calDBmIndex = 0;
   for (uint8_t i = 0; i < (CAL_DBM_SIZE-1); i++)
   {
-    if (powerInDbm < calDBm[i + 1])
+    if (dB < calDBm[i + 1])
     {
       calDBmIndex = i;
       break;
     }
   }
 
-  float x = powerInDbm;
+  float x = dB;
   float x1 = calDBm[calDBmIndex];
   float x2 = calDBm[calDBmIndex + 1];
 
@@ -142,32 +124,21 @@ void decreasePWMVal()
   }
 }
 
-void target_set_power_mW(uint16_t power)
+void target_set_power_dB(uint8_t dB)
 {
-  // uint8_t index = get_power_index_by_mW(power);
-
-  // if (index == 0xff)
-  //   return;
-
-  // uint16_t tempFreq = myEEPROM.currFreq;
-  // VpdSetPoint = power_mapping[index].a - power_mapping[index].b*tempFreq + power_mapping[index].c*tempFreq*tempFreq - power_mapping[index].d*tempFreq*tempFreq*tempFreq;
-
-  // pwm_val = power_mapping[index].pwm_val;
-  // amp_state = power_mapping[index].amp_state;
-
-  if (power < 10)
+  if (dB < 10)
   {
     VpdSetPoint = 0;
     pwm_val = 3000;
     amp_state = 0;
-  } else if (power >= 400)
+  } else if (dB >= 26)
   {
     VpdSetPoint = 1500;
     pwm_val = 2000;
     amp_state = 1;
   } else
   {
-    VpdSetPoint = bilinearInterpolation(power);
+    VpdSetPoint = bilinearInterpolation(dB);
     amp_state = 1;
   }
   

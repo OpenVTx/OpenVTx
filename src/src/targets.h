@@ -22,7 +22,7 @@
 
 void taget_setup(void);
 void taget_loop(void);
-void target_set_power_mW(uint16_t power);
+void target_set_power_dB(uint8_t power);
 
 void target_rfPowerAmpPinSetup(void);
 uint32_t vpd_value_get(void);

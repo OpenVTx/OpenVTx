@@ -84,7 +84,7 @@ void rtc6705WriteFrequency(uint32_t newFreq)
   /* Switch off */
   amp_state = 1; // Force off cmd rewrite
   rtc6705PowerAmpOff();
-  target_set_power_mW(0);
+  target_set_power_dB(0);
 
   /* Set frequency */
   sendBits(data);
