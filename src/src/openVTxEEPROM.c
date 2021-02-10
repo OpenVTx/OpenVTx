@@ -15,6 +15,7 @@ void defaultEEPROM(void)
     myEEPROM.pitmodeInRange = 0;
     myEEPROM.pitmodeOutRange = 0;
     myEEPROM.currPowerdB = 0;
+    myEEPROM.currPowermW = 0; // Required due to rounding errors when converting between dBm and mW
     myEEPROM.unlocked = 1;
 
     EEPROM_put(0, myEEPROM);

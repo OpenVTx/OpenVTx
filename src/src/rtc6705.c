@@ -84,7 +84,7 @@ void rtc6705WriteFrequency(uint32_t newFreq)
   /* Switch off */
   amp_state = 1; // Force off cmd rewrite
   rtc6705PowerAmpOff();
-  target_set_power_mW(0);
+  target_set_power_dB(0);
 
   /* Set frequency */
   sendBits(data);
@@ -93,4 +93,10 @@ void rtc6705WriteFrequency(uint32_t newFreq)
 
   /* Restore state */
   setPowerdB(myEEPROM.currPowerdB);
+  
+  /* Process uart data */
+  if (myEEPROM.vtxMode == TRAMP)
+    setPowermW(myEEPROM.currPowermW); // When in TRAMP mode power must be set by mW to stop rounding errors due to saved dBm being an int.
+  else
+    setPowerdB(myEEPROM.currPowerdB);
 }

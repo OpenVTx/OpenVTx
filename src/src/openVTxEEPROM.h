@@ -22,6 +22,7 @@ typedef struct
     uint8_t pitmodeInRange;
     uint8_t pitmodeOutRange;
     uint8_t currPowerdB;
+    uint8_t currPowermW; // Required due to rounding errors when converting between dBm and mW
     uint8_t unlocked;
 } openVTxEEPROM;
 

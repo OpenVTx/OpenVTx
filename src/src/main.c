@@ -35,10 +35,13 @@ void setup(void)
 
   // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
-  // target_set_power_mW(0);
-  // target_set_power_mW(25);
-  // target_set_power_mW(100);
-  // target_set_power_mW(400);
+  myEEPROM.currFreq = 5600;
+  rtc6705WriteFrequency(myEEPROM.currFreq);
+
+  // target_set_power_dB(0);
+  target_set_power_dB(14);
+  // target_set_power_dB(20);
+  // target_set_power_dB(26);
 #endif /* DEBUG */
 }
 
