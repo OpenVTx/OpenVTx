@@ -45,6 +45,9 @@ uint16_t calVpd[CAL_DBM_SIZE][CAL_FREQ_SIZE] = {
 
 uint16_t bilinearInterpolation(uint8_t dB)
 {
+
+  dB = dB + OFFSET;
+
   float tempFreq = myEEPROM.currFreq;
 
   if (tempFreq < 5600) tempFreq = 5600;
