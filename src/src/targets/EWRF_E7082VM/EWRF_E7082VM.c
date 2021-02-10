@@ -15,7 +15,7 @@ gpio_out_t vref_pin;
 gpio_adc_t vpd_pin;
 uint32_t currentVpd = 0;
 
-uint16_t pwm_val = 3000;
+uint16_t pwm_val = 2500;
 uint16_t VpdSetPoint = 0;
 uint8_t amp_state = 0;
 
@@ -43,7 +43,7 @@ uint16_t calVpd[CAL_DBM_SIZE][CAL_FREQ_SIZE] = {
 {1450, 1450, 1450, 1455, 1465, 1460, 1460, 1450, 1445}
 };
 
-uint16_t bilinearInterpolation(uint8_t dB)
+uint16_t bilinearInterpolation(float dB)
 {
 
   dB = dB + OFFSET;
@@ -111,7 +111,7 @@ uint32_t vpd_value_get(void)
 
 void increasePWMVal()
 {
-  if (pwm_val < 3000)
+  if (pwm_val < 2500)
   {
     pwm_val++;
     pwm_out_write(outputPowerTimer, pwm_val);
@@ -127,12 +127,12 @@ void decreasePWMVal()
   }
 }
 
-void target_set_power_dB(uint8_t dB)
+void target_set_power_dB(float dB)
 {
   if (dB < 10)
   {
     VpdSetPoint = 0;
-    pwm_val = 3000;
+    pwm_val = 2500;
     amp_state = 0;
   } else if (dB >= 26)
   {

@@ -24,5 +24,5 @@ void status_led1(uint8_t state);
 void status_led2(uint8_t state);
 void status_led3(uint8_t state);
 
-void setPowerdB(uint8_t dB);
+void setPowerdB(float dB);
 void setPowermW(uint16_t mW);

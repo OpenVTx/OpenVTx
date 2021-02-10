@@ -83,7 +83,7 @@ void status_led3(uint8_t state)
 #endif
 }
 
-void setPowerdB(uint8_t dB)
+void setPowerdB(float dB)
 {
     // uint8_t dB = 10.0 * log10((float)mW);
     myEEPROM.currPowerdB = dB;
@@ -104,6 +104,6 @@ void setPowerdB(uint8_t dB)
 void setPowermW(uint16_t mW)
 {
     // setPowerIndex(get_power_index_by_mW(mW));
-    uint8_t dB = 10.0 * log10((float)mW);
+    float dB = 10.0 * log10((float)mW);
     setPowerdB(dB);
 }
