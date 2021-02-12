@@ -57,6 +57,5 @@ vtxtable powerlabels 0 25 100 400
 uint32_t millis(void);
 void delay(uint32_t ms);
 void delayMicroseconds(uint32_t us);
-void checkPowerOutput(void);
 
 #endif /* __TARGET_DEF_H_ */

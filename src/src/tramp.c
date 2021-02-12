@@ -96,9 +96,8 @@ void trampProcessIPacket(void)
 {
     pitMode = !rxPacket[2];
 
-     // When in TRAMP mode power must be set by mW to stop rounding errors due to saved dBm being an int.
      // Regardless of input mW, pitmode will force output to 0mW.
-    setPowermW(myEEPROM.currPowermW);
+    setPowerdB(myEEPROM.currPowerdB);
 
     myEEPROM.pitmodeInRange = pitMode;  // Pitmode set via CMS is not remembered with Tramp, but I have forced it here to be useful like SA pitmode.
     myEEPROM.pitmodeOutRange = 0;       // Set to 0 so only one of PIR or POR is set for smartaudio
