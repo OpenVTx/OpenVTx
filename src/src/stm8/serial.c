@@ -10,8 +10,8 @@ void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin)
         ;
     if (halfduplex)
         UART1_HalfDuplexCmd(ENABLE);
-#ifdef SERIAL_PIN
-    pinMode(SERIAL_PIN, INPUT_PULLUP);
+#ifdef UART_TX
+    pinMode(UART_TX, INPUT_PULLUP);
 #endif
 }
 

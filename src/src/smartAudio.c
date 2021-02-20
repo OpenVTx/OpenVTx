@@ -6,7 +6,6 @@
 #include "helpers.h"
 #include "serial.h"
 
-
 const uint16_t channelFreqTable[48] = {
     5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // A
     5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866, // B
@@ -309,19 +308,19 @@ void smartaudioProcessSerial(void)
 
                     switch (rxPacket[2] >> 1) // Commands
                     {
-                    case SA_CMD_GET_SETTINGS:
+                    case SA_CMD_GET_SETTINGS: // 0x03
                         smartaudioBuildSettingsPacket();
                         break;
-                    case SA_CMD_SET_POWER:
+                    case SA_CMD_SET_POWER: // 0x05
                         smartaudioProcessPowerPacket();
                         break;
-                    case SA_CMD_SET_CHAN:
+                    case SA_CMD_SET_CHAN: // 0x07
                         smartaudioProcessChannelPacket();
                         break;
-                    case SA_CMD_SET_FREQ:
+                    case SA_CMD_SET_FREQ: // 0x09
                         smartaudioProcessFrequencyPacket();
                         break;
-                    case SA_CMD_SET_MODE:
+                    case SA_CMD_SET_MODE: // 0x0B
                         smartaudioProcessModePacket();
                         break;
                     }

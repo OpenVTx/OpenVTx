@@ -41,6 +41,19 @@ gpio_pwm_t pwm_init(uint32_t pin)
         return GPIO_PIN_IVALID;
     gpio_pwm_t g = pin;
     pinMode(pin, OUTPUT);
+
+// #define VPD           PC4 // TIM2_CH3
+
+    uint16_t AutoReloadRegister = 1591; // 10khz
+    TIM2->PSCR = 0x00; // 62kHz
+    TIM2->ARRH = (uint8_t)(AutoReloadRegister >> 8);
+    TIM2->ARRL = (uint8_t)(AutoReloadRegister);
+    unsigned char tmp = TIM2->CCER2 & (uint8_t)(~(TIM2_CCER2_CC3E | TIM2_CCER2_CC3P));
+    TIM2->CCER2 = tmp | TIM2_CCER2_CC3E;
+    TIM2->CCMR3 = TIM2_OCMODE_PWM1 | TIM2_CCMR_OCxPE;
+    TIM2->CCR3H = 0x00; // init with 0 duty cycle e.g. 0 volts
+    TIM2->CCR3L = 0x00; // init with 0 duty cycle e.g. 0 volts
+
     pwm_out_write(g, 0);
     return g;
 }
@@ -48,6 +61,10 @@ gpio_pwm_t pwm_init(uint32_t pin)
 void pwm_out_write(gpio_pwm_t pwm, uint16_t val)
 {
     analogWrite(pwm, val);
+
+TIM2->CCR3H = (uint8_t)(val >> 8);
+TIM2->CCR3L = (uint8_t)(val);
+
 }
 
 gpio_adc_t adc_config(uint32_t pin)
@@ -58,5 +75,5 @@ gpio_adc_t adc_config(uint32_t pin)
 
 uint32_t adc_read(gpio_adc_t pin)
 {
-    return analogRead(pin);
+    return (uint32_t)analogRead(pin);
 }
