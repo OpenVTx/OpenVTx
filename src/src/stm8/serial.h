@@ -1,7 +1,6 @@
 #ifndef __SERIAL_H_
 #define __SERIAL_H_
 
-#include <Arduino.h>
 #include <stdint.h>
 
 void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin);

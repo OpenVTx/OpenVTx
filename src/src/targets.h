@@ -14,8 +14,8 @@
 #include "targets/Eachine_TX801/Eachine_TX801.h"
 #elif defined(EACHINE_TX526)
 #include "targets/Eachine_TX526/Eachine_TX526.h"
-#elif defined(XF5806_V2_1)
-#include "targets/XF5806_V2_1/XF5806_V2_1.h"
+#elif defined(STM8_TEMPLATE)
+#include "targets/STM8_TEMPLATE/STM8_TEMPLATE.h"
 #elif defined(EWRF_E7082VM)
 #include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
 #endif
