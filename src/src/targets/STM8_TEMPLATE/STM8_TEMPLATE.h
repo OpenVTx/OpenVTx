@@ -21,8 +21,8 @@
 #define LED3_REVERSED
 
 #define VREF          PB4
-#define VPD           PC4 // TIM2_CH3
+#define VPD           PC4
 
-#define RTC_BIAS      PD2
+#define RTC_BIAS      PD2  // TIM2_CH3
 
 #endif /* __TARGET_DEF_H_ */
