@@ -26,6 +26,8 @@ void setup(void)
 
   readEEPROM();
 
+  pitMode = myEEPROM.pitmodeInRange;
+
   start_serial(myEEPROM.vtxMode);
 
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
