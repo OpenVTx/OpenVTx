@@ -12,12 +12,13 @@
 static uint32_t protocol_checked;
 #endif /* !DEBUG */
 
-static void start_serial(uint8_t type)
-{
+#if DEBUG
+  serial_begin(SMARTAUDIO_BAUD, UART_TX, UART_RX);
+#else
   serial_begin(((type == TRAMP) ? TRAMP_BAUD : SMARTAUDIO_BAUD), UART_TX, UART_RX);
   myEEPROM.vtxMode = type;
   updateEEPROM = 1;
-}
+#endif /* !DEBUG */
 
 void setup(void)
 {

@@ -16,6 +16,8 @@
 #include "targets/Eachine_TX526/Eachine_TX526.h"
 #elif defined(EWRF_E7082VM)
 #include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
+#elif defined(STM32F031_TEMPLATE)
+#include "targets/STM32F031_TEMPLATE/STM32F031_TEMPLATE.h"
 #endif
 
 // These are target specific functions and need to implemented per target!

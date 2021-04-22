@@ -5,6 +5,7 @@
 #include "rtc6705.h"
 #include <string.h>
 #include <math.h>
+#include "gpio.h"
 
 uint8_t rxPacket[16];
 uint8_t txPacket[18];
@@ -46,20 +47,36 @@ static gpio_out_t led3_pin;
 void status_leds_init(void)
 {
 #ifdef LED1
-  led1_pin = gpio_out_setup(LED1, 1);
+  #ifdef LED1_REVERSED
+    led1_pin = gpio_out_setup(LED1, 0);
+  #else
+    led1_pin = gpio_out_setup(LED1, 1);
+  #endif
 #endif
 #ifdef LED2
-  led2_pin = gpio_out_setup(LED2, 0);
+  #ifdef LED2_REVERSED
+    led2_pin = gpio_out_setup(LED2, 1);
+  #else
+    led2_pin = gpio_out_setup(LED2, 0);
+  #endif
 #endif
 #ifdef LED3
-  led3_pin = gpio_out_setup(LED3, 0);
+  #ifdef LED3_REVERSED
+    led3_pin = gpio_out_setup(LED3, 1);
+  #else
+    led3_pin = gpio_out_setup(LED3, 0);
+  #endif
 #endif
 }
 
 void status_led1(uint8_t state)
 {
 #ifdef LED1
-  gpio_out_write(led1_pin, state);
+  #ifdef LED1_REVERSED
+    gpio_out_write(led1_pin, !state);
+  #else
+    gpio_out_write(led1_pin, state);
+  #endif
 #else
   (void)state;
 #endif
@@ -68,7 +85,11 @@ void status_led1(uint8_t state)
 void status_led2(uint8_t state)
 {
 #ifdef LED2
-  gpio_out_write(led2_pin, state);
+  #ifdef LED2_REVERSED
+    gpio_out_write(led2_pin, !state);
+  #else
+    gpio_out_write(led2_pin, state);
+  #endif
 #else
   (void)state;
 #endif
@@ -77,7 +98,11 @@ void status_led2(uint8_t state)
 void status_led3(uint8_t state)
 {
 #ifdef LED3
-  gpio_out_write(led3_pin, state);
+  #ifdef LED3_REVERSED
+    gpio_out_write(led3_pin, !state);
+  #else
+    gpio_out_write(led3_pin, state);
+  #endif
 #else
   (void)state;
 #endif
