@@ -1,5 +1,6 @@
 #include "EEPROM.h"
 #include <gd32f1x0.h>
+#include <string.h>
 
 #ifndef FLASH_BASE
 #define FLASH_BASE  0x08000000U
@@ -37,13 +38,16 @@ static int flash_storage_erase(uint32_t address)
 
 static int flash_storage_write(uint32_t const * data, uint32_t size)
 {
-    if (EEPROM_SIZE < size)
+    uint32_t address = EEPROM_ADDR;
+
+    if (!data || !size || EEPROM_SIZE < size)
+        return -1;
+
+    if (!memcmp((void*)address, data, size))
         return -1;
 
     /* unlock the flash program/erase controller */
     fmc_unlock();
-
-    uint32_t address = EEPROM_ADDR;
 
     if (flash_storage_erase(address) < 0) {
         // Erase failed
@@ -63,24 +67,26 @@ static int flash_storage_write(uint32_t const * data, uint32_t size)
     /* lock the main FMC after the program operation */
     fmc_lock();
 
-    if (size || address < FLASH_END)
+    if (size)
         return -1;
+
     return 0;
 }
 
 
-void eeprom_update_block(uint16_t idx, uint8_t *ptr, uint32_t len)
+void eeprom_update_block(const uint16_t idx, uint8_t *ptr, uint32_t const len)
 {
     (void)idx;
+    fwdgt_counter_reload();
     flash_storage_write((uint32_t*)ptr, ((len + 3) / 4));
+    fwdgt_counter_reload();
 }
 
-void eeprom_read_block(const uint16_t idx, uint8_t *ptr, uint32_t len)
+
+void eeprom_read_block(const uint16_t idx, uint8_t *ptr, uint32_t const len)
 {
     (void)idx;
-    __IO uint8_t *read_ptr = (uint8_t*)EEPROM_ADDR;
-
-    while (len--) {
-        *ptr++ = *read_ptr++;
-    }
+    if (!ptr || !len || EEPROM_SIZE < len)
+        return;
+    memcpy(ptr, (uint8_t*)EEPROM_ADDR, len);
 }

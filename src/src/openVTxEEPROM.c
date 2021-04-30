@@ -1,9 +1,12 @@
 #include "openVTxEEPROM.h"
+#include "targets.h"
 #include <EEPROM.h>
 
-uint8_t updateEEPROM;
 
 openVTxEEPROM myEEPROM;
+uint32_t eeprom_last_write;
+uint8_t updateEEPROM;
+
 
 void defaultEEPROM(void)
 {
@@ -18,7 +21,7 @@ void defaultEEPROM(void)
     myEEPROM.currPowermW = 0; // Required due to rounding errors when converting between dBm and mW
     myEEPROM.unlocked = 1;
 
-    EEPROM_put(0, myEEPROM);
+    updateEEPROM = 1;
 }
 
 void readEEPROM(void)
@@ -28,12 +31,15 @@ void readEEPROM(void)
     if (myEEPROM.version != versionEEPROM) {
         defaultEEPROM();
     }
+    eeprom_last_write = millis();
 }
 
 void writeEEPROM(void)
 {
-    if (updateEEPROM) {
+    uint32_t const now = millis();
+    if (updateEEPROM && 1000 <= (now - eeprom_last_write)) {
         EEPROM_put(0, myEEPROM);
         updateEEPROM = 0;
+        eeprom_last_write = now;
     }
 }
