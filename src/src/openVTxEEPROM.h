@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#define versionEEPROM 0x100
+#define versionEEPROM 0x110
 
 extern uint8_t updateEEPROM;
 
@@ -22,7 +22,7 @@ typedef struct
     uint8_t pitmodeInRange;
     uint8_t pitmodeOutRange;
     float currPowerdB;
-    uint8_t currPowermW; // Required due to rounding errors when converting between dBm and mW
+    uint16_t currPowermW; // Required due to rounding errors when converting between dBm and mW
     uint8_t unlocked;
 } openVTxEEPROM;
 

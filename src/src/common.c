@@ -89,15 +89,14 @@ void setPowerdB(float dB)
     updateEEPROM = 1;
 
     if (pitMode)
-        // Pit mode set => force output power to zero
-        dB = 0;
-
-    if (dB <= 1)
-        rtc6705PowerAmpOff();
-    else
-        rtc6705PowerAmpOn();
-
-    target_set_power_dB(dB);
+    {
+      rtc6705PowerAmpOff();
+      target_set_power_dB(0);
+    } else
+    {
+      rtc6705PowerAmpOn();
+      target_set_power_dB(dB);
+    }
 }
 
 void setPowermW(uint16_t mW)
