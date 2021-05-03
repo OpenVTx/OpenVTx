@@ -230,8 +230,14 @@ void smartaudioProcessModePacket(void)
             SA_CMD_SET_MODE, sizeof(sa_u8_resp_t));
     uint8_t data = rxPacket[4], operationMode = 0;
 
-    myEEPROM.pitmodeInRange = bitRead(data, 0);
-    myEEPROM.pitmodeOutRange = bitRead(data, 1); // Set PIR and POR. POR is no longer used in SA2.1 and is treated like PIR
+    if (myEEPROM.pitmodeInRange < bitRead(data, 0) || myEEPROM.pitmodeOutRange < bitRead(data, 1)) // Setting PitMode via SmartAudio command will take action immediately without therequirement of a power cycle
+    {
+        pitMode = 1;
+        setPowerdB(myEEPROM.currPowerdB);
+    }
+
+    myEEPROM.pitmodeInRange = bitRead(data, 0);  // Set PIR and POR. 
+    myEEPROM.pitmodeOutRange = bitRead(data, 1); // POR is no longer used in SA2.1 and is treated like PIR
     bool clearPitMode = bitRead(data, 2); // This bit is only for CLEARING pitmode.    
     myEEPROM.unlocked = bitRead(data, 3); // Unlocked bit
 
