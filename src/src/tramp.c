@@ -56,8 +56,8 @@ void trampBuildvPacket(void)
     txPacket[3] = (myEEPROM.currFreq >> 8) & 0xff;
     txPacket[4] = mW & 0xff;          // Configured transmitting power
     txPacket[5] = (mW >> 8) & 0xff;   // Configured transmitting power
-    txPacket[6] = 0;                                    // trampControlMode
-    txPacket[7] = pitMode;                              // trampPitMode
+    txPacket[6] = 0;                  // trampControlMode
+    txPacket[7] = pitMode;            // trampPitMode
     txPacket[8] = mW & 0xff;          // Actual transmitting power
     txPacket[9] = (mW >> 8) & 0xff;   // Actual transmitting power
     trampSendPacket();
