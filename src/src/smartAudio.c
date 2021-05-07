@@ -204,15 +204,22 @@ void smartaudioProcessPowerPacket(void)
         if (!data) {
             /* 0Db is pit mode enable */
             pitMode = 1;
-            data = myEEPROM.currPowerdB;
+            uint8_t tempCurrPowerdB= myEEPROM.currPowerdB;
+            setPowerdB(0);
+            myEEPROM.currPowerdB = tempCurrPowerdB;
+        } else{
+            pitMode = 0;            
+            setPowerdB(data);
         }
-        setPowerdB(data);
     } else {
         if (!data) {
             /* 0Db is pit mode enable */
             pitMode = 1;
-            setPowerdB(myEEPROM.currPowerdB);
-        } else {
+            uint8_t tempCurrPowerdB= myEEPROM.currPowerdB;
+            setPowerdB(0);
+            myEEPROM.currPowerdB = tempCurrPowerdB;
+        } else{
+            pitMode = 0;
             setPowermW(data);
         }
     }
@@ -230,22 +237,27 @@ void smartaudioProcessModePacket(void)
             SA_CMD_SET_MODE, sizeof(sa_u8_resp_t));
     uint8_t data = rxPacket[4], operationMode = 0;
 
+    uint8_t previousPitmodeInRange = myEEPROM.pitmodeInRange;
+
     // Set PIR and POR. POR is no longer used in SA2.1 and is treated like PIR
     myEEPROM.pitmodeInRange = bitRead(data, 0);
     myEEPROM.pitmodeOutRange = bitRead(data, 1);
+    uint8_t clearPitMode = bitRead(data, 2);
+    myEEPROM.unlocked = bitRead(data, 3);
 
     // This bit is only for CLEARING pitmode.
-    if (bitRead(data, 2)) {
+    if (clearPitMode) {
         pitMode = 0;
         setPowerdB(myEEPROM.currPowerdB);
-    } else if (bitRead(data, 0) || bitRead(data, 1)) {
-        /* Enable pitmode if PIR or POR is set */
+    }
+    
+    // When turning on pitmodeInRange go into pitmode
+    if (previousPitmodeInRange < myEEPROM.pitmodeInRange)
+    {
+        /* Enable pitmode if PIR is set */
         pitMode = 1;
         setPowerdB(myEEPROM.currPowerdB);
     }
-
-    // Unlocked bit
-    myEEPROM.unlocked = bitRead(data, 3);
 
     updateEEPROM = 1;
 

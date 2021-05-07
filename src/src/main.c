@@ -24,7 +24,8 @@ void setup(void)
   target_rfPowerAmpPinSetup();
   spiPinSetup();
 
-  readEEPROM();
+  // readEEPROM();
+  defaultEEPROM();
 
   pitMode = myEEPROM.pitmodeInRange;
 
@@ -70,7 +71,7 @@ void loop(void)
 
   checkPowerOutput();
 
-  writeEEPROM();
+  // writeEEPROM();
 
   taget_loop();
   status_led2(vtxModeLocked);
