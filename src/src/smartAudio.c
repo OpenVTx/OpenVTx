@@ -207,8 +207,7 @@ void smartaudioProcessPowerPacket(void)
             uint8_t tempCurrPowerdB= myEEPROM.currPowerdB;
             setPowerdB(0);
             myEEPROM.currPowerdB = tempCurrPowerdB;
-        } else{
-            pitMode = 0;            
+        } else{      
             setPowerdB(data);
         }
     } else {
@@ -219,7 +218,6 @@ void smartaudioProcessPowerPacket(void)
             setPowerdB(0);
             myEEPROM.currPowerdB = tempCurrPowerdB;
         } else{
-            pitMode = 0;
             setPowermW(data);
         }
     }
