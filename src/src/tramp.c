@@ -149,8 +149,8 @@ void trampProcessSerial(void)
 
                 status_led3(0);
             }
-        }
 
-        clearSerialBuffer();
+            clearSerialBuffer();
+        }
     }
 }
