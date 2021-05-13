@@ -131,19 +131,14 @@ void smartaudioBuildSettingsPacket(void)
     bitWrite(operationMode, 4, myEEPROM.unlocked);
 
     payload->channel = myEEPROM.channel;
-    // payload->power = get_power_index_by_dB(myEEPROM.currPowerdB);
     payload->power = 0; // Fake index to allow setting any power level
     payload->operationMode = operationMode;
     payload->frequency[0] = (uint8_t)(myEEPROM.currFreq >> 8);
     payload->frequency[1] = (uint8_t)(myEEPROM.currFreq);
     payload->rawPowerValue = myEEPROM.currPowerdB;
-    // payload->num_pwr_levels = get_power_db_values(payload->levels);
-    payload->num_pwr_levels = 4; // Fake index to allow setting any power level
-
-    payload->levels[0] = 1;
-    payload->levels[1] = 14;
-    payload->levels[2] = 20;
-    payload->levels[3] = 26;
+    payload->num_pwr_levels = SA_NUM_POWER_LEVELS;
+    for (uint8_t i = 0; i < SA_NUM_POWER_LEVELS; i++)
+        payload->levels[i] = powerLevels[i];
 
     smartaudioSendPacket();
 }
