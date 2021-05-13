@@ -140,6 +140,11 @@ void smartaudioBuildSettingsPacket(void)
     // payload->num_pwr_levels = get_power_db_values(payload->levels);
     payload->num_pwr_levels = 4; // Fake index to allow setting any power level
 
+    payload->levels[0] = 1;
+    payload->levels[1] = 14;
+    payload->levels[2] = 20;
+    payload->levels[3] = 26;
+
     smartaudioSendPacket();
 }
 
