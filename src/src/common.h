@@ -26,3 +26,5 @@ void status_led3(uint8_t state);
 
 void setPowerdB(float dB);
 void setPowermW(uint16_t mW);
+
+void reboot_into_bootloader(uint32_t baud);

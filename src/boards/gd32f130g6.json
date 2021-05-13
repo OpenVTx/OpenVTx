@@ -26,7 +26,7 @@
   "name": "GigaDevice GD32F130G6U6",
   "upload": {
     "maximum_ram_size": 4096,
-    "maximum_size": 32768,
+    "maximum_size": 24572,
     "protocol": "stlink",
     "protocols": [
       "jlink",

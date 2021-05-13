@@ -4,7 +4,7 @@
 #include "printf.h"
 #include <stdint.h>
 
-void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin);
+void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin, uint8_t stopbits);
 uint8_t serial_available(void);
 uint8_t serial_read(void);
 void serial_write(uint8_t data);

@@ -32,6 +32,9 @@ enum {
     SA_CMD_SET_MODE,
     SA_CMD_GET_SETTINGS_V2 = 0x09,        // Response only
     SA_CMD_GET_SETTINGS_V21 = 0x11,
+
+    /* Internal custom commands */
+    SA_CMD_BOOTLOADER = 0x78,
 };
 
 #define PIT_MODE_FREQ_GET   (0x1 << 14)
@@ -207,7 +210,7 @@ void smartaudioProcessPowerPacket(void)
             uint8_t tempCurrPowerdB= myEEPROM.currPowerdB;
             setPowerdB(0);
             myEEPROM.currPowerdB = tempCurrPowerdB;
-        } else{      
+        } else{
             setPowerdB(data);
         }
     } else {
@@ -248,7 +251,7 @@ void smartaudioProcessModePacket(void)
         pitMode = 0;
         setPowerdB(myEEPROM.currPowerdB);
     }
-    
+
     // When turning on pitmodeInRange go into pitmode
     if (previousPitmodeInRange < myEEPROM.pitmodeInRange)
     {
@@ -284,9 +287,9 @@ static uint8_t state, in_idx, in_len;
 
 void smartaudioProcessSerial(void)
 {
-    uint8_t data, state_next = SA_SYNC;
+    uint8_t state_next = SA_SYNC;
     if (serial_available()) {
-        data = serial_read();
+        uint8_t const data = serial_read();
 
         rxPacket[in_idx++] = data;
 
@@ -297,8 +300,9 @@ void smartaudioProcessSerial(void)
                 }
                 break;
             case SA_HEADER:
-                if (data == SA_HEADER_BYTE)
+                if (data == SA_HEADER_BYTE) {
                     state_next = SA_COMMAND;
+                }
                 break;
             case SA_COMMAND:
                 state_next = SA_LENGTH;
@@ -308,8 +312,7 @@ void smartaudioProcessSerial(void)
                 in_len = in_idx + data;
                 break;
             case SA_DATA:
-                if (in_len <= in_idx)
-                    state_next = SA_CRC;
+                state_next = (in_idx < in_len) ? SA_DATA : SA_CRC;
                 break;
             case SA_CRC:
                 // CRC check and packet processing
@@ -333,6 +336,10 @@ void smartaudioProcessSerial(void)
                         break;
                     case SA_CMD_SET_MODE:
                         smartaudioProcessModePacket();
+                        break;
+                    case SA_CMD_BOOTLOADER:
+                        if (rxPacket[4] == 'R' && rxPacket[5] == 'S' && rxPacket[6] == 'T')
+                            reboot_into_bootloader(SMARTAUDIO_BAUD);
                         break;
                     }
                     status_led3(0);

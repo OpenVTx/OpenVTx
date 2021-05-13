@@ -52,8 +52,16 @@ void delayMicroseconds(uint32_t us)
 
 int main(void)
 {
+    /* Reset vector location which is set wrongly by SystemInit */
+    extern uint32_t isr_vector_table_base;
+    SCB->VTOR = (__IO uint32_t) &isr_vector_table_base;
+    (void)SCB->VTOR;
+    __ISB();
+
     SystemCoreClockUpdate();
     systick_config();
+
+    __enable_irq();
 
     extern void setup(void);
     extern void loop(void);

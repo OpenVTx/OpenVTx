@@ -33,10 +33,13 @@ static void USARTx_IRQHandler(uint32_t usart_periph)
         uint8_t next = rx_head;
         uint8_t data = usart_data_receive(usart_periph);
         if (((next + 1) % sizeof(rx_buffer)) != rx_tail) {
-        rx_buffer[next] = data;
-        rx_head = (next + 1) % sizeof(rx_buffer);
+            rx_buffer[next] = data;
+            rx_head = (next + 1) % sizeof(rx_buffer);
         }
     }
+    usart_flag_clear(usart_periph, USART_FLAG_FERR);
+    usart_flag_clear(usart_periph, USART_FLAG_ORERR);
+    usart_flag_clear(usart_periph, USART_FLAG_PERR);
 }
 
 void USART0_IRQHandler(void)
@@ -49,7 +52,7 @@ void USART1_IRQHandler(void)
     USARTx_IRQHandler(USART1);
 }
 
-static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfduplex)
+static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfduplex, uint8_t stopbits)
 {
     uint32_t usart_periph = usart_cfg->usart;
 
@@ -65,11 +68,15 @@ static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfdu
 
     /* USART configure */
     usart_deinit(usart_periph);
+    //usart_oversample_config(usart_periph, USART_OVSMOD_16);
     /* 8N1 (standard) */
     usart_baudrate_set(usart_periph, baud);
-    // usart_parity_config(usart_periph, USART_PM_NONE);
-    // usart_word_length_set(usart_periph, USART_WL_8BIT);
-    // usart_stop_bit_set(usart_periph, USART_STB_1BIT);
+    usart_parity_config(usart_periph, USART_PM_NONE);
+    usart_word_length_set(usart_periph, USART_WL_8BIT);
+    if (stopbits == 2)
+        usart_stop_bit_set(usart_periph, USART_STB_2BIT);
+    else
+        usart_stop_bit_set(usart_periph, USART_STB_1BIT);
     if (halfduplex) {
         usart_halfduplex_enable(usart_periph);
         usart_transmit_config(usart_periph, USART_TRANSMIT_DISABLE);
@@ -83,7 +90,7 @@ static void config_uart(struct usartx * usart_cfg, uint32_t baud, uint8_t halfdu
     nvic_irq_enable((usart_periph == USART1) ? USART1_IRQn : USART0_IRQn, 0, 0);
 }
 
-void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin)
+void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin, uint8_t stopbits)
 {
     uint8_t iter, halfduplex = (tx_pin == rx_pin);
 
@@ -91,7 +98,7 @@ void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin)
     {
         if (usart_config[iter].pin_tx == tx_pin && (halfduplex || usart_config[iter].pin_rx == rx_pin))
         {
-            config_uart(&usart_config[iter], baud, halfduplex);
+            config_uart(&usart_config[iter], baud, halfduplex, stopbits);
             break;
         }
     }

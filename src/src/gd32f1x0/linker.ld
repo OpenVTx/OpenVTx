@@ -1,18 +1,27 @@
 
+/* Page is 1k */
+__FLASH_PAGE_SIZE = 0x400;
+/* BL RAM data size */
+__BL_DATA_SIZE = 0x80;
+
 /* Entry Point */
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = 0x20001000;    /* end of RAM */
+_estack = 0x20001000 - __BL_DATA_SIZE;
+/* Reserve some RAM to exchange data for bootloader */
+_bootloader_data = _estack + 0x4;
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400;     /* required amount of stack */
+
+_FLASH_OFFSET = DEFINED(FLASH_APP_OFFSET) ? FLASH_APP_OFFSET : 0K;
 
 /* Specify the memory areas */
 MEMORY
 {
   RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 4K
-  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K
+  FLASH (rx) : ORIGIN = 0x08000000 + _FLASH_OFFSET, LENGTH = 32K - _FLASH_OFFSET
 }
 
 /* Define output sections */
@@ -22,6 +31,7 @@ SECTIONS
   .isr_vector :
   {
     . = ALIGN(4);
+    isr_vector_table_base = .;
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH
@@ -121,6 +131,7 @@ SECTIONS
     PROVIDE ( _end = . );
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
+    . = . + __BL_DATA_SIZE;
     . = ALIGN(4);
   } >RAM
 

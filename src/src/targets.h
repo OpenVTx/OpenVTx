@@ -28,3 +28,4 @@ void checkPowerOutput(void);
 void target_rfPowerAmpPinSetup(void);
 uint32_t vpd_value_get(void);
 
+void mcu_reboot(void);
