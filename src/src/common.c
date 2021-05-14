@@ -104,3 +104,25 @@ void setPowermW(uint16_t mW)
     float dB = 10.0 * log10((float)mW);
     setPowerdB(dB);
 }
+
+#define BOOTLOADER_KEY  0x4f565458 // OVTX
+#define BOOTLOADER_TYPE 0xACDC
+
+struct bootloader {
+    uint32_t key;
+    uint32_t reset_type;
+    uint32_t baud;
+};
+
+void reboot_into_bootloader(uint32_t baud)
+{
+    extern uint32_t _bootloader_data;
+    struct bootloader * blinfo = (struct bootloader*)&_bootloader_data;
+    blinfo->key = BOOTLOADER_KEY;
+    blinfo->reset_type = BOOTLOADER_TYPE;
+    blinfo->baud = baud;
+
+    delay(200);
+
+    mcu_reboot();
+}

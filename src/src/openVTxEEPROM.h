@@ -9,7 +9,9 @@ extern uint8_t updateEEPROM;
 typedef enum
 {
   TRAMP,
-  SMARTAUDIO
+  SMARTAUDIO,
+  //BOOTLOADER,
+  VTX_MODE_MAX
 } vtxMode_e;
 
 typedef struct

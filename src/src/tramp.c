@@ -10,6 +10,13 @@ uint16_t temperature = 0; // Dummy value.
 #define TRAMP_HEADER    0x0F // 15
 #define TRAMP_MSG_SIZE  15
 
+struct tramp_msg {
+    uint8_t header;
+    uint8_t cmd;
+    uint8_t payload[12];
+    uint8_t crc;
+};
+
 
 uint8_t trampCalcCrc(uint8_t *packet)
 {
@@ -105,52 +112,68 @@ void trampProcessIPacket(void)
     updateEEPROM = 1;
 }
 
+enum {
+    TRAMP_SYNC = 0,
+    TRAMP_DATA,
+    TRAMP_CRC,
+};
+
+static uint8_t state, in_idx;
+
 void trampProcessSerial(void)
 {
-    // wait all bytes to be received
-    if (TRAMP_MSG_SIZE <= serial_available())
-    {
-        rxPacket[0] = serial_read();
+    if (serial_available()) {
+        uint8_t data = serial_read();
 
-        if (rxPacket[0] == TRAMP_HEADER)
-        {
-            // read in buffer
-            for (int i = 1; i < TRAMP_MSG_SIZE; i++)
-            {
-                rxPacket[i] = serial_read();
-            }
+        rxPacket[in_idx++] = data;
 
-            if (rxPacket[(TRAMP_MSG_SIZE - 1)] == trampCalcCrc(rxPacket))
-            {
-                status_led3(1);
-                vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
-
-                switch (rxPacket[1]) // command
-                {
-                case 'F': // 0x50 - Freq - do not respond to this packet
-                    trampProcessFPacket();
-                    break;
-                case 'P': // 0x50 - Power - do not respond to this packet
-                    trampProcessPPacket();
-                    break;
-                case 'I': // 0x49 - Pitmode - do not respond to this packet. Pitmode is not remember on reboot for Tramp, but I have so that matches SA and is useful.
-                    trampProcessIPacket();
-                    break;
-                case 'r': // 0x72 - Max min freq and power packet
-                    trampBuildrPacket();
-                    break;
-                case 'v': // 0x76 - Verify
-                    trampBuildvPacket();
-                    break;
-                case 's': // 0x73 - Temperature
-                    trampBuildsPacket();
-                    break;
+        switch (state) {
+            case TRAMP_SYNC:
+                if (data == TRAMP_HEADER) {
+                    state = TRAMP_DATA;
+                } else {
+                    in_idx = 0;
                 }
+                break;
+            case TRAMP_DATA:
+                if ((TRAMP_MSG_SIZE - 1) <= in_idx)
+                    state = TRAMP_CRC;
+                break;
+            case TRAMP_CRC:
+                if (data == trampCalcCrc(rxPacket)) {
+                    status_led3(1);
+                    vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
 
-                status_led3(0);
-            }
-
-            clearSerialBuffer();
-        }
+                    switch (rxPacket[1]) // command
+                    {
+                    case 'F': // 0x50 - Freq - do not respond to this packet
+                        trampProcessFPacket();
+                        break;
+                    case 'P': // 0x50 - Power - do not respond to this packet
+                        trampProcessPPacket();
+                        break;
+                    case 'I': // 0x49 - Pitmode - do not respond to this packet. Pitmode is not remember on reboot for Tramp, but I have so that matches SA and is useful.
+                        trampProcessIPacket();
+                        break;
+                    case 'r': // 0x72 - Max min freq and power packet
+                        trampBuildrPacket();
+                        break;
+                    case 'v': // 0x76 - Verify
+                        trampBuildvPacket();
+                        break;
+                    case 's': // 0x73 - Temperature
+                        trampBuildsPacket();
+                        break;
+                    case 'R':// Reboot to bootloader
+                        if (rxPacket[2] == 'S' && rxPacket[3] == 'T')
+                            reboot_into_bootloader(TRAMP_BAUD);
+                        break;
+                    }
+                    status_led3(0);
+                }
+                in_idx = 0;
+                state = TRAMP_SYNC;
+                break;
+        };
     }
 }

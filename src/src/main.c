@@ -14,7 +14,20 @@ static uint32_t protocol_checked;
 
 static void start_serial(uint8_t type)
 {
-  serial_begin(((type == TRAMP) ? TRAMP_BAUD : SMARTAUDIO_BAUD), UART_TX, UART_RX);
+  uint32_t baud, stopbits = 2;
+  switch (type) {
+    case TRAMP:
+      baud = TRAMP_BAUD;
+      stopbits = 1;
+      break;
+    case SMARTAUDIO:
+      baud = SMARTAUDIO_BAUD;
+      break;
+    default:
+      baud = 115200;
+      break;
+  }
+  serial_begin(baud, UART_TX, UART_RX, stopbits);
   myEEPROM.vtxMode = type;
   updateEEPROM = 1;
 }
@@ -57,7 +70,9 @@ void loop(void)
     uint32_t now = millis();
     if (PROTOCOL_CHECK_TIMEOUT <= (now - protocol_checked))
     {
-      start_serial((myEEPROM.vtxMode == TRAMP ? SMARTAUDIO: TRAMP));  
+      uint8_t mode = (uint8_t)myEEPROM.vtxMode;
+      mode = (mode + 1) % VTX_MODE_MAX;
+      start_serial((vtxMode_e)mode);
       protocol_checked = now;
     }
   }
