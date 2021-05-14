@@ -32,6 +32,9 @@ uint8_t trampCalcCrc(uint8_t *packet)
 
 void trampSendPacket(void)
 {
+    // Flight Controller needs a bit time to swap TX to RX state
+    delay(10);
+
     txPacket[TRAMP_MSG_SIZE-1] = trampCalcCrc(txPacket);
     txPacket[TRAMP_MSG_SIZE] = 0;
     Serial_write_len(txPacket, (TRAMP_MSG_SIZE+1));

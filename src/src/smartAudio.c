@@ -17,7 +17,6 @@ const uint16_t channelFreqTable[48] = {
 };
 
 
-
 /**** SmartAudio definitions ****/
 #define CRC_LEN         1
 #define LEGHT_CALC(len) (sizeof(sa_header_t) + CRC_LEN + (len))
@@ -113,6 +112,8 @@ void smartaudioSendPacket(void)
         (uint8_t*)&hdr->command,
         (len - offsetof(sa_header_t, command)));
     len += CRC_LEN;
+    // Flight Controller needs a bit time to swap TX to RX state
+    delay(10);
     Serial_write_len(txPacket, len);
     serial_flush();
 }
@@ -164,6 +165,7 @@ void smartaudioProcessFrequencyPacket(void)
     else
     {
         rtc6705WriteFrequency(freq);
+        myEEPROM.freqMode = 1;
     }
 
     payload->data_u16[0] = (uint8_t)(freq >> 8);
@@ -183,6 +185,7 @@ void smartaudioProcessChannelPacket(void)
     if (channel < ARRAY_SIZE(channelFreqTable)) {
         myEEPROM.channel = channel;
         rtc6705WriteFrequency(channelFreqTable[channel]);
+        myEEPROM.freqMode = 0;
     } else {
         channel = myEEPROM.channel;
     }
@@ -199,30 +202,21 @@ void smartaudioProcessPowerPacket(void)
         (sa_u8_resp_t*)fill_resp_header(
             SA_CMD_SET_POWER, sizeof(sa_u8_resp_t));
     uint8_t data = rxPacket[4];
+    /* SA2.1 sets the MSB to indicate power is in dB.
+     * Set MSB to zero and currPower will now be in dB. */
+    uint8_t const value_in_db = data & 0x80;
+    data &= 0x7F;
 
-    if (data & 0x80) {
-        /* SA2.1 sets the MSB to indicate power is in dB.
-         * Set MSB to zero and currPower will now be in dB. */
-        data &= 0x7F;
-        if (!data) {
-            /* 0Db is pit mode enable */
-            pitMode = 1;
-            uint8_t tempCurrPowerdB= myEEPROM.currPowerdB;
-            setPowerdB(0);
-            myEEPROM.currPowerdB = tempCurrPowerdB;
-        } else{
-            setPowerdB(data);
-        }
+    if (!data) {
+        /* 0dB is pit mode enable */
+        pitMode = 1;
+        uint8_t tempCurrPowerdB = myEEPROM.currPowerdB;
+        setPowerdB(0);
+        myEEPROM.currPowerdB = tempCurrPowerdB;
+    } else if (value_in_db) {
+        setPowerdB(data);
     } else {
-        if (!data) {
-            /* 0Db is pit mode enable */
-            pitMode = 1;
-            uint8_t tempCurrPowerdB= myEEPROM.currPowerdB;
-            setPowerdB(0);
-            myEEPROM.currPowerdB = tempCurrPowerdB;
-        } else{
-            setPowermW(data);
-        }
+        setPowermW(data);
     }
 
     payload->data_u8 = myEEPROM.currPowerdB;
