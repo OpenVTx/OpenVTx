@@ -123,6 +123,7 @@ void reboot_into_bootloader(uint32_t baud)
     blinfo->baud = baud;
 
     rtc6705PowerAmpOff();
+    target_set_power_dB(0);
     delay(200);
 
     mcu_reboot();
