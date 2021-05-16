@@ -209,7 +209,7 @@ void smartaudioProcessPowerPacket(void)
 
     if (!data) {
         /* 0dB is pit mode enable */
-        pitMode = 1;
+        if (value_in_db) pitMode = 1; // Do not set pitmode for a 0mW.  INav sends this command on boot for some reason :|
         uint8_t tempCurrPowerdB = myEEPROM.currPowerdB;
         setPowerdB(0);
         myEEPROM.currPowerdB = tempCurrPowerdB;
@@ -316,19 +316,19 @@ void smartaudioProcessSerial(void)
 
                     switch (rxPacket[2] >> 1) // Commands
                     {
-                    case SA_CMD_GET_SETTINGS:
+                    case SA_CMD_GET_SETTINGS: // 0x03
                         smartaudioBuildSettingsPacket();
                         break;
-                    case SA_CMD_SET_POWER:
+                    case SA_CMD_SET_POWER: // 0x05
                         smartaudioProcessPowerPacket();
                         break;
-                    case SA_CMD_SET_CHAN:
+                    case SA_CMD_SET_CHAN: // 0x07
                         smartaudioProcessChannelPacket();
                         break;
-                    case SA_CMD_SET_FREQ:
+                    case SA_CMD_SET_FREQ: // 0x09
                         smartaudioProcessFrequencyPacket();
                         break;
-                    case SA_CMD_SET_MODE:
+                    case SA_CMD_SET_MODE: // 0x0B
                         smartaudioProcessModePacket();
                         break;
                     case SA_CMD_BOOTLOADER:
