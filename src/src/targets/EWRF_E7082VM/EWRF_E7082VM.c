@@ -10,6 +10,8 @@
 
 #define OUTPUT_POWER_INTERVAL 5 // ms
 
+uint8_t powerLevels[] = {0, 1, 14, 20, 26}; // SA2.1 powerlevels dBm. Currently only used for Inav and a max of 5.
+
 gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;
 gpio_adc_t vpd_pin;

@@ -2,6 +2,4 @@
 
 #pragma once
 
-#define SA_NUM_POWER_LEVELS 4
-
 void smartaudioProcessSerial(void);

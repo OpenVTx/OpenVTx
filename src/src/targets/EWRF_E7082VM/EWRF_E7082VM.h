@@ -9,9 +9,9 @@ vtxtable band 2 BOSCAM_B B FACTORY 5733 5752 5771 5790 5809 5828 5847 5866
 vtxtable band 3 BOSCAM_E E FACTORY 5705 5685 5665 5645 5885 5905 5925 5945
 vtxtable band 4 FATSHARK F FACTORY 5740 5760 5780 5800 5820 5840 5860 5880
 vtxtable band 5 RACEBAND R FACTORY 5658 5695 5732 5769 5806 5843 5880 5917
-vtxtable powerlevels 4
-vtxtable powervalues 0 14 20 26
-vtxtable powerlabels 0 25 100 400
+vtxtable powerlevels 5
+vtxtable powervalues 1 14 17 20 26
+vtxtable powerlabels 0 25 50 100 400
 
 # TRAMP
 # vtxtable 
@@ -23,9 +23,9 @@ vtxtable band 3 BOSCAM_E E CUSTOM  5705 5685 5665 5645 5885 5905 5925 5945
 vtxtable band 4 FATSHARK F CUSTOM  5740 5760 5780 5800 5820 5840 5860 5880
 vtxtable band 5 RACEBAND R CUSTOM  5658 5695 5732 5769 5806 5843 5880 5917
 vtxtable band 6 IMD6     I CUSTOM  5732 5765 5828 5840 5866 5740    0    0
-vtxtable powerlevels 4
-vtxtable powervalues 0 25 100 400
-vtxtable powerlabels 0 25 100 400
+vtxtable powerlevels 5
+vtxtable powervalues 1 25 50 100 400
+vtxtable powerlabels 0 25 50 100 400
 
 */
 
@@ -33,6 +33,9 @@ vtxtable powerlabels 0 25 100 400
 #define __TARGET_DEF_H_
 
 #define MAX_POWER     400 // mW
+
+#define SA_NUM_POWER_LEVELS 5 // Max 5 for INAV.
+extern uint8_t powerLevels[];
 
 #define UART_RX       PA9
 #define UART_TX       PA9

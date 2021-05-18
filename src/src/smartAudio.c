@@ -131,14 +131,14 @@ void smartaudioBuildSettingsPacket(void)
     bitWrite(operationMode, 4, myEEPROM.unlocked);
 
     payload->channel = myEEPROM.channel;
-    // payload->power = get_power_index_by_dB(myEEPROM.currPowerdB);
     payload->power = 0; // Fake index to allow setting any power level
     payload->operationMode = operationMode;
     payload->frequency[0] = (uint8_t)(myEEPROM.currFreq >> 8);
     payload->frequency[1] = (uint8_t)(myEEPROM.currFreq);
     payload->rawPowerValue = myEEPROM.currPowerdB;
-    // payload->num_pwr_levels = get_power_db_values(payload->levels);
-    payload->num_pwr_levels = 4; // Fake index to allow setting any power level
+    payload->num_pwr_levels = SA_NUM_POWER_LEVELS;
+    for (uint8_t i = 0; i < SA_NUM_POWER_LEVELS; i++)
+        payload->levels[i] = powerLevels[i];
 
     smartaudioSendPacket();
 }
@@ -209,7 +209,7 @@ void smartaudioProcessPowerPacket(void)
 
     if (!data) {
         /* 0dB is pit mode enable */
-        pitMode = 1;
+        pitMode = value_in_db ? 1 : 0; // Do not set pitmode for a 0mW.  INav sends this command on boot for some reason. https://github.com/iNavFlight/inav/issues/6976
         uint8_t tempCurrPowerdB = myEEPROM.currPowerdB;
         setPowerdB(0);
         myEEPROM.currPowerdB = tempCurrPowerdB;
@@ -316,19 +316,19 @@ void smartaudioProcessSerial(void)
 
                     switch (rxPacket[2] >> 1) // Commands
                     {
-                    case SA_CMD_GET_SETTINGS:
+                    case SA_CMD_GET_SETTINGS: // 0x03
                         smartaudioBuildSettingsPacket();
                         break;
-                    case SA_CMD_SET_POWER:
+                    case SA_CMD_SET_POWER: // 0x05
                         smartaudioProcessPowerPacket();
                         break;
-                    case SA_CMD_SET_CHAN:
+                    case SA_CMD_SET_CHAN: // 0x07
                         smartaudioProcessChannelPacket();
                         break;
-                    case SA_CMD_SET_FREQ:
+                    case SA_CMD_SET_FREQ: // 0x09
                         smartaudioProcessFrequencyPacket();
                         break;
-                    case SA_CMD_SET_MODE:
+                    case SA_CMD_SET_MODE: // 0x0B
                         smartaudioProcessModePacket();
                         break;
                     case SA_CMD_BOOTLOADER:
