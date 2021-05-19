@@ -18,7 +18,7 @@ static void start_serial(uint8_t type)
   switch (type) {
     case TRAMP:
       baud = TRAMP_BAUD;
-      stopbits = 2;
+      stopbits = 1;
       break;
     case SMARTAUDIO:
       baud = SMARTAUDIO_BAUD;
