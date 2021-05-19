@@ -11,7 +11,7 @@ uint8_t updateEEPROM;
 void defaultEEPROM(void)
 {
     myEEPROM.version = versionEEPROM;
-    myEEPROM.vtxMode = SMARTAUDIO;
+    myEEPROM.vtxMode = TRAMP;
     myEEPROM.currFreq = 5800;
     myEEPROM.channel = 27;
     myEEPROM.freqMode = 0;
