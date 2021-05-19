@@ -18,11 +18,15 @@ static void start_serial(uint8_t type)
   switch (type) {
     case TRAMP:
       baud = TRAMP_BAUD;
-      stopbits = 1;
+      stopbits = 2;
       break;
     case SMARTAUDIO:
       baud = SMARTAUDIO_BAUD;
-      stopbits = 1; // This should be 2 but it doesnt work with INav. https://github.com/iNavFlight/inav/issues/6984
+      stopbits = 2;
+      break;
+    case SMARTAUDIO_INAV:
+      baud = SMARTAUDIO_BAUD;
+      stopbits = 1; // This should be 2 but it doesnt work with INav. https://github.com/iNavFlight/inav/pull/6986
       break;
     default:
       baud = 115200;
