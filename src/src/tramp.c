@@ -96,7 +96,16 @@ void trampProcessPPacket(void)
     uint16_t mW = rxPacket[3];
     mW <<= 8;
     mW += rxPacket[2];
-    setPowermW(mW);
+
+    if (mW == RACE_MODE)
+    {
+        pitMode = 1;
+        setPowerdB(14);
+        myEEPROM.currPowermW = mW;
+    } else
+    {
+        setPowermW(mW);
+    }
 
     myEEPROM.currPowermW = mW;
     updateEEPROM = 1;

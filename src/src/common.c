@@ -92,6 +92,10 @@ void setPowerdB(float dB)
     {
       rtc6705PowerAmpOff();
       target_set_power_dB(0);
+    } else if (dB == RACE_MODE)
+    {
+      rtc6705PowerAmpOn();
+      target_set_power_dB(14);
     } else
     {
       rtc6705PowerAmpOn();

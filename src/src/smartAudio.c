@@ -207,15 +207,27 @@ void smartaudioProcessPowerPacket(void)
     uint8_t const value_in_db = data & 0x80;
     data &= 0x7F;
 
-    if (!data) {
+    if (!data)
+    {
         /* 0dB is pit mode enable */
         pitMode = value_in_db ? 1 : 0; // Do not set pitmode for a 0mW.  INav sends this command on boot for some reason. https://github.com/iNavFlight/inav/issues/6976
         uint8_t tempCurrPowerdB = myEEPROM.currPowerdB;
         setPowerdB(0);
         myEEPROM.currPowerdB = tempCurrPowerdB;
-    } else if (value_in_db) {
+    }
+    else if (data == RACE_MODE)
+    {
+        pitMode = 1;
+        setPowerdB(14);
+        myEEPROM.currPowerdB = data;
+        myEEPROM.currPowermW = data;
+    }
+    else if (value_in_db)
+    {
         setPowerdB(data);
-    } else {
+    }
+    else
+    {
         setPowermW(data);
     }
 
