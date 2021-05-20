@@ -98,25 +98,22 @@ void trampProcessPPacket(void)
     mW += rxPacket[2];
 
     if (mW == RACE_MODE)
-    {
         pitMode = 1;
-        setPowerdB(14);
-        myEEPROM.currPowermW = mW;
-    } else
-    {
-        setPowermW(mW);
-    }
-
-    myEEPROM.currPowermW = mW;
-    updateEEPROM = 1;
+    
+    setPowermW(mW);
 }
 
 void trampProcessIPacket(void)
 {
     pitMode = !rxPacket[2];
 
-     // Regardless of input mW, pitmode will force output to 0mW.
-    setPowerdB(myEEPROM.currPowerdB);
+    if (myEEPROM.currPowermW == RACE_MODE)
+    {
+        setPowerdB(14);
+    } else
+    {
+        setPowerdB(myEEPROM.currPowermW);
+    }
 
     myEEPROM.pitmodeInRange = pitMode;  // Pitmode set via CMS is not remembered with Tramp, but I have forced it here to be useful like SA pitmode.
     myEEPROM.pitmodeOutRange = 0;       // Set to 0 so only one of PIR or POR is set for smartaudio

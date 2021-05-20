@@ -218,9 +218,7 @@ void smartaudioProcessPowerPacket(void)
     else if (data == RACE_MODE)
     {
         pitMode = 1;
-        setPowerdB(14);
-        myEEPROM.currPowerdB = data;
-        myEEPROM.currPowermW = data;
+        setPowerdB(data);
     }
     else if (value_in_db)
     {
@@ -255,7 +253,15 @@ void smartaudioProcessModePacket(void)
     // This bit is only for CLEARING pitmode.
     if (clearPitMode) {
         pitMode = 0;
-        setPowerdB(myEEPROM.currPowerdB);
+
+        if (myEEPROM.currPowerdB == RACE_MODE)
+        {
+            setPowerdB(14);
+            myEEPROM.currPowerdB = RACE_MODE;
+        } else
+        {
+            setPowerdB(myEEPROM.currPowerdB);
+        }
     }
 
     // When turning on pitmodeInRange go into pitmode
