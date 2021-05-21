@@ -11,9 +11,20 @@ Currently SA is fully implemented and test against [Rev. 09](https://www.team-bl
 OpenVTx uses VS Code and [PlatformIO](https://platformio.org/platformio-ide).
 
 # Flashing the VTx
-Flashing requires an [ST-LINK V2](https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20210125211035&SearchText=ST-LINK+V2) and connection is via the below image.  Shown below is of the E7082VM and other targets will differ in appearance but the process will be similar.  Details will be added to a wiki as more targets are added.  Select your VTx target from within PlatformIO and press Upload.
+Flashing requires an [ST-LINK V2](https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20210125211035&SearchText=ST-LINK+V2) and connection is via the below image.  Shown below is of the E7082VM and other targets will differ in appearance but the process will be similar.  Details will be added to a wiki as more targets are added.  
 
 <img src="img/st_link_connection.png" width="50%">
+
+Before flashing the read protection must be disabled. In the STM32 ST_Link Utility connect to the target and go to Option Bytes
+
+<img src="img/OptionBytes.png" width="50%">
+
+<img src="img/OptionBytes2.png" width="50%">
+
+In the Option Bytes, disable Read Protection and Check the 3 boxes.  Apply.  This will probably result in an error, but that is ok.  
+After this erase the chip.  
+Select your VTx target from within PlatformIO and press Upload.
+
 
 # Betaflight VTx Tables
 
