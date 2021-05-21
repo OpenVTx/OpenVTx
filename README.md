@@ -17,7 +17,9 @@ Flashing requires an [ST-LINK V2](https://www.aliexpress.com/wholesale?catId=0&i
 
 Before flashing the read protection must be disabled. In the STM32 ST_Link Utility connect to the target and go to Option Bytes
 
-<img src="img/optionbytes.png" width="50%">
+<img src="img/OptionBytes.png" width="50%">
+
+<img src="img/OptionBytes2.png" width="50%">
 
 In the Option Bytes, disable Read Protection and Check the 3 boxes.  Apply.  This will probably result in an error, but that is ok.  
 After this erase the chip.  
