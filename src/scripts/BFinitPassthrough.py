@@ -63,18 +63,23 @@ def bf_passthrough_init(port, requestedBaudrate=None, half_duplex=False):
                     dbg_print("    ** VTX SA config detected: '%s'" % line)
                     SerialRXindex = config.group(1)
                     vtx_type = "SA"
-                elif config.group(2) == "8192":
+                    requestedBaudrate = 4800
+                elif config.group(2) == "8192": # BF https://github.com/betaflight/betaflight/blob/master/docs/Serial.md
                     dbg_print("    ** VTX Tramp config detected: '%s'" % line)
                     SerialRXindex = config.group(1)
                     vtx_type = "TRAMP"
+                    requestedBaudrate = 9600
+                elif config.group(2) == "4096": # INav.  4096 is also FUNCTION_TELEMETRY_IBUS in BF.  So this might cause issues.
+                    dbg_print("    ** VTX Tramp config detected: '%s'" % line)
+                    SerialRXindex = config.group(1)
+                    vtx_type = "TRAMP"
+                    requestedBaudrate = 9600
                 if not debug:
                     break
 
     if not SerialRXindex:
         raise PassthroughFailed("!!! RX Serial not found !!!!\n  Check configuration and try again...")
 
-    if requestedBaudrate is None:
-        requestedBaudrate = {'SA': 4800, 'TRAMP': 9600, None: requestedBaudrate}[vtx_type]
     cmd = "serialpassthrough %s %s" % (SerialRXindex, requestedBaudrate, )
 
     dbg_print("Enabling serial passthrough...")
