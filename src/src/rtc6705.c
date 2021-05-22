@@ -69,7 +69,7 @@ void rtc6705PowerAmpOff(void)
   amp_state = 0;
 }
 
-void rtc6705WriteFrequency(uint32_t newFreq)
+void rtc6705WriteFrequency(uint32_t newFreq, uint8_t forceSet)
 {
   uint32_t freq = newFreq * 1000U;
   freq /= 40;
@@ -79,7 +79,7 @@ void rtc6705WriteFrequency(uint32_t newFreq)
   uint32_t data = SynthesizerRegisterB | (1 << 4) | (SYN_RF_A_REG << 5) | (SYN_RF_N_REG << 12);
 
   /* Don't write if not changed -> avoid blinking */
-  if (newFreq == myEEPROM.currFreq)
+  if (newFreq == myEEPROM.currFreq && !forceSet)
     return;
 
   myEEPROM.currFreq = newFreq;
