@@ -4,6 +4,11 @@ OpenVTx aims to provide firmware with both the SmartAudio and Tramp protocols.  
 
 Currently SA is fully implemented and test against [Rev. 09](https://www.team-blacksheep.com/tbs_smartaudio_rev09.pdf).  To date IMRC has not released a protocol standard and implementation is based on information found within Betaflight.
 
+# Features
+
+**Race Mode** - When at a race event and using pitmode on a switch with Betaflight, select the RCE VTx power level.  It will force pitmode on boot and only use 25mW.
+
+
 # Currently Supported VTx
 - [EWRF E7082VM V1 & V2](https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20210125211126&SearchText=EWRF+E7082VM) - Max output power of [+500mW](img/EWRF_E7082VM_500mW.jpg).
 
@@ -41,8 +46,8 @@ vtxtable band 3 BOSCAM_E E FACTORY 5705 5685 5665 5645 5885 5905 5925 5945
 vtxtable band 4 FATSHARK F FACTORY 5740 5760 5780 5800 5820 5840 5860 5880
 vtxtable band 5 RACEBAND R FACTORY 5658 5695 5732 5769 5806 5843 5880 5917
 vtxtable powerlevels 5
-vtxtable powervalues 1 14 17 20 26
-vtxtable powerlabels 0 25 50 100 400
+vtxtable powervalues 1 2 14 20 26
+vtxtable powerlabels 0 RCE 25 100 400
 save
 ```
 ```
@@ -57,8 +62,8 @@ vtxtable band 4 FATSHARK F CUSTOM  5740 5760 5780 5800 5820 5840 5860 5880
 vtxtable band 5 RACEBAND R CUSTOM  5658 5695 5732 5769 5806 5843 5880 5917
 vtxtable band 6 IMD6     I CUSTOM  5732 5765 5828 5840 5866 5740    0    0
 vtxtable powerlevels 5
-vtxtable powervalues 1 25 50 100 400
-vtxtable powerlabels 0 25 50 100 400
+vtxtable powervalues 1 2 25 100 400
+vtxtable powerlabels 0 RCE 25 100 400
 save
 ```
 

@@ -7,6 +7,7 @@
 
 #define PROTOCOL_CHECK_TIMEOUT 200
 
+#define RACE_MODE 2
 
 extern uint8_t rxPacket[16];
 extern uint8_t txPacket[18];

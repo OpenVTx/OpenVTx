@@ -101,6 +101,9 @@ void setPowerdB(float dB)
 
 void setPowermW(uint16_t mW)
 {
+    myEEPROM.currPowermW = mW;
+    updateEEPROM = 1;
+
     float dB = 10.0 * log10((float)mW);
     setPowerdB(dB);
 }
