@@ -71,19 +71,19 @@ void rtc6705PowerAmpOff(void)
 
 void rtc6705WriteFrequency(uint32_t newFreq, uint8_t forceSet) // forceSet is needed for the initial write during setup, otherwise it does nothing and A1 is set by default.
 {
-  uint32_t freq = newFreq * 1000U;
-  freq /= 40;
-  uint32_t SYN_RF_N_REG = freq / 64;
-  uint32_t SYN_RF_A_REG = freq % 64;
-
-  uint32_t data = SynthesizerRegisterB | (1 << 4) | (SYN_RF_A_REG << 5) | (SYN_RF_N_REG << 12);
-
   /* Don't write if not changed -> avoid blinking */
   if (newFreq == myEEPROM.currFreq && !forceSet)
     return;
 
   myEEPROM.currFreq = newFreq;
   updateEEPROM = 1;
+
+  uint32_t freq = newFreq * 1000U;
+  freq /= 40;
+  uint32_t SYN_RF_N_REG = freq / 64;
+  uint32_t SYN_RF_A_REG = freq % 64;
+
+  uint32_t data = SynthesizerRegisterB | (1 << 4) | (SYN_RF_A_REG << 5) | (SYN_RF_N_REG << 12);
 
   /* Switch off */
   amp_state = 1; // Force off cmd rewrite
