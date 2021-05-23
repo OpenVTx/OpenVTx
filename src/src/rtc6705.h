@@ -20,4 +20,6 @@ void sendBits(uint32_t data);
 void rtc6705ResetState(void);
 void rtc6705PowerAmpOn(void);
 void rtc6705PowerAmpOff(void);
+void rtc6705WriteFreq(uint32_t newFreq, uint8_t forceSet);
 void rtc6705WriteFrequency(uint32_t newFreq);
+void rtc6705WriteFrequencyForce(uint32_t newFreq);

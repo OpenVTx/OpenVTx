@@ -30,6 +30,7 @@ static void start_serial(uint8_t type)
       break;
     default:
       baud = 115200;
+      stopbits = 1;
       break;
   }
   serial_begin(baud, UART_TX, UART_RX, stopbits);
@@ -50,7 +51,7 @@ void setup(void)
   start_serial(myEEPROM.vtxMode);
 
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
-  rtc6705WriteFrequency(myEEPROM.currFreq);
+  rtc6705WriteFrequencyForce(myEEPROM.currFreq);
 
   status_leds_init();
 
