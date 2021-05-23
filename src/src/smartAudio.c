@@ -164,7 +164,7 @@ void smartaudioProcessFrequencyPacket(void)
     }
     else
     {
-        rtc6705WriteFrequency(freq);
+        rtc6705WriteFrequency(freq, FALSE);
         myEEPROM.freqMode = 1;
     }
 
@@ -184,7 +184,7 @@ void smartaudioProcessChannelPacket(void)
 
     if (channel < ARRAY_SIZE(channelFreqTable)) {
         myEEPROM.channel = channel;
-        rtc6705WriteFrequency(channelFreqTable[channel]);
+        rtc6705WriteFrequency(channelFreqTable[channel], FALSE);
         myEEPROM.freqMode = 0;
     } else {
         channel = myEEPROM.channel;

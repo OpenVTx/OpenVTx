@@ -69,7 +69,7 @@ void rtc6705PowerAmpOff(void)
   amp_state = 0;
 }
 
-void rtc6705WriteFrequency(uint32_t newFreq, uint8_t forceSet)
+void rtc6705WriteFrequency(uint32_t newFreq, uint8_t forceSet) // forceSet is needed for the initial write during setup, otherwise it does nothing and A1 is set by default.
 {
   uint32_t freq = newFreq * 1000U;
   freq /= 40;

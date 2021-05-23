@@ -58,7 +58,7 @@ void setup(void)
   // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
   myEEPROM.currFreq = 5600;
-  rtc6705WriteFrequency(myEEPROM.currFreq);
+  rtc6705WriteFrequency(myEEPROM.currFreq, FALSE);
 
   // target_set_power_dB(0);
   target_set_power_dB(14);

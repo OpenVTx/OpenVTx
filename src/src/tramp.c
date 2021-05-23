@@ -88,7 +88,7 @@ void trampProcessFPacket(void)
     uint32_t freq = rxPacket[3];
     freq <<= 8;
     freq |= rxPacket[2];
-    rtc6705WriteFrequency(freq);
+    rtc6705WriteFrequency(freq, FALSE);
 }
 
 void trampProcessPPacket(void)

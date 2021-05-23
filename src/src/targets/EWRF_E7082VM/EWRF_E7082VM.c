@@ -210,7 +210,7 @@ void taget_loop(void)
       {
         myEEPROM.currFreq = 5600;
       }
-      rtc6705WriteFrequency(myEEPROM.currFreq);
+      rtc6705WriteFrequency(myEEPROM.currFreq, FALSE);
     }
     #endif /* OUTPUT_POWER_TESTING */
   }
