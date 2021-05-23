@@ -1,3 +1,5 @@
+Join us on discord https://discord.gg/uGUKaD2u8Z
+
 **Open source video transmitter firmware for the FPV community**
 
 OpenVTx aims to provide firmware with both the SmartAudio and Tramp protocols.  Either protocol can be used on the flight controller and on VTx power up the protocol used is automatically detected by OpenVTx.
