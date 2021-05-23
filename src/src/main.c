@@ -30,6 +30,7 @@ static void start_serial(uint8_t type)
       break;
     default:
       baud = 115200;
+      stopbits = 1;
       break;
   }
   serial_begin(baud, UART_TX, UART_RX, stopbits);
