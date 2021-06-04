@@ -85,6 +85,8 @@ void trampBuildsPacket(void)
 
 void trampProcessFPacket(void)
 {
+    initFreqPacketRecived = 1;
+    
     uint32_t freq = rxPacket[3];
     freq <<= 8;
     freq |= rxPacket[2];

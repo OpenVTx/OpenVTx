@@ -12,8 +12,8 @@ void defaultEEPROM(void)
 {
     myEEPROM.version = versionEEPROM;
     myEEPROM.vtxMode = TRAMP;
-    myEEPROM.currFreq = 5800;
-    myEEPROM.channel = 27;
+    myEEPROM.currFreq = 5801;
+    myEEPROM.channel = 255;
     myEEPROM.freqMode = 0;
     myEEPROM.pitmodeInRange = 0;
     myEEPROM.pitmodeOutRange = 0;

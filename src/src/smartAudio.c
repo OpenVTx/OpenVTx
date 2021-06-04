@@ -145,6 +145,8 @@ void smartaudioBuildSettingsPacket(void)
 
 void smartaudioProcessFrequencyPacket(void)
 {
+    initFreqPacketRecived = 1;
+
     sa_u16_resp_t * payload =
         (sa_u16_resp_t*)fill_resp_header(
             SA_CMD_SET_FREQ, sizeof(sa_u16_resp_t));
@@ -177,6 +179,8 @@ void smartaudioProcessFrequencyPacket(void)
 
 void smartaudioProcessChannelPacket(void)
 {
+    initFreqPacketRecived = 1;
+    
     sa_u8_resp_t * payload =
         (sa_u8_resp_t*)fill_resp_header(
             SA_CMD_SET_CHAN, sizeof(sa_u8_resp_t));
