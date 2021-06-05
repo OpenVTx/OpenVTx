@@ -52,21 +52,21 @@ void rtc6705ResetState(void)
 
 void rtc6705PowerAmpOn(void)
 {
-  if (amp_state) return;
-  uint32_t data = PredriverandPAControlRegister | (1 << 4) | (0b10011111011111100000);
+  // if (amp_state) return;
+  // uint32_t data = PredriverandPAControlRegister | (1 << 4) | (0b10011111011111100000);
 
-  sendBits(data);
-  amp_state = 1;
+  // sendBits(data);
+  // amp_state = 1;
 }
 
 void rtc6705PowerAmpOff(void)
 {
-  if (!amp_state) return;
+  // if (!amp_state) return;
 
-  uint32_t data = PredriverandPAControlRegister | (1 << 4);
+  // uint32_t data = PredriverandPAControlRegister | (1 << 4);
 
-  sendBits(data);
-  amp_state = 0;
+  // sendBits(data);
+  // amp_state = 0;
 }
 
 void rtc6705WriteFrequency(uint32_t newFreq)
@@ -88,7 +88,7 @@ void rtc6705WriteFrequency(uint32_t newFreq)
   /* Switch off */
   amp_state = 1; // Force off cmd rewrite
   rtc6705PowerAmpOff();
-  target_set_power_dB(0);
+  // target_set_power_dB(0);
 
   /* Set frequency */
   sendBits(data);
