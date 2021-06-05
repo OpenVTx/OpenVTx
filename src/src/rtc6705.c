@@ -90,9 +90,13 @@ void rtc6705WriteFrequency(uint32_t newFreq)
   rtc6705PowerAmpOff();
   target_set_power_dB(0);
 
+  delay(500);
+
   /* Set frequency */
   sendBits(data);
 
+  delay(500);
+  
   /* Restore state */
   setPowerdB(myEEPROM.currPowerdB);
 }
