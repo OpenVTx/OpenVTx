@@ -72,7 +72,7 @@ void rtc6705PowerAmpOff(void)
 void rtc6705WriteFrequency(uint32_t newFreq)
 {
   /* Don't write if not changed -> avoid blinking */
-  if (newFreq == myEEPROM.currFreq)
+  if (newFreq == myEEPROM.currFreq && newFreq != BOOT_FREQ)
     return;
 
   myEEPROM.currFreq = newFreq;

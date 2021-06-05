@@ -12,7 +12,7 @@ void defaultEEPROM(void)
 {
     myEEPROM.version = versionEEPROM;
     myEEPROM.vtxMode = TRAMP;
-    myEEPROM.currFreq = 5801;
+    myEEPROM.currFreq = BOOT_FREQ;
     myEEPROM.channel = 255;
     myEEPROM.freqMode = 0;
     myEEPROM.pitmodeInRange = 0;
