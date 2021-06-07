@@ -90,6 +90,8 @@ void loop(void)
   else
     smartaudioProcessSerial();
 
+  rtc6705PowerUpAfterPLLSettleTime();
+  
   checkPowerOutput();
 
   // writeEEPROM();
