@@ -48,10 +48,10 @@ void setup(void)
 
   pitMode = myEEPROM.pitmodeInRange;
 
-  start_serial(myEEPROM.vtxMode);
-
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
-  rtc6705WriteFrequencyForce(myEEPROM.currFreq);
+  rtc6705WriteFrequency(myEEPROM.currFreq);
+
+  start_serial(myEEPROM.vtxMode);
 
   status_leds_init();
 
@@ -90,6 +90,8 @@ void loop(void)
   else
     smartaudioProcessSerial();
 
+  rtc6705PowerUpAfterPLLSettleTime();
+  
   checkPowerOutput();
 
   // writeEEPROM();

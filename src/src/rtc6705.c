@@ -9,6 +9,7 @@ static gpio_out_t sck_pin;
 static gpio_out_t mosi_pin;
 static uint_fast8_t amp_state;
 
+static uint32_t powerUpAfterSettleTime = 0;
 
 void spiPinSetup(void)
 {
@@ -71,18 +72,8 @@ void rtc6705PowerAmpOff(void)
 
 void rtc6705WriteFrequency(uint32_t newFreq)
 {
-  rtc6705WriteFreq(newFreq, FALSE);
-}
-
-void rtc6705WriteFrequencyForce(uint32_t newFreq)
-{
-  rtc6705WriteFreq(newFreq, TRUE);
-}
-
-void rtc6705WriteFreq(uint32_t newFreq, uint8_t forceSet)
-{
   /* Don't write if not changed -> avoid blinking */
-  if (newFreq == myEEPROM.currFreq && !forceSet)
+  if (newFreq == myEEPROM.currFreq && newFreq != BOOT_FREQ)
     return;
 
   myEEPROM.currFreq = newFreq;
@@ -103,6 +94,17 @@ void rtc6705WriteFreq(uint32_t newFreq, uint8_t forceSet)
   /* Set frequency */
   sendBits(data);
 
-  /* Restore state */
-  setPowerdB(myEEPROM.currPowerdB);
+  powerUpAfterSettleTime = millis() + PLL_SETTLE_TIME;
+}
+
+void rtc6705PowerUpAfterPLLSettleTime()
+{
+  if (!powerUpAfterSettleTime)
+    return;
+
+  if (powerUpAfterSettleTime < millis())
+  {
+    setPowerdB(myEEPROM.currPowerdB);
+    powerUpAfterSettleTime = 0;
+  }
 }
