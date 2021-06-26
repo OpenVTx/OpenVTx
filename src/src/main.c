@@ -41,7 +41,7 @@ static void start_serial(uint8_t type)
 void setup(void)
 {
   target_rfPowerAmpPinSetup();
-  spiPinSetup();
+  rtc6705spiPinSetup();
 
   // readEEPROM();
   defaultEEPROM();

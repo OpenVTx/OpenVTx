@@ -12,13 +12,19 @@
 #define PredriverandPAControlRegister 0x07
 #define StateRegister 0x0F
 
+#define READ_BIT 0x00
+#define WRITE_BIT 0x01
+
+#define POWER_AMP_ON 0b10011111011111100000 
+
 #define MIN_FREQ 5000
 #define MAX_FREQ 5999
 
 #define PLL_SETTLE_TIME 500
 
-void spiPinSetup(void);
-void sendBits(uint32_t data);
+void rtc6705spiPinSetup(void);
+void rtc6705writeRegister(uint32_t data);
+uint32_t rtc6705readRegister(uint8_t register);
 void rtc6705ResetState(void);
 void rtc6705PowerAmpOn(void);
 void rtc6705PowerAmpOff(void);
