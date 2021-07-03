@@ -7,7 +7,6 @@
 static gpio_out_t ss_pin;
 static gpio_out_t sck_pin;
 static gpio_out_t mosi_pin;
-static gpio_in_t miso_pin;
 
 static uint32_t powerUpAfterSettleTime = 0;
 
@@ -40,7 +39,7 @@ uint32_t rtc6705readRegister(uint8_t readRegister)
   }
 
   // Change pin from output to input
-  miso_pin = gpio_in_setup(SPI_MOSI, 0);
+  gpio_in_t miso_pin = gpio_in_setup(SPI_MOSI, 0);
 
   // Read data 20 bits
   for (uint8_t i = 0; i < 20; i++)

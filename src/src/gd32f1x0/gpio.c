@@ -54,7 +54,7 @@ gpio_in_t gpio_in_setup(uint32_t pin, int32_t pull_up)
 
 uint8_t gpio_in_read(gpio_in_t g)
 {
-    return (GPIO_ISTAT(g.regs) & (g.bit));
+    return !!(GPIO_ISTAT(g.regs) & (g.bit));
 }
 
 
