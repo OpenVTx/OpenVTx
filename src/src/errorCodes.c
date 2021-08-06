@@ -18,7 +18,10 @@ uint32_t errorTime = 0;
 void errorCheck(void)
 {
     if (currentErrorMode == NO_EEROR)
+    {
+        status_led1(1); // Default LED on and no error
         return;
+    }
 
     uint32_t now = millis();
     if (now > errorTime)
@@ -28,18 +31,19 @@ void errorCheck(void)
         switch (currentErrorMode) {
             case RTC6705_NOT_DETECTED:
                 errorTime = now + 10 * rtc6705NotDetectedime[errorIndex % ARRAY_SIZE(rtc6705NotDetectedime)];
-                status_led1(!(errorIndex % 2));
             break;
             case POWER_5V_NOT_DETECTED:
                 errorTime = now + 10 * power5vNotDetectedime[errorIndex % ARRAY_SIZE(power5vNotDetectedime)];
-                status_led1(!(errorIndex % 2));
             break;
             case POWER_3V3_NOT_DETECTED:
                 errorTime = now + 10 * power3v3NotDetectedime[errorIndex % ARRAY_SIZE(power3v3NotDetectedime)];
-                status_led1(!(errorIndex % 2));
             break;
             default:
+                status_led1(1); // Default LED on and no error
+                return;
             break;
         }
+        
+        status_led1(!(errorIndex % 2));
     }
 }
