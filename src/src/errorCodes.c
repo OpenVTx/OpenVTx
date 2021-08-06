@@ -39,8 +39,6 @@ void errorCheck(void)
                 errorTime = now + 10 * power3v3NotDetectedime[errorIndex % ARRAY_SIZE(power3v3NotDetectedime)];
             break;
             default:
-                currentErrorMode = NO_EEROR;
-                status_led1(1); // Default LED on and no error
                 return;
             break;
         }
