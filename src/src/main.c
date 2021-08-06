@@ -5,6 +5,7 @@
 #include "smartAudio.h"
 #include "tramp.h"
 #include "serial.h"
+#include "errorCodes.h"
 #include "gpio.h"
 
 
@@ -36,6 +37,18 @@ static void start_serial(uint8_t type)
   serial_begin(baud, UART_TX, UART_RX, stopbits);
   myEEPROM.vtxMode = type;
   updateEEPROM = 1;
+}
+
+void checkRTC6705isAlive()
+{
+  if (rtc6705CheckFrequency())
+  {
+    currentErrorMode = NO_EEROR;
+  } else
+  {
+    currentErrorMode = RTC6705_NOT_DETECTED;
+    rtc6705WriteFrequency(myEEPROM.currFreq); // Tries and set the correct freq to the RTC6705
+  }
 }
 
 void setup(void)
@@ -93,6 +106,10 @@ void loop(void)
   rtc6705PowerUpAfterPLLSettleTime();
   
   checkPowerOutput();
+
+  checkRTC6705isAlive();
+
+  errorCheck();
 
   // writeEEPROM();
 

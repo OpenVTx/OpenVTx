@@ -121,6 +121,23 @@ void rtc6705PowerAmpOff(void)
   rtc6705writeRegister(newRegData);
 }
 
+uint8_t rtc6705CheckFrequency()
+{
+  uint32_t freq = myEEPROM.currFreq * 1000U;
+  freq /= 40;
+  uint32_t SYN_RF_N_REG = freq / 64;
+  uint32_t SYN_RF_A_REG = freq % 64;
+
+  uint32_t newRegData = SynthesizerRegisterB | (WRITE_BIT << 4) | (SYN_RF_A_REG << 5) | (SYN_RF_N_REG << 12);
+
+  uint32_t currentRegData = SynthesizerRegisterB | (WRITE_BIT << 4) | rtc6705readRegister(SynthesizerRegisterB);
+
+  if (newRegData == currentRegData)
+    return 1;
+  else
+    return 0;
+}
+
 void rtc6705WriteFrequency(uint32_t newFreq)
 {
   myEEPROM.currFreq = newFreq;
