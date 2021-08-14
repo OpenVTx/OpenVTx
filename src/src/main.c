@@ -43,9 +43,12 @@ void checkRTC6705isAlive()
 {
   if (!rtc6705CheckFrequency())
   {
-    if (currentErrorMode == NO_EEROR)
-      currentErrorMode = RTC6705_NOT_DETECTED;
     rtc6705WriteFrequency(myEEPROM.currFreq); // Tries and set the correct freq to the RTC6705
+    
+    if (currentErrorMode == NO_ERROR)
+    {
+      currentErrorMode = RTC6705_NOT_DETECTED;
+    }
   }
 }
 

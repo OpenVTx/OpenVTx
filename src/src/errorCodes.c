@@ -3,7 +3,7 @@
 #include "common.h"
 #include "helpers.h"
 
-errorMode_e currentErrorMode = NO_EEROR;
+errorMode_e currentErrorMode = NO_ERROR;
 
 // LED blink period is in ms / 10
 // Final index 250 is a 2.5s LED off period before repeating the cycle
@@ -17,7 +17,7 @@ uint32_t errorTime = 0;
 
 void errorCheck(void)
 {
-    if (currentErrorMode == NO_EEROR)
+    if (currentErrorMode == NO_ERROR)
     {
         status_led1(1); // Default LED on and no error
         return;

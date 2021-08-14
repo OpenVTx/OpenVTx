@@ -7,10 +7,10 @@ typedef enum
   RTC6705_NOT_DETECTED,
   POWER_5V_NOT_DETECTED,
   POWER_3V3_NOT_DETECTED,
-  NO_EEROR
+  NO_ERROR
 } errorMode_e;
 
-errorMode_e currentErrorMode;
+extern errorMode_e currentErrorMode;
 
 uint8_t rtc6705NotFoundTime[8];
 uint8_t power5vNotDetectedime[6];
