@@ -28,5 +28,6 @@ uint32_t rtc6705readRegister(uint8_t register);
 void rtc6705ResetState(void);
 void rtc6705PowerAmpOn(void);
 void rtc6705PowerAmpOff(void);
+uint8_t rtc6705CheckFrequency(void);
 void rtc6705WriteFrequency(uint32_t newFreq);
 void rtc6705PowerUpAfterPLLSettleTime();
