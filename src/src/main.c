@@ -12,6 +12,8 @@
 static uint32_t protocol_checked;
 #endif /* !DEBUG */
 
+static uint32_t flightControllerChecked = FLIGHT_CONTROLLER_CHECK_TIMEOUT;
+
 static void start_serial(uint8_t type)
 {
   uint32_t baud, stopbits;
@@ -80,6 +82,16 @@ void loop(void)
       mode = (mode + 1) % VTX_MODE_MAX;
       start_serial((vtxMode_e)mode);
       protocol_checked = now;
+    }
+
+    if (flightControllerChecked < now)
+    {
+      if (myEEPROM.vtxMode == TRAMP)
+        trampBuildrPacket();
+      else
+        smartaudioBuildSettingsPacket();
+        
+      flightControllerChecked += FLIGHT_CONTROLLER_CHECK_INTERVAL;
     }
   }
 #endif /* DEBUG */
