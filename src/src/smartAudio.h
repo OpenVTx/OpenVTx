@@ -2,4 +2,5 @@
 
 #pragma once
 
+void smartaudioBuildSettingsPacket(void);
 void smartaudioProcessSerial(void);

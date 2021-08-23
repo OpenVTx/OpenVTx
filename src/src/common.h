@@ -7,6 +7,8 @@
 
 #define PROTOCOL_CHECK_TIMEOUT 200
 
+#define FLIGHT_CONTROLLER_CHECK_TIMEOUT 3000
+
 #define RACE_MODE 2
 
 extern uint8_t rxPacket[16];

@@ -94,6 +94,14 @@ void loop(void)
       mode = (mode + 1) % VTX_MODE_MAX;
       start_serial((vtxMode_e)mode);
       protocol_checked = now;
+      
+      if (FLIGHT_CONTROLLER_CHECK_TIMEOUT < now)
+      {
+        if (myEEPROM.vtxMode == TRAMP)
+          trampBuildrPacket();
+        else
+          smartaudioBuildSettingsPacket();
+      }
     }
   }
 #endif /* DEBUG */
