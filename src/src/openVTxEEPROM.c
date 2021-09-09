@@ -4,9 +4,12 @@
 
 
 openVTxEEPROM myEEPROM;
-uint32_t eeprom_last_write;
-uint8_t updateEEPROM;
+uint32_t eeprom_last_write = 0;
 
+void updateEEPROM(void)
+{
+    eeprom_last_write = millis();
+}
 
 void defaultEEPROM(void)
 {
@@ -21,7 +24,7 @@ void defaultEEPROM(void)
     myEEPROM.currPowermW = 0; // Required due to rounding errors when converting between dBm and mW
     myEEPROM.unlocked = 1;
 
-    updateEEPROM = 1;
+    updateEEPROM();
 }
 
 void readEEPROM(void)
@@ -31,15 +34,13 @@ void readEEPROM(void)
     if (myEEPROM.version != versionEEPROM) {
         defaultEEPROM();
     }
-    eeprom_last_write = millis();
 }
 
 void writeEEPROM(void)
 {
     uint32_t const now = millis();
-    if (updateEEPROM && 1000 <= (now - eeprom_last_write)) {
+    if (eeprom_last_write && (1000 < (now - eeprom_last_write))) {
         EEPROM_put(0, myEEPROM);
-        updateEEPROM = 0;
-        eeprom_last_write = now;
+        eeprom_last_write = 0;
     }
 }

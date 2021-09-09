@@ -2,11 +2,11 @@
 
 #include <stdint.h>
 
-#define versionEEPROM 0x110
+#define versionEEPROM 0x0001
 
 #define BOOT_FREQ 5000
 
-extern uint8_t updateEEPROM;
+extern uint32_t eeprom_last_write;
 
 typedef enum
 {
@@ -33,6 +33,7 @@ typedef struct
 
 extern openVTxEEPROM myEEPROM;
 
+void updateEEPROM(void);
 void defaultEEPROM(void);
 void readEEPROM(void);
 void writeEEPROM(void);
