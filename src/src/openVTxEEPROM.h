@@ -30,7 +30,6 @@ typedef struct
 } openVTxEEPROM;
 
 extern openVTxEEPROM myEEPROM;
-uint32_t eeprom_last_write;
 
 void updateEEPROM(void);
 void defaultEEPROM(void);
