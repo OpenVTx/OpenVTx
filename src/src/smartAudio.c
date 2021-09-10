@@ -242,7 +242,7 @@ void smartaudioProcessModePacket(void)
             SA_CMD_SET_MODE, sizeof(sa_u8_resp_t));
     uint8_t data = rxPacket[4], operationMode = 0;
 
-    uint8_t previousPitmodeInRange = myEEPROM.pitmodeInRange;
+    // uint8_t previousPitmodeInRange = myEEPROM.pitmodeInRange;
 
     // Set PIR and POR. POR is no longer used in SA2.1 and is treated like PIR
     myEEPROM.pitmodeInRange = bitRead(data, 0);
@@ -265,12 +265,11 @@ void smartaudioProcessModePacket(void)
     }
 
     // When turning on pitmodeInRange go into pitmode
-    if (previousPitmodeInRange < myEEPROM.pitmodeInRange)
-    {
-        /* Enable pitmode if PIR is set */
-        pitMode = 1;
-        setPowerdB(myEEPROM.currPowerdB);
-    }
+    // if (previousPitmodeInRange < myEEPROM.pitmodeInRange)
+    // {
+    //     pitMode = 1;
+    //     setPowerdB(myEEPROM.currPowerdB);
+    // }
 
     updateEEPROM();
 
