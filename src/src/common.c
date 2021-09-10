@@ -8,7 +8,7 @@
 
 uint8_t rxPacket[16];
 uint8_t txPacket[18];
-uint8_t vtxModeLocked = 0;
+uint8_t vtxModeLocked;
 uint8_t pitMode = 0;
 
 void clearSerialBuffer(void)

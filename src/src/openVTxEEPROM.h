@@ -6,8 +6,6 @@
 
 #define BOOT_FREQ 5000
 
-extern uint32_t eeprom_last_write;
-
 typedef enum
 {
   TRAMP,
@@ -32,6 +30,7 @@ typedef struct
 } openVTxEEPROM;
 
 extern openVTxEEPROM myEEPROM;
+uint32_t eeprom_last_write;
 
 void updateEEPROM(void);
 void defaultEEPROM(void);
