@@ -100,7 +100,7 @@ void trampProcessPPacket(void)
     if (mW == RACE_MODE)
     {
         pitMode = 1;
-        myEEPROM.currPowerdB = 2; // currPowerdB is set because it is used in setup() to check RACE_MODE
+        myEEPROM.currPowerdB = RACE_MODE; // currPowerdB is set because it is used in setup() to check RACE_MODE
     }
     
     setPowermW(mW);
