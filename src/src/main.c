@@ -36,7 +36,7 @@ static void start_serial(uint8_t type)
   }
   serial_begin(baud, UART_TX, UART_RX, stopbits);
   myEEPROM.vtxMode = type;
-  updateEEPROM = 1;
+  updateEEPROM();
 }
 
 void checkRTC6705isAlive()
@@ -57,8 +57,7 @@ void setup(void)
   target_rfPowerAmpPinSetup();
   rtc6705spiPinSetup();
 
-  // readEEPROM();
-  defaultEEPROM();
+  readEEPROM();
 
   pitMode = myEEPROM.pitmodeInRange;
 
@@ -69,16 +68,6 @@ void setup(void)
 
   status_leds_init();
 
-  // TODO DEBUG! Below flashing is just for testing. Delete later.
-#if DEBUG
-  myEEPROM.currFreq = 5600;
-  rtc6705WriteFrequency(myEEPROM.currFreq);
-
-  // target_set_power_dB(0);
-  target_set_power_dB(14);
-  // target_set_power_dB(20);
-  // target_set_power_dB(26);
-#endif /* DEBUG */
 }
 
 void loop(void)
@@ -120,7 +109,7 @@ void loop(void)
 
   errorCheck();
 
-  // writeEEPROM();
+  writeEEPROM();
 
   taget_loop();
   status_led2(vtxModeLocked);

@@ -10,7 +10,6 @@ uint8_t rxPacket[16];
 uint8_t txPacket[18];
 uint8_t vtxModeLocked;
 uint8_t pitMode = 0;
-uint8_t initFreqPacketRecived = 0;
 
 void clearSerialBuffer(void)
 {
@@ -87,10 +86,7 @@ void status_led3(uint8_t state)
 void setPowerdB(float dB)
 {
     myEEPROM.currPowerdB = dB;
-    updateEEPROM = 1;
-
-    if (!initFreqPacketRecived)
-      return;
+    updateEEPROM();
 
     if (pitMode)
     {
@@ -106,7 +102,7 @@ void setPowerdB(float dB)
 void setPowermW(uint16_t mW)
 {
     myEEPROM.currPowermW = mW;
-    updateEEPROM = 1;
+    updateEEPROM();
 
     float dB = 10.0 * log10((float)mW);
     setPowerdB(dB);
