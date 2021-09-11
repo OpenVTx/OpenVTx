@@ -59,8 +59,7 @@ void setup(void)
 
   readEEPROM();
 
-  // pitMode = myEEPROM.pitmodeInRange;
-  pitMode = myEEPROM.currPowerdB == RACE_MODE;
+  pitMode = myEEPROM.pitmodeInRange;
 
   rtc6705ResetState(); // During testing registers got messed up. So now it gets reset on boot!
   rtc6705WriteFrequency(myEEPROM.currFreq);
