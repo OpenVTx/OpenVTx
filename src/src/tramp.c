@@ -85,6 +85,8 @@ void trampBuildsPacket(void)
 
 void trampProcessFPacket(void)
 {
+    initFreqPacketRecived = 1;
+    
     uint32_t freq = rxPacket[3];
     freq <<= 8;
     freq |= rxPacket[2];
@@ -112,13 +114,13 @@ void trampProcessIPacket(void)
         setPowerdB(14);
     } else
     {
-        setPowermW(myEEPROM.currPowermW);
+        setPowerdB(myEEPROM.currPowermW);
     }
 
-    // myEEPROM.pitmodeInRange = pitMode;  // Pitmode set via CMS is not remembered with Tramp, but I have forced it here to be useful like SA pitmode.
-    // myEEPROM.pitmodeOutRange = 0;       // Set to 0 so only one of PIR or POR is set for smartaudio
+    myEEPROM.pitmodeInRange = pitMode;  // Pitmode set via CMS is not remembered with Tramp, but I have forced it here to be useful like SA pitmode.
+    myEEPROM.pitmodeOutRange = 0;       // Set to 0 so only one of PIR or POR is set for smartaudio
 
-    updateEEPROM();
+    updateEEPROM = 1;
 }
 
 enum {

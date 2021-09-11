@@ -17,6 +17,8 @@ extern uint8_t txPacket[18];
 extern uint8_t vtxModeLocked;
 extern uint8_t pitMode;
 
+extern uint8_t initFreqPacketRecived;
+
 void clearSerialBuffer(void);
 void zeroRxPacket(void);
 void zeroTxPacket(void);
