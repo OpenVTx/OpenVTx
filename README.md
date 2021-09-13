@@ -17,6 +17,9 @@ Currently SA is fully implemented and test against [Rev. 09](https://www.team-bl
 # Setup
 OpenVTx uses VS Code and [PlatformIO](https://platformio.org/platformio-ide).
 
+fubarphill has made a fairly thorough video explaining the project and flashing process on youtube 
+[![open vtx flashing guide](https://i.ytimg.com/vi/JsJOMwu4hBM/hqdefault.jpg?sqp=-oaymwEcCPYBEIoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&amp;rs=AOn4CLA1-gKpZdeOFu6gtONHsG5YoIeSzg)](https://www.youtube.com/watch?v=JsJOMwu4hBM)
+
 # Flashing the VTx
 Flashing requires an [ST-LINK V2](https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20210125211035&SearchText=ST-LINK+V2) and connection is via the below image.  Shown below is of the E7082VM and other targets will differ in appearance but the process will be similar.  Details will be added to a wiki as more targets are added.  
 
@@ -26,11 +29,16 @@ Before flashing the read protection must be disabled. In the STM32 ST_Link Utili
 
 <img src="img/OptionBytes.png" width="50%">
 
+ **When you click apply, it will probably result in an error, but that is OK.**  
 <img src="img/OptionBytes2.png" width="50%">
 
-In the Option Bytes, disable Read Protection and Check the 3 boxes.  Apply.  This will probably result in an error, but that is ok.  
-After this erase the chip.  
-Select your VTx target from within PlatformIO and press Upload.
+In the Option Bytes, disable Read Protection and Check the 3 boxes.  Apply.  
+ **To reiterate, this will probably result in an error, but that is ok.**  
+The next steps are:
+ - with the ST-LINK V2, build and upload in platformio
+ - wire the vtx to an fc (+, - and smart audio pin) to flash via serial passthrough - [explanation why this is done this way](https://youtu.be/JsJOMwu4hBM?t=594)
+ - apply smart audio vtx table first to the fc via betaflight
+ - flash the vtx via serial passthrough, build and upload in platformio
 
 
 # Betaflight VTx Tables
