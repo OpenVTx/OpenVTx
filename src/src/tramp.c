@@ -114,7 +114,7 @@ void trampProcessIPacket(void)
         setPowerdB(14);
     } else
     {
-        setPowerdB(myEEPROM.currPowermW);
+        setPowermW(myEEPROM.currPowermW);
     }
 
     myEEPROM.pitmodeInRange = pitMode;  // Pitmode set via CMS is not remembered with Tramp, but I have forced it here to be useful like SA pitmode.
