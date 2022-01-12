@@ -72,6 +72,19 @@ typedef struct {
 } sa_u16_resp_t;
 
 
+uint8_t findPowerIndexFromLut(uint8_t dBm)
+{
+    if (pitMode) {
+        for (uint8_t i = 0; i < ARRAY_SIZE(saPowerLevelsLut); i++) {
+            if (dBm == saPowerLevelsLut[i]) {
+                return i;
+            }
+        }
+    }
+    return 1; // in pitmode
+}
+
+
 uint8_t* fill_resp_header(uint8_t cmd, uint8_t len)
 {
     sa_header_t * hdr = (sa_header_t*)txPacket;
@@ -136,9 +149,9 @@ void smartaudioBuildSettingsPacket(void)
     payload->frequency[0] = (uint8_t)(myEEPROM.currFreq >> 8);
     payload->frequency[1] = (uint8_t)(myEEPROM.currFreq);
     payload->rawPowerValue = myEEPROM.currPowerdB;
-    payload->num_pwr_levels = SA_NUM_POWER_LEVELS;
-    for (uint8_t i = 0; i < SA_NUM_POWER_LEVELS; i++)
-        payload->levels[i] = powerLevels[i];
+    payload->num_pwr_levels = ARRAY_SIZE(saPowerLevelsLut);
+    for (uint8_t i = 0; i < payload->num_pwr_levels; i++)
+        payload->levels[i] = saPowerLevelsLut[i];
 
     smartaudioSendPacket();
 }
@@ -180,7 +193,7 @@ void smartaudioProcessFrequencyPacket(void)
 void smartaudioProcessChannelPacket(void)
 {
     initFreqPacketRecived = 1;
-    
+
     sa_u8_resp_t * payload =
         (sa_u8_resp_t*)fill_resp_header(
             SA_CMD_SET_CHAN, sizeof(sa_u8_resp_t));
@@ -208,32 +221,32 @@ void smartaudioProcessPowerPacket(void)
     uint8_t data = rxPacket[4];
     /* SA2.1 sets the MSB to indicate power is in dB.
      * Set MSB to zero and currPower will now be in dB. */
-    uint8_t const value_in_db = data & 0x80;
+    uint8_t const value_in_dbm = data & 0x80;
     data &= 0x7F;
+    /* Make sure the received power index (SA2.0) is valid if not in dBm
+     *    Some firmwares are using indices even for SA2.1 so make sure it is
+     *    handled here as well (when MSB is not set)
+     */
+    if (!value_in_dbm) {
+        /* Force into pitmode if a invalid index is received */
+        data = (data < ARRAY_SIZE(saPowerLevelsLut)) ? saPowerLevelsLut[data] : 0;
+    }
 
-    if (!data)
-    {
+    if (!data) {
         /* 0dB is pit mode enable */
-        pitMode = value_in_db ? 1 : 0; // Do not set pitmode for a 0mW.  INav sends this command on boot for some reason. https://github.com/iNavFlight/inav/issues/6976
+        pitMode = value_in_dbm ? 1 : 0; // Do not set pitmode for a 0mW.  INav sends this command on boot for some reason. https://github.com/iNavFlight/inav/issues/6976
         uint8_t tempCurrPowerdB = myEEPROM.currPowerdB;
         setPowerdB(0);
         myEEPROM.currPowerdB = tempCurrPowerdB;
-    }
-    else if (data == RACE_MODE)
-    {
-        pitMode = 1;
+    } else {
+        if (data == RACE_MODE) {
+            pitMode = 1;
+        }
         setPowerdB(data);
-    }
-    else if (value_in_db)
-    {
-        setPowerdB(data);
-    }
-    else
-    {
-        setPowermW(data);
     }
 
-    payload->data_u8 = myEEPROM.currPowerdB;
+    payload->data_u8 = value_in_dbm ?
+            myEEPROM.currPowerdB : findPowerIndexFromLut(myEEPROM.currPowerdB);
     payload->reserved = RESERVE_BYTE;
 
     smartaudioSendPacket();
@@ -247,30 +260,28 @@ void smartaudioProcessModePacket(void)
     uint8_t data = rxPacket[4], operationMode = 0;
 
     uint8_t previousPitmodeInRange = myEEPROM.pitmodeInRange;
+    uint8_t clearPitMode;
 
     // Set PIR and POR. POR is no longer used in SA2.1 and is treated like PIR
     myEEPROM.pitmodeInRange = bitRead(data, 0);
     myEEPROM.pitmodeOutRange = bitRead(data, 1);
-    uint8_t clearPitMode = bitRead(data, 2);
+    clearPitMode = bitRead(data, 2);
     myEEPROM.unlocked = bitRead(data, 3);
 
     // This bit is only for CLEARING pitmode.
     if (clearPitMode) {
         pitMode = 0;
 
-        if (myEEPROM.currPowerdB == RACE_MODE)
-        {
-            setPowerdB(14);
+        if (myEEPROM.currPowerdB == RACE_MODE) {
+            setPowerdB(RACE_MODE_POWER);
             myEEPROM.currPowerdB = RACE_MODE;
-        } else
-        {
+        } else {
             setPowerdB(myEEPROM.currPowerdB);
         }
     }
 
     // When turning on pitmodeInRange go into pitmode
-    if (previousPitmodeInRange < myEEPROM.pitmodeInRange)
-    {
+    if (previousPitmodeInRange < myEEPROM.pitmodeInRange) {
         /* Enable pitmode if PIR is set */
         pitMode = 1;
         setPowerdB(myEEPROM.currPowerdB);
