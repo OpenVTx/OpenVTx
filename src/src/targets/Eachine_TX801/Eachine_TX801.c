@@ -3,10 +3,8 @@
 #include "helpers.h"
 #include <Arduino.h>
 
-struct PowerMapping power_mapping[4] = {
-  {0, 0}, {25, 14}, {100, 20}, {200, 23},
-};
-uint8_t power_mapping_size = ARRAY_SIZE(power_mapping);
+
+uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS] = {0, 1, 14, 20, 23};
 
 
 void target_rfPowerAmpPinSetup(void)
@@ -25,22 +23,32 @@ void target_rfPowerAmpPinSetup(void)
   // pinMode(POWER_AMP_6, OUTPUT);
 }
 
-void target_set_power_mW(uint16_t power)
+void taget_setup(void)
 {
+}
+
+void taget_loop(void)
+{
+}
+
+void target_set_power_dB(float dB)
+{
+  int8_t dBint = (int)(dB + 0.5);
   uint8_t pinOutput = 0;
 
-  switch (power)
+  switch (dBint)
   {
   case 0:
+  case 1:
     pinOutput = 1; // Setting to 0 does not reduce power for some reason :|
     break;
-  case 25:
+  case 14:
     pinOutput = 18;
     break;
-  case 100:
+  case 20:
     pinOutput = 50;
     break;
-  case 200:
+  case 23:
     pinOutput = 63;
     break;
   default:
@@ -57,12 +65,6 @@ void target_set_power_mW(uint16_t power)
   }
 }
 
-
-void taget_setup(void)
-{
-}
-
-
-void taget_loop(void)
+void checkPowerOutput(void)
 {
 }

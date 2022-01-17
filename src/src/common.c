@@ -108,7 +108,7 @@ void setPowermW(uint16_t mW)
     myEEPROM.currPowermW = mW;
     updateEEPROM = 1;
 
-    float dB = 10.0 * log10((float)mW);
+    float dB = 10.0 * log10f((float)mW);  // avoid double conversion!
     setPowerdB(dB);
 }
 

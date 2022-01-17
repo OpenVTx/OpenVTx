@@ -17,16 +17,17 @@ void rtc6705spiPinSetup(void)
   mosi_pin = gpio_out_setup(SPI_MOSI, 0);
 }
 
-uint32_t rtc6705readRegister(uint8_t readRegister)
+uint32_t rtc6705readRegister(uint8_t reg)
 {
-  uint32_t writeData = readRegister | (READ_BIT << 4);
+  uint32_t writeData = reg | (READ_BIT << 4);
   uint32_t readData = 0;
+  uint8_t i;
 
   gpio_out_write(ss_pin, 0);
   delayMicroseconds(1);
 
   // Write register address and read bit
-  for (uint8_t i = 0; i < 5; i++)
+  for (i = 0; i < 5; i++)
   {
     gpio_out_write(sck_pin, 0);
     delayMicroseconds(1);
@@ -42,7 +43,7 @@ uint32_t rtc6705readRegister(uint8_t readRegister)
   gpio_in_t miso_pin = gpio_in_setup(SPI_MOSI, 0);
 
   // Read data 20 bits
-  for (uint8_t i = 0; i < 20; i++)
+  for (i = 0; i < 20; i++)
   {
     gpio_out_write(sck_pin, 0);
     delayMicroseconds(1);
@@ -112,7 +113,7 @@ void rtc6705PowerAmpOn(void)
 void rtc6705PowerAmpOff(void)
 {
   uint32_t newRegData = PredriverandPAControlRegister | (WRITE_BIT << 4);
-  
+
   uint32_t currentRegData = PredriverandPAControlRegister | (WRITE_BIT << 4) | rtc6705readRegister(PredriverandPAControlRegister);
 
   if (newRegData == currentRegData)

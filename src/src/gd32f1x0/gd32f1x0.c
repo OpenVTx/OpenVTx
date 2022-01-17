@@ -3,6 +3,11 @@
 
 static volatile uint32_t _ms_cntr;
 
+void mcu_reboot(void)
+{
+    NVIC_SystemReset();
+}
+
 void SysTick_Handler(void)
 {
     ++_ms_cntr;

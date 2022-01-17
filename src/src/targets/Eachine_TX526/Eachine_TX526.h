@@ -27,6 +27,9 @@ If you have made it this far and have the equipment to check these outputs, plea
 
 #define MAX_POWER 200 // mW
 
+#define SA_NUM_POWER_LEVELS 4 // Max 5 for INAV.
+extern uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS];
+
 #define UART_TX 0
 #define UART_RX 0
 //#define SERIAL_PIN -1

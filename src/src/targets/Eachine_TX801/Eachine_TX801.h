@@ -48,6 +48,9 @@ pinOutput value and mW measured
 
 #define MAX_POWER 200 // mW
 
+#define SA_NUM_POWER_LEVELS 5 // Max 5 for INAV.
+extern uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS];
+
 #define UART_TX 0
 #define UART_RX 0
 #define SERIAL_PIN PD5
