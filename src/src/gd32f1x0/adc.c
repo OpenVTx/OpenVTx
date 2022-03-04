@@ -122,6 +122,7 @@ uint32_t adc_read(gpio_adc_t config)
     }
     return 0;
 #else
+    (void)config;
     uint32_t temp = 0;
     for (uint8_t iter = 0; iter < ARRAY_SIZE(conv_results); iter++) {
         temp += conv_results[iter];

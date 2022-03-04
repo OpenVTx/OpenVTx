@@ -44,7 +44,7 @@ void checkRTC6705isAlive()
   if (!rtc6705CheckFrequency())
   {
     rtc6705WriteFrequency(myEEPROM.currFreq); // Tries and set the correct freq to the RTC6705
-    
+
     if (currentErrorMode == NO_ERROR)
     {
       currentErrorMode = RTC6705_NOT_DETECTED;
@@ -94,7 +94,7 @@ void loop(void)
       mode = (mode + 1) % VTX_MODE_MAX;
       start_serial((vtxMode_e)mode);
       protocol_checked = now;
-      
+
       if (FLIGHT_CONTROLLER_CHECK_TIMEOUT < now)
       {
         if (myEEPROM.vtxMode == TRAMP)
@@ -113,7 +113,7 @@ void loop(void)
     smartaudioProcessSerial();
 
   rtc6705PowerUpAfterPLLSettleTime();
-  
+
   checkPowerOutput();
 
   checkRTC6705isAlive();

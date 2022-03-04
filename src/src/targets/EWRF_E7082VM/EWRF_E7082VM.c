@@ -54,16 +54,17 @@ uint16_t calVpd[CAL_DBM_SIZE][CAL_FREQ_SIZE] = {
 
 uint16_t bilinearInterpolation(float dB)
 {
+  uint16_t tempFreq = myEEPROM.currFreq;
+  uint8_t i;
+  uint8_t calFreqsIndex = 0;
+  uint8_t calDBmIndex = 0;
 
   dB = dB + OFFSET;
-
-  float tempFreq = myEEPROM.currFreq;
 
   if (tempFreq < 5600) tempFreq = 5600;
   if (tempFreq > 6000) tempFreq = 6000;
 
-  uint8_t calFreqsIndex = 0;
-  for (uint8_t i = 0; i < (CAL_FREQ_SIZE-1); i++)
+  for (i = 0; i < (ARRAY_SIZE(calFreqs) - 1); i++)
   {
     if (tempFreq < calFreqs[i + 1])
     {
@@ -72,8 +73,7 @@ uint16_t bilinearInterpolation(float dB)
     }
   }
 
-  uint8_t calDBmIndex = 0;
-  for (uint8_t i = 0; i < (CAL_DBM_SIZE-1); i++)
+  for (i = 0; i < (ARRAY_SIZE(calDBm) - 1); i++)
   {
     if (dB < calDBm[i + 1])
     {
@@ -225,9 +225,4 @@ void taget_loop(void)
 
   /* Reset WD */
   fwdgt_counter_reload();
-}
-
-void mcu_reboot(void)
-{
-    NVIC_SystemReset();
 }

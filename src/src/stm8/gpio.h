@@ -22,7 +22,7 @@ static inline uint8_t gpio_in_valid(gpio_in_t g) {
 
 typedef uint32_t gpio_pwm_t;
 gpio_pwm_t pwm_init(uint32_t pin);
-void pwm_out_write(gpio_pwm_t, int val);
+void pwm_out_write(gpio_pwm_t pwm, uint16_t val);
 
 typedef uint32_t gpio_adc_t;
 gpio_adc_t adc_config(uint32_t pin);

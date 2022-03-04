@@ -1,5 +1,6 @@
 #pragma once
 
+#include "platform.h"
 #include <stdint.h>
 
 #define TRAMP_BAUD 9600

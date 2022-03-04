@@ -2,8 +2,9 @@
 #include "targets.h"
 #include <Arduino.h>
 
-void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin)
+void serial_begin(uint32_t baud, uint32_t tx_pin, uint32_t rx_pin, uint8_t stopbit)
 {
+    (void)stopbit;
     uint8_t halfduplex = (tx_pin == rx_pin);
     Serial_begin(baud);
     while (!Serial)
