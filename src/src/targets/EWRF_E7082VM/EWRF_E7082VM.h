@@ -4,7 +4,7 @@
 #define MAX_POWER     400 // mW
 
 #define SA_NUM_POWER_LEVELS 5 // Max 5 for INAV.
-extern uint8_t powerLevels[];
+extern uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS];
 
 #define UART_RX       PA9
 #define UART_TX       PA9

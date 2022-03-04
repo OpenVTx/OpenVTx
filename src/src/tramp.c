@@ -5,7 +5,6 @@
 #include "targets.h"
 #include "serial.h"
 
-uint16_t temperature = 0; // Dummy value.
 
 #define TRAMP_HEADER    0x0F // 15
 #define TRAMP_MSG_SIZE  15
@@ -75,6 +74,8 @@ void trampBuildvPacket(void)
 
 void trampBuildsPacket(void)
 {
+    uint16_t temperature = 0; // Dummy value.
+
     zeroTxPacket();
     txPacket[0] = TRAMP_HEADER;
     txPacket[1] = 's';
@@ -86,7 +87,7 @@ void trampBuildsPacket(void)
 void trampProcessFPacket(void)
 {
     initFreqPacketRecived = 1;
-    
+
     uint32_t freq = rxPacket[3];
     freq <<= 8;
     freq |= rxPacket[2];
@@ -101,7 +102,7 @@ void trampProcessPPacket(void)
 
     if (mW == RACE_MODE)
         pitMode = 1;
-    
+
     setPowermW(mW);
 }
 

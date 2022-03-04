@@ -10,7 +10,14 @@
 
 #define OUTPUT_POWER_INTERVAL 5 // ms
 
-uint8_t powerLevels[] = {0, 1, 14, 20, 26}; // SA2.1 powerlevels dBm. Currently only used for Inav and a max of 5.
+/* SA2.1 powerlevels in dBm.
+ *
+ * INav:
+ *    Max of 5 [https://github.com/iNavFlight/inav/blob/a8016edd0d6f05bb12a75b0ea75a3483772baaeb/src/main/io/vtx_smartaudio.h#L36]
+ *    Index 0 is ignored [https://github.com/iNavFlight/inav/blob/a8016edd0d6f05bb12a75b0ea75a3483772baaeb/src/main/io/vtx_smartaudio.c#L334]
+ *
+ */
+uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS] = {0, 1, 14, 20, 26};
 
 gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;

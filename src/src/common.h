@@ -9,7 +9,8 @@
 
 #define FLIGHT_CONTROLLER_CHECK_TIMEOUT 3000
 
-#define RACE_MODE 2
+#define RACE_MODE       2
+#define RACE_MODE_POWER 14 // dBm
 
 extern uint8_t rxPacket[16];
 extern uint8_t txPacket[18];
