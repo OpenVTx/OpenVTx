@@ -22,7 +22,7 @@ struct usartx usart_config[] = {
 
 static uint32_t usart_periph_selected, usart_periph_halfduplex;
 
-static volatile uint8_t rx_buffer[64];
+static volatile uint8_t rx_buffer[128];
 static volatile uint8_t rx_head, rx_tail;
 
 static void USARTx_IRQHandler(uint32_t usart_periph)

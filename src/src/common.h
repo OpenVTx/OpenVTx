@@ -5,6 +5,7 @@
 
 #define TRAMP_BAUD 9600
 #define SMARTAUDIO_BAUD 4800
+#define MSP_BAUD 9600
 
 #define PROTOCOL_CHECK_TIMEOUT 200
 
@@ -13,13 +14,16 @@
 #define RACE_MODE       2
 #define RACE_MODE_POWER 14 // dBm
 
-extern uint8_t rxPacket[16];
-extern uint8_t txPacket[18];
+extern uint8_t rxPacket[128];
+extern uint8_t txPacket[128];
 
 extern uint8_t vtxModeLocked;
 extern uint8_t pitMode;
 
 extern uint8_t initFreqPacketRecived;
+
+uint8_t getFreqTableSize(void);
+uint16_t getFreqByIdx(uint8_t idx);
 
 void clearSerialBuffer(void);
 void zeroRxPacket(void);

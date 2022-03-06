@@ -4,6 +4,7 @@
 #include "rtc6705.h"
 #include "smartAudio.h"
 #include "tramp.h"
+#include "mspVtx.h"
 #include "serial.h"
 #include "errorCodes.h"
 #include "gpio.h"
@@ -24,6 +25,10 @@ static void start_serial(uint8_t type)
     case SMARTAUDIO:
       baud = SMARTAUDIO_BAUD;
       stopbits = 2;
+      break;
+    case MSP:
+      baud = MSP_BAUD;
+      stopbits = 1;
       break;
     default:
       baud = 115200;
@@ -79,11 +84,11 @@ void setup(void)
 
 void loop(void)
 {
+  uint32_t now = millis();
 
 #if !DEBUG
   if (!vtxModeLocked)
   {
-    uint32_t now = millis();
     if (PROTOCOL_CHECK_TIMEOUT <= (now - protocol_checked))
     {
       uint8_t mode = (uint8_t)myEEPROM.vtxMode;
@@ -93,20 +98,43 @@ void loop(void)
 
       if (FLIGHT_CONTROLLER_CHECK_TIMEOUT < now)
       {
-        if (myEEPROM.vtxMode == TRAMP)
-          trampBuildrPacket();
-        else
-          smartaudioBuildSettingsPacket();
+          switch (myEEPROM.vtxMode)
+          {
+          case TRAMP:
+            trampBuildrPacket();
+            break;
+          case SMARTAUDIO:
+            smartaudioBuildSettingsPacket();
+            break;
+          default:
+            break;
+          }
+
+        // if (myEEPROM.vtxMode == TRAMP)
+        //   trampBuildrPacket();
+        // else
+        //   smartaudioBuildSettingsPacket();
       }
     }
   }
 #endif /* DEBUG */
 
   /* Process uart data */
-  if (myEEPROM.vtxMode == TRAMP)
+  switch (myEEPROM.vtxMode)
+  {
+  case TRAMP:
     trampProcessSerial();
-  else
+    break;
+  case SMARTAUDIO:
     smartaudioProcessSerial();
+    break;
+  case MSP:
+    mspQueryFlightController(now);
+    mspProcessSerial();
+    break;
+  default:
+    break;
+  }
 
   rtc6705PowerUpAfterPLLSettleTime();
 
