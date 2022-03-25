@@ -114,14 +114,18 @@ void mspProcessPacket(void)
 
         initFreqPacketRecived = 1;
 
+        in_mspVtxConfigStruct.power -= 1; // Correct for BF starting at 1.
+
         uint8_t channel = ((in_mspVtxConfigStruct.band - 1) * 8) + (in_mspVtxConfigStruct.channel - 1);
 
-        if (channel < getFreqTableSize()) {            
+        if (channel < getFreqTableSize())
+        {            
             myEEPROM.channel = channel;
             rtc6705WriteFrequency(getFreqByIdx(channel));
             myEEPROM.freqMode = 0;
         }
 
+        pitMode = in_mspVtxConfigStruct.pitmode;
         setPowerdB(saPowerLevelsLut[in_mspVtxConfigStruct.power]);
 
         // serial_write(in_mspVtxConfigStruct.vtxType);
