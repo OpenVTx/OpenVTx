@@ -23,6 +23,8 @@ extern uint8_t pitMode;
 extern uint8_t initFreqPacketRecived;
 
 uint8_t getFreqTableSize(void);
+uint8_t getFreqTableBands(void);
+uint8_t getFreqTableChannels(void);
 uint16_t getFreqByIdx(uint8_t idx);
 
 void clearSerialBuffer(void);

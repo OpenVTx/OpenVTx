@@ -129,8 +129,7 @@ void loop(void)
     smartaudioProcessSerial();
     break;
   case MSP:
-    mspQueryFlightController(now);
-    mspProcessSerial();
+    mspUpdate(now);
     break;
   default:
     break;

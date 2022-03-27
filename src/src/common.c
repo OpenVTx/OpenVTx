@@ -27,6 +27,16 @@ uint8_t getFreqTableSize(void)
     return ARRAY_SIZE(channelFreqTable);
 }
 
+uint8_t getFreqTableBands(void)
+{
+    return getFreqTableSize() / getFreqTableChannels();
+}
+
+uint8_t getFreqTableChannels(void)
+{
+    return 8;
+}
+
 uint16_t getFreqByIdx(uint8_t idx)
 {
     return channelFreqTable[idx];
