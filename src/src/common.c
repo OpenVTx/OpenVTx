@@ -16,6 +16,17 @@ const uint16_t channelFreqTable[48] = {
     5333, 5373, 5413, 5453, 5493, 5533, 5573, 5613  // L
 };
 
+const uint8_t channelFreqLabel[48] = {
+    'B', 'A', 'N', 'D', ' ', 'A', ' ', ' ', // A
+    'B', 'A', 'N', 'D', ' ', 'B', ' ', ' ', // B
+    'B', 'A', 'N', 'D', ' ', 'E', ' ', ' ', // E
+    'F', 'A', 'T', 'S', 'H', 'A', 'R', 'K', // F
+    'R', 'A', 'C', 'E', ' ', ' ', ' ', ' ', // R
+    'R', 'A', 'C', 'E', ' ', 'L', 'O', 'W', // L
+};
+
+const uint8_t bandLetter[6] = {'A', 'B', 'E', 'F', 'R', 'L'};
+
 uint8_t rxPacket[64];
 uint8_t txPacket[64];
 uint8_t vtxModeLocked;
@@ -40,6 +51,16 @@ uint8_t getFreqTableChannels(void)
 uint16_t getFreqByIdx(uint8_t idx)
 {
     return channelFreqTable[idx];
+}
+
+uint8_t channelFreqLabelByIdx(uint8_t idx)
+{
+    return channelFreqLabel[idx];
+}
+
+uint8_t getBandLetterByIdx(uint8_t idx)
+{
+    return bandLetter[idx];
 }
 
 void clearSerialBuffer(void)

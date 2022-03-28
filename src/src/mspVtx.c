@@ -12,37 +12,29 @@
 #define MSP_HEADER_REQUEST              0x3C
 #define MSP_HEADER_RESPONSE             0x3E
 #define MSP_HEADER_ERROR                0x21
+#define MSP_HEADER_SIZE                 8
 
-#define MSP_VTX_CONFIG                  88 //out message         Get vtx settings - betaflight
-#define MSP_SET_VTX_CONFIG              89 //in message          Set vtx settings - betaflight
+#define MSP_VTX_CONFIG                  88  //out message         Get vtx settings - betaflight
+#define MSP_SET_VTX_CONFIG              89  //in message          Set vtx settings - betaflight
 
-#define MSP_VTXTABLE_BAND               137    //out message         vtxTable band/channel data
-#define MSP_SET_VTXTABLE_BAND           227    //in message          set vtxTable band/channel data (one band at a time)
+#define MSP_VTXTABLE_BAND               137 //out message         vtxTable band/channel data
+#define MSP_SET_VTXTABLE_BAND           227 //in message          set vtxTable band/channel data (one band at a time)
 
-#define MSP_VTXTABLE_POWERLEVEL         138    //out message         vtxTable powerLevel data
+#define MSP_VTXTABLE_POWERLEVEL         138 //out message         vtxTable powerLevel data
 #define MSP_SET_VTXTABLE_POWERLEVEL     228 //in message          set vtxTable powerLevel data (one powerLevel at a time)
 
-#define MSP_EEPROM_WRITE                250    //in message          no param
+#define MSP_EEPROM_WRITE                250 //in message          no param
 
 #define FC_QUERY_PERIOD_MS              1000
 
 typedef enum
 {
   GET_VTX_TABLE_SIZE = 0,
-  GET_POWER_LEVEL_1,
-  GET_POWER_LEVEL_2,
-  GET_POWER_LEVEL_3,
-  GET_POWER_LEVEL_4,
-  GET_POWER_LEVEL_5,
-  GET_BAND_1,
-  GET_BAND_2,
-  GET_BAND_3,
-  GET_BAND_4,
-  GET_BAND_5,
-  GET_BAND_6,
+  CHECK_POWER_LEVELS,
+  CHECK_BANDS,
   SET_DEFAULTS,
   SEND_EEPROM_WRITE,
-  NORMAL,
+  MONITORING,
   MSP_STATE_MAX
 } mspState_e;
 
@@ -83,6 +75,7 @@ mspVtxConfigStruct in_mspVtxConfigStruct;
 uint32_t nextFlightControllerQueryTime = 0;
 uint8_t mspState = GET_VTX_TABLE_SIZE;
 uint8_t eepromWriteRequired = 0;
+uint8_t checkingIndex = 0;
 
 static uint8_t state, in_idx, in_CRC;
 static uint16_t in_Function, in_PayloadSize, in_Type;
@@ -102,57 +95,59 @@ uint8_t mspCalcCrc(uint8_t crc, unsigned char a)
 
 void mspSendPacket(uint8_t len)
 {
-    // Flight Controller needs a bit time to swap TX to RX state
-    delay(10);
+    delay(10); // Flight Controller needs a bit time to swap TX to RX state
 
     Serial_write_len(txPacket, len);
+}
+
+void mspCreateHeader(void)
+{
+    zeroTxPacket();
+    txPacket[0] = '$';
+    txPacket[1] = 'X';
+    txPacket[2] = '<';
+    txPacket[3] = 0;
+}
+
+void mspSendSimpleRequest(uint16_t opCode)
+{
+    mspCreateHeader();
+
+    txPacket[4] = opCode & 0xFF;
+    txPacket[5] = (opCode >> 8) & 0xFF;
+    
+    txPacket[6] = 0; // PayloadSize LSB
+    txPacket[7] = 0; // PayloadSize MSB
+    
+    uint8_t crc = 0;
+    for(int i = 3; i < 8; i++)
+    {
+        crc = mspCalcCrc(crc, txPacket[i]);
+    }
+
+    txPacket[MSP_HEADER_SIZE] = crc;
+
+    mspSendPacket(MSP_HEADER_SIZE+1);
 }
 
 void sendEepromWrite()
 {
     if (!eepromWriteRequired)
     {
-        mspState = NORMAL;
+        mspState = MONITORING;
         return;
     }
 
     eepromWriteRequired = 0;
 
-    uint16_t payloadSize = 0;
-
-    zeroTxPacket();
-    txPacket[0] = '$';
-    txPacket[1] = 'X';
-    txPacket[2] = '<';
-    txPacket[3] = 0;
-
-    txPacket[4] = MSP_EEPROM_WRITE & 0xFF;
-    txPacket[5] = (MSP_EEPROM_WRITE >> 8) & 0xFF;
-    
-    txPacket[6] = payloadSize & 0xFF;
-    txPacket[7] = (payloadSize >> 8) & 0xFF;
-    
-    uint8_t crc = 0;
-    for(int i = 3; i < payloadSize+8; i++)
-    {
-        crc = mspCalcCrc(crc, txPacket[i]);
-    }
-
-    txPacket[payloadSize+8] = crc;
-
-    mspSendPacket(payloadSize+9);
+    mspSendSimpleRequest(MSP_EEPROM_WRITE);
 }
 
-void setVtxTableBand(uint8_t band, uint8_t labelChar1, uint8_t labelChar2, uint8_t labelChar3, uint8_t labelChar4,
-                                   uint8_t labelChar5, uint8_t labelChar6, uint8_t labelChar7, uint8_t labelChar8, uint8_t bandLetter)
+void setVtxTableBand(uint8_t band)
 {
     uint16_t payloadSize = 29;
 
-    zeroTxPacket();
-    txPacket[0] = '$';
-    txPacket[1] = 'X';
-    txPacket[2] = '<';
-    txPacket[3] = 0;
+    mspCreateHeader();
 
     txPacket[4] = MSP_SET_VTXTABLE_BAND & 0xFF;
     txPacket[5] = (MSP_SET_VTXTABLE_BAND >> 8) & 0xFF;
@@ -161,35 +156,33 @@ void setVtxTableBand(uint8_t band, uint8_t labelChar1, uint8_t labelChar2, uint8
     txPacket[7] = (payloadSize >> 8) & 0xFF;
     
     txPacket[8] = band;
-    txPacket[9] = 8; //bandNameLength;
-    txPacket[10] = labelChar1; // nameChar
-    txPacket[11] = labelChar2;
-    txPacket[12] = labelChar3;
-    txPacket[13] = labelChar4;
-    txPacket[14] = labelChar5;
-    txPacket[15] = labelChar6;
-    txPacket[16] = labelChar7;
-    txPacket[17] = labelChar8;
-    txPacket[18] = bandLetter;
-    txPacket[19] = 0; // isFactoryBand
-    txPacket[20] = 8; // channelCount
+    txPacket[9] = BAND_NAME_LENGTH;
+
+    for (uint8_t i = 0; i < CHANNEL_COUNT; i++)
+    {
+        txPacket[10 + i] = channelFreqLabelByIdx((band - 1) * CHANNEL_COUNT + i);
+    }
+    
+    txPacket[10+CHANNEL_COUNT] = getBandLetterByIdx(band - 1);
+    txPacket[11+CHANNEL_COUNT] = IS_FACTORY_BAND;
+    txPacket[12+CHANNEL_COUNT] = CHANNEL_COUNT;
 
     int i;
-    for(i = 0; i < 8; i++)
+    for(i = 0; i < CHANNEL_COUNT; i++)
     {
-        txPacket[21 + (i * 2)] =  getFreqByIdx(((band-1)*8) + i) & 0xFF;
-        txPacket[22 + (i * 2)] = (getFreqByIdx(((band-1)*8) + i) >> 8) & 0xFF;
+        txPacket[(13+CHANNEL_COUNT) + (i * 2)] =  getFreqByIdx(((band-1) * CHANNEL_COUNT) + i) & 0xFF;
+        txPacket[(14+CHANNEL_COUNT) + (i * 2)] = (getFreqByIdx(((band-1) * CHANNEL_COUNT) + i) >> 8) & 0xFF;
     }
     
     uint8_t crc = 0;
-    for(i = 3; i < payloadSize+8; i++)
+    for(i = 3; i < MSP_HEADER_SIZE+payloadSize; i++)
     {
         crc = mspCalcCrc(crc, txPacket[i]);
     }
 
-    txPacket[payloadSize+8] = crc;
+    txPacket[MSP_HEADER_SIZE+payloadSize] = crc;
 
-    mspSendPacket(payloadSize+9);
+    mspSendPacket(MSP_HEADER_SIZE+payloadSize+1);
 
     eepromWriteRequired = 1;
 }
@@ -198,11 +191,7 @@ void queryVtxTableBand(uint8_t idx)
 {
     uint16_t payloadSize = 1;
 
-    zeroTxPacket();
-    txPacket[0] = '$';
-    txPacket[1] = 'X';
-    txPacket[2] = '<';
-    txPacket[3] = 0;
+    mspCreateHeader();
 
     txPacket[4] = MSP_VTXTABLE_BAND & 0xFF;
     txPacket[5] = (MSP_VTXTABLE_BAND >> 8) & 0xFF;
@@ -213,25 +202,21 @@ void queryVtxTableBand(uint8_t idx)
     txPacket[8] = idx; // get power array entry
     
     uint8_t crc = 0;
-    for(int i = 3; i < payloadSize+8; i++)
+    for(int i = 3; i < MSP_HEADER_SIZE+payloadSize; i++)
     {
         crc = mspCalcCrc(crc, txPacket[i]);
     }
 
-    txPacket[payloadSize+8] = crc;
+    txPacket[MSP_HEADER_SIZE+payloadSize] = crc;
 
-    mspSendPacket(payloadSize+9);
+    mspSendPacket(MSP_HEADER_SIZE+payloadSize+1);
 }
 
-void setVtxTablePowerLevel(uint8_t idx, uint16_t powerValue, uint8_t labelChar1, uint8_t labelChar2, uint8_t labelChar3)
+void setVtxTablePowerLevel(uint8_t idx)
 {
     uint16_t payloadSize = 7;
 
-    zeroTxPacket();
-    txPacket[0] = '$';
-    txPacket[1] = 'X';
-    txPacket[2] = '<';
-    txPacket[3] = 0;
+    mspCreateHeader();
 
     txPacket[4] = MSP_SET_VTXTABLE_POWERLEVEL & 0xFF;
     txPacket[5] = (MSP_SET_VTXTABLE_POWERLEVEL >> 8) & 0xFF;
@@ -239,23 +224,23 @@ void setVtxTablePowerLevel(uint8_t idx, uint16_t powerValue, uint8_t labelChar1,
     txPacket[6] = payloadSize & 0xFF;
     txPacket[7] = (payloadSize >> 8) & 0xFF;
     
-    txPacket[8] = idx; // power array entry
-    txPacket[9] = powerValue & 0xFF; // powerValue LSB
-    txPacket[10] = (powerValue >> 8) & 0xFF; // powerValue MSB
-    txPacket[11] = 3; // powerLevelLabelLength 3
-    txPacket[12] = labelChar1; // power array entry
-    txPacket[13] = labelChar2; // power array entry
-    txPacket[14] = labelChar3; // power array entry
+    txPacket[8] = idx;
+    txPacket[9] = saPowerLevelsLut[idx - 1] & 0xFF;         // powerValue LSB
+    txPacket[10] = (saPowerLevelsLut[idx - 1] >> 8) & 0xFF; // powerValue MSB
+    txPacket[11] = POWER_LEVEL_LABEL_LENGTH; 
+    txPacket[12] = saPowerLevelsLabel[((idx - 1) * POWER_LEVEL_LABEL_LENGTH) + 0];
+    txPacket[13] = saPowerLevelsLabel[((idx - 1) * POWER_LEVEL_LABEL_LENGTH) + 1];
+    txPacket[14] = saPowerLevelsLabel[((idx - 1) * POWER_LEVEL_LABEL_LENGTH) + 2];
     
     uint8_t crc = 0;
-    for(int i = 3; i < payloadSize+8; i++)
+    for(int i = 3; i < MSP_HEADER_SIZE+payloadSize; i++)
     {
         crc = mspCalcCrc(crc, txPacket[i]);
     }
 
-    txPacket[payloadSize+8] = crc;
+    txPacket[MSP_HEADER_SIZE+payloadSize] = crc;
 
-    mspSendPacket(payloadSize+9);
+    mspSendPacket(MSP_HEADER_SIZE+payloadSize+1);
 
     eepromWriteRequired = 1;
 }
@@ -264,11 +249,7 @@ void queryVtxTablePowerLevel(uint8_t idx)
 {
     uint16_t payloadSize = 1;
 
-    zeroTxPacket();
-    txPacket[0] = '$';
-    txPacket[1] = 'X';
-    txPacket[2] = '<';
-    txPacket[3] = 0;
+    mspCreateHeader();
 
     txPacket[4] = MSP_VTXTABLE_POWERLEVEL & 0xFF;
     txPacket[5] = (MSP_VTXTABLE_POWERLEVEL >> 8) & 0xFF;
@@ -276,28 +257,24 @@ void queryVtxTablePowerLevel(uint8_t idx)
     txPacket[6] = payloadSize & 0xFF;
     txPacket[7] = (payloadSize >> 8) & 0xFF;
     
-    txPacket[8] = idx; // get power array entry
+    txPacket[8] = idx + 1;
     
     uint8_t crc = 0;
-    for(int i = 3; i < payloadSize+8; i++)
+    for(int i = 3; i < MSP_HEADER_SIZE+payloadSize; i++)
     {
         crc = mspCalcCrc(crc, txPacket[i]);
     }
 
-    txPacket[payloadSize+8] = crc;
+    txPacket[MSP_HEADER_SIZE+payloadSize] = crc;
 
-    mspSendPacket(payloadSize+9);
+    mspSendPacket(MSP_HEADER_SIZE+payloadSize+1);
 }
 
 void setDefaultBandChannelPower()
 {
     uint16_t payloadSize = 4;
 
-    zeroTxPacket();
-    txPacket[0] = '$';
-    txPacket[1] = 'X';
-    txPacket[2] = '<';
-    txPacket[3] = 0;
+    mspCreateHeader();
 
     txPacket[4] = MSP_SET_VTX_CONFIG & 0xFF;
     txPacket[5] = (MSP_SET_VTX_CONFIG >> 8) & 0xFF;
@@ -307,19 +284,19 @@ void setDefaultBandChannelPower()
 
     
     txPacket[8] = 27; // idx LSB - Set default to F4 5800MHz
-    txPacket[9] = 0; // idx MSB
-    txPacket[10] = 3; // idx Power idx
+    txPacket[9] = 0;  // idx MSB
+    txPacket[10] = 3; // 25mW Power idx
     txPacket[11] = 0; // pitmode
     
     uint8_t crc = 0;
-    for(int i = 3; i < payloadSize+8; i++)
+    for(int i = 3; i < MSP_HEADER_SIZE+payloadSize; i++)
     {
         crc = mspCalcCrc(crc, txPacket[i]);
     }
 
-    txPacket[payloadSize+8] = crc;
+    txPacket[MSP_HEADER_SIZE+payloadSize] = crc;
 
-    mspSendPacket(payloadSize+9);
+    mspSendPacket(MSP_HEADER_SIZE+payloadSize+1);
 
     eepromWriteRequired = 1;
 }
@@ -328,11 +305,7 @@ void clearVtxTable(void)
 {
     uint16_t payloadSize = 15;
 
-    zeroTxPacket();
-    txPacket[0] = '$';
-    txPacket[1] = 'X';
-    txPacket[2] = '<';
-    txPacket[3] = 0;
+    mspCreateHeader();
 
     txPacket[4] = MSP_SET_VTX_CONFIG & 0xFF;
     txPacket[5] = (MSP_SET_VTX_CONFIG >> 8) & 0xFF;
@@ -342,8 +315,8 @@ void clearVtxTable(void)
 
     
     txPacket[8] = 28; // idx LSB - Set default to F4 5800MHz
-    txPacket[9] = 0; // idx MSB
-    txPacket[10] = 0; // idx Power idx
+    txPacket[9] = 0;  // idx MSB
+    txPacket[10] = 3; // 25mW Power idx
     txPacket[11] = 0; // pitmode
     txPacket[12] = 0; // lowPowerDisarm 
     txPacket[13] = 0; // pitModeFreq LSB
@@ -358,48 +331,21 @@ void clearVtxTable(void)
     txPacket[22] = 1; // vtxtable should be cleared  
     
     uint8_t crc = 0;
-    for(int i = 3; i < payloadSize+8; i++)
+    for(int i = 3; i < MSP_HEADER_SIZE+payloadSize; i++)
     {
         crc = mspCalcCrc(crc, txPacket[i]);
     }
 
-    txPacket[payloadSize+8] = crc;
+    txPacket[MSP_HEADER_SIZE+payloadSize] = crc;
 
-    mspSendPacket(payloadSize+9);
+    mspSendPacket(MSP_HEADER_SIZE+payloadSize+1);
 
     eepromWriteRequired = 1;
 }
 
-void queryVtxConfig(void)
-{
-    uint16_t payloadSize = 0;
-
-    zeroTxPacket();
-    txPacket[0] = '$';
-    txPacket[1] = 'X';
-    txPacket[2] = '<';
-    txPacket[3] = 0;
-
-    txPacket[4] = MSP_VTX_CONFIG & 0xFF;
-    txPacket[5] = (MSP_VTX_CONFIG >> 8) & 0xFF;
-    
-    txPacket[6] = payloadSize & 0xFF;
-    txPacket[7] = (payloadSize >> 8) & 0xFF;
-    
-    uint8_t crc = 0;
-    for(int i = 3; i < payloadSize+8; i++)
-    {
-        crc = mspCalcCrc(crc, txPacket[i]);
-    }
-
-    txPacket[payloadSize+8] = crc;
-
-    mspSendPacket(payloadSize+9);
-}
-
 void mspProcessPacket(void)
 {
-    uint16_t powerValue;
+    uint16_t value;
     uint8_t bandNameLength, bandLetter, bandFactory, bandLength;
     uint8_t frequenciesCorrect = 1;
 
@@ -413,13 +359,13 @@ void mspProcessPacket(void)
         case GET_VTX_TABLE_SIZE:
             if (in_mspVtxConfigStruct.bands == getFreqTableBands() && in_mspVtxConfigStruct.channels == getFreqTableChannels() && in_mspVtxConfigStruct.powerLevels == SA_NUM_POWER_LEVELS)
             {
-                mspState = GET_POWER_LEVEL_1;
+                mspState = CHECK_POWER_LEVELS;
                 nextFlightControllerQueryTime = millis();
                 break;
             }
             clearVtxTable();
             break;
-        case NORMAL:
+        case MONITORING:
             initFreqPacketRecived = 1;
 
             pitMode = in_mspVtxConfigStruct.pitmode;
@@ -440,57 +386,31 @@ void mspProcessPacket(void)
         break;
 
     case MSP_VTXTABLE_POWERLEVEL:
-        powerValue = ((uint16_t)rxPacket[10] << 8) + rxPacket[9];
+        value = ((uint16_t)rxPacket[10] << 8) + rxPacket[9];
         switch (mspState)
-        {
-        case GET_POWER_LEVEL_1:
-            if (powerValue ==  saPowerLevelsLut[0] &&  rxPacket[12] == '0' &&  rxPacket[13] == ' ' &&  rxPacket[14] == ' ')
+        {        
+        case CHECK_POWER_LEVELS:
+            if (value ==  saPowerLevelsLut[checkingIndex] && rxPacket[11] == POWER_LEVEL_LABEL_LENGTH) // Check lengths before trying to check content
             {
-                mspState = GET_POWER_LEVEL_2;
-                nextFlightControllerQueryTime = millis();
-                break;
+                if (rxPacket[12] == saPowerLevelsLabel[checkingIndex * POWER_LEVEL_LABEL_LENGTH + 0] &&
+                    rxPacket[13] == saPowerLevelsLabel[checkingIndex * POWER_LEVEL_LABEL_LENGTH + 1] &&
+                    rxPacket[14] == saPowerLevelsLabel[checkingIndex * POWER_LEVEL_LABEL_LENGTH + 2])
+                {
+                    checkingIndex++;
+                    if (checkingIndex > SA_NUM_POWER_LEVELS - 1)
+                    {
+                        checkingIndex = 0;
+                        mspState = CHECK_BANDS;
+                    }
+                    nextFlightControllerQueryTime = millis();
+                    break;
+                }
             }
-            setVtxTablePowerLevel(1, 1,   '0', ' ', ' ');
-            break;
-        case GET_POWER_LEVEL_2:
-            if (powerValue ==  saPowerLevelsLut[1] &&  rxPacket[12] == 'R' &&  rxPacket[13] == 'C' &&  rxPacket[14] == 'E')
-            {
-                mspState = GET_POWER_LEVEL_3;
-                nextFlightControllerQueryTime = millis();
-                break;
-            }
-            setVtxTablePowerLevel(2, 2,   'R', 'C', 'E');
-            break;
-        case GET_POWER_LEVEL_3:
-            if (powerValue ==  saPowerLevelsLut[2] &&  rxPacket[12] == '2' &&  rxPacket[13] == '5' &&  rxPacket[14] == ' ')
-            {
-                mspState = GET_POWER_LEVEL_4;
-                nextFlightControllerQueryTime = millis();
-                break;
-            }
-            setVtxTablePowerLevel(3, 14,  '2', '5', ' ');
-            break;
-        case GET_POWER_LEVEL_4:
-            if (powerValue ==  saPowerLevelsLut[3] &&  rxPacket[12] == '1' &&  rxPacket[13] == '0' &&  rxPacket[14] == '0')
-            {
-                mspState = GET_POWER_LEVEL_5;
-                nextFlightControllerQueryTime = millis();
-                break;
-            }
-            setVtxTablePowerLevel(4, 20, '1', '0', '0');
-            break;
-        case GET_POWER_LEVEL_5:
-            if (powerValue ==  saPowerLevelsLut[4] &&  rxPacket[12] == '4' &&  rxPacket[13] == '0' &&  rxPacket[14] == '0')
-            {
-                mspState = GET_BAND_1;
-                nextFlightControllerQueryTime = millis();
-                break;
-            }
-            setVtxTablePowerLevel(5, 26, '4', '0', '0');
+            setVtxTablePowerLevel(checkingIndex + 1);
             break;
         }
         break;
-    
+
     case MSP_VTXTABLE_BAND:
         bandNameLength = rxPacket[9];
         bandLetter = rxPacket[10 + bandNameLength];
@@ -498,149 +418,43 @@ void mspProcessPacket(void)
         bandLength = rxPacket[12 + bandNameLength];
         switch (mspState)
         {
-        case GET_BAND_1:
-            if (bandNameLength ==  8 && bandLetter == 'A' && !bandFactory && bandLength == 8)
+        case CHECK_BANDS:
+            if (bandNameLength ==  BAND_NAME_LENGTH && bandLetter == getBandLetterByIdx(checkingIndex) && bandFactory == IS_FACTORY_BAND && bandLength == CHANNEL_COUNT) // Check lengths before trying to check content
             {
-                if (rxPacket[10] == 'B' && rxPacket[11] == 'A' && rxPacket[12] == 'N' && rxPacket[13] == 'D' && 
-                    rxPacket[14] == ' ' && rxPacket[15] == 'A' && rxPacket[16] == ' ' && rxPacket[17] == ' ')
+                if (rxPacket[10] == channelFreqLabelByIdx(checkingIndex * CHANNEL_COUNT + 0) &&
+                    rxPacket[11] == channelFreqLabelByIdx(checkingIndex * CHANNEL_COUNT + 1) &&
+                    rxPacket[12] == channelFreqLabelByIdx(checkingIndex * CHANNEL_COUNT + 2) &&
+                    rxPacket[13] == channelFreqLabelByIdx(checkingIndex * CHANNEL_COUNT + 3) &&
+                    rxPacket[14] == channelFreqLabelByIdx(checkingIndex * CHANNEL_COUNT + 4) &&
+                    rxPacket[15] == channelFreqLabelByIdx(checkingIndex * CHANNEL_COUNT + 5) &&
+                    rxPacket[16] == channelFreqLabelByIdx(checkingIndex * CHANNEL_COUNT + 6) &&
+                    rxPacket[17] == channelFreqLabelByIdx(checkingIndex * CHANNEL_COUNT + 7))
                 {
                     for (uint8_t i = 0; i < 8; i++)
                     {
-                        powerValue = ((uint16_t)rxPacket[22 + (2*i)] << 8) + rxPacket[21 + (2*i)];
-                        if (powerValue != getFreqByIdx(i))
+                        value = ((uint16_t)rxPacket[22 + (2*i)] << 8) + rxPacket[21 + (2*i)];
+                        if (value != getFreqByIdx(checkingIndex * CHANNEL_COUNT + i))
                             frequenciesCorrect = 0;
                     }
 
                     if (frequenciesCorrect)
                     {
-                        mspState = GET_BAND_2;
+                        checkingIndex++;
+                        if (checkingIndex > getFreqTableBands() - 1)
+                        {
+                            mspState = MONITORING;
+                            if (eepromWriteRequired) mspState = SET_DEFAULTS;
+                        }
                         nextFlightControllerQueryTime = millis();
                         break;
                     }
                 }
             }
-            setVtxTableBand(1, 'B', 'A', 'N', 'D', ' ', 'A', ' ', ' ', 'A');
-            break;
-        case GET_BAND_2:
-            if (bandNameLength ==  8 && bandLetter == 'B' && !bandFactory && bandLength == 8)
-            {
-                if (rxPacket[10] == 'B' && rxPacket[11] == 'A' && rxPacket[12] == 'N' && rxPacket[13] == 'D' && 
-                    rxPacket[14] == ' ' && rxPacket[15] == 'B' && rxPacket[16] == ' ' && rxPacket[17] == ' ')
-                {
-                    for (uint8_t i = 0; i < 8; i++)
-                    {
-                        powerValue = ((uint16_t)rxPacket[22 + (2*i)] << 8) + rxPacket[21 + (2*i)];
-                        if (powerValue != getFreqByIdx(i + 8))
-                            frequenciesCorrect = 0;
-                    }
-
-                    if (frequenciesCorrect)
-                    {
-                        mspState = GET_BAND_3;
-                        nextFlightControllerQueryTime = millis();
-                        break;
-                    }
-                }
-            }
-            setVtxTableBand(2, 'B', 'A', 'N', 'D', ' ', 'B', ' ', ' ', 'B');
-            break;
-        case GET_BAND_3:
-            if (bandNameLength ==  8 && bandLetter == 'E' && !bandFactory && bandLength == 8)
-            {
-                if (rxPacket[10] == 'B' && rxPacket[11] == 'A' && rxPacket[12] == 'N' && rxPacket[13] == 'D' && 
-                    rxPacket[14] == ' ' && rxPacket[15] == 'E' && rxPacket[16] == ' ' && rxPacket[17] == ' ')
-                {
-                    for (uint8_t i = 0; i < 8; i++)
-                    {
-                        powerValue = ((uint16_t)rxPacket[22 + (2*i)] << 8) + rxPacket[21 + (2*i)];
-                        if (powerValue != getFreqByIdx(i + 16))
-                            frequenciesCorrect = 0;
-                    }
-
-                    if (frequenciesCorrect)
-                    {
-                        mspState = GET_BAND_4;
-                        nextFlightControllerQueryTime = millis();
-                        break;
-                    }
-                }
-            }
-            setVtxTableBand(3, 'B', 'A', 'N', 'D', ' ', 'E', ' ', ' ', 'E');
-            break;
-        case GET_BAND_4:
-            if (bandNameLength ==  8 && bandLetter == 'F' && !bandFactory && bandLength == 8)
-            {
-                if (rxPacket[10] == 'F' && rxPacket[11] == 'A' && rxPacket[12] == 'T' && rxPacket[13] == 'S' && 
-                    rxPacket[14] == 'H' && rxPacket[15] == 'A' && rxPacket[16] == 'R' && rxPacket[17] == 'K')
-                {
-                    for (uint8_t i = 0; i < 8; i++)
-                    {
-                        powerValue = ((uint16_t)rxPacket[22 + (2*i)] << 8) + rxPacket[21 + (2*i)];
-                        if (powerValue != getFreqByIdx(i + 24))
-                            frequenciesCorrect = 0;
-                    }
-
-                    if (frequenciesCorrect)
-                    {
-                        mspState = GET_BAND_5;
-                        nextFlightControllerQueryTime = millis();
-                        break;
-                    }
-                }
-            }
-            setVtxTableBand(4, 'F', 'A', 'T', 'S', 'H', 'A', 'R', 'K', 'F');
-            break;
-        case GET_BAND_5:
-            if (bandNameLength ==  8 && bandLetter == 'R' && !bandFactory && bandLength == 8)
-            {
-                if (rxPacket[10] == 'R' && rxPacket[11] == 'A' && rxPacket[12] == 'C' && rxPacket[13] == 'E' && 
-                    rxPacket[14] == ' ' && rxPacket[15] == ' ' && rxPacket[16] == ' ' && rxPacket[17] == ' ')
-                {
-                    for (uint8_t i = 0; i < 8; i++)
-                    {
-                        powerValue = ((uint16_t)rxPacket[22 + (2*i)] << 8) + rxPacket[21 + (2*i)];
-                        if (powerValue != getFreqByIdx(i + 32))
-                            frequenciesCorrect = 0;
-                    }
-
-                    if (frequenciesCorrect)
-                    {
-                        mspState = GET_BAND_6;
-                        nextFlightControllerQueryTime = millis();
-                        break;
-                    }
-                }
-            }
-            setVtxTableBand(5, 'R', 'A', 'C', 'E', ' ', ' ', ' ', ' ', 'R');
-            break;
-        case GET_BAND_6:
-            if (bandNameLength ==  8 && bandLetter == 'L' && !bandFactory && bandLength == 8)
-            {
-                if (rxPacket[10] == 'R' && rxPacket[11] == 'A' && rxPacket[12] == 'C' && rxPacket[13] == 'E' && 
-                    rxPacket[14] == ' ' && rxPacket[15] == 'L' && rxPacket[16] == 'O' && rxPacket[17] == 'W')
-                {
-                    for (uint8_t i = 0; i < 8; i++)
-                    {
-                        powerValue = ((uint16_t)rxPacket[22 + (2*i)] << 8) + rxPacket[21 + (2*i)];
-                        if (powerValue != getFreqByIdx(i + 40))
-                            frequenciesCorrect = 0;
-                    }
-
-                    if (frequenciesCorrect)
-                    {
-                        mspState = NORMAL;
-                        if (eepromWriteRequired) mspState = SET_DEFAULTS;
-                        nextFlightControllerQueryTime = millis();
-                        break;
-                    }
-                }
-            }
-            setVtxTableBand(6, 'R', 'A', 'C', 'E', ' ', 'L', 'O', 'W', 'L');
+            setVtxTableBand(checkingIndex + 1);
             break;
         }
         break;
 
-    // Reply received and the FC is ready to be queried again.
     case MSP_SET_VTX_CONFIG:
         switch (mspState)
         {
@@ -649,13 +463,14 @@ void mspProcessPacket(void)
             nextFlightControllerQueryTime = millis();
             break;
         }
+
     case MSP_SET_VTXTABLE_BAND:
     case MSP_SET_VTXTABLE_POWERLEVEL:
         nextFlightControllerQueryTime = millis();
         break;
 
     case MSP_EEPROM_WRITE:
-        mspState = NORMAL;
+        mspState = MONITORING;
         nextFlightControllerQueryTime = millis();
         break;
     }
@@ -757,40 +572,13 @@ void mspUpdate(uint32_t now)
     switch (mspState)
     {
         case GET_VTX_TABLE_SIZE:
-            queryVtxConfig();
+            mspSendSimpleRequest(MSP_VTX_CONFIG);
             break;
-        case GET_POWER_LEVEL_1:
-            queryVtxTablePowerLevel(1);
+        case CHECK_POWER_LEVELS:
+            queryVtxTablePowerLevel(checkingIndex);
             break;
-        case GET_POWER_LEVEL_2:
-            queryVtxTablePowerLevel(2);
-            break;
-        case GET_POWER_LEVEL_3:
-            queryVtxTablePowerLevel(3);
-            break;
-        case GET_POWER_LEVEL_4:
-            queryVtxTablePowerLevel(4);
-            break;
-        case GET_POWER_LEVEL_5:
-            queryVtxTablePowerLevel(5);
-            break;
-        case GET_BAND_1:
-            queryVtxTableBand(1);
-            break;
-        case GET_BAND_2:
-            queryVtxTableBand(2);
-            break;
-        case GET_BAND_3:
-            queryVtxTableBand(3);
-            break;
-        case GET_BAND_4:
-            queryVtxTableBand(4);
-            break;
-        case GET_BAND_5:
-            queryVtxTableBand(5);
-            break;
-        case GET_BAND_6:
-            queryVtxTableBand(6);
+        case CHECK_BANDS:
+            queryVtxTableBand(checkingIndex + 1);
             break;
         case SET_DEFAULTS:
             setDefaultBandChannelPower();
@@ -798,8 +586,8 @@ void mspUpdate(uint32_t now)
         case SEND_EEPROM_WRITE:
             sendEepromWrite();
             break;
-        case NORMAL:
-            queryVtxConfig();
+        case MONITORING:
+            mspSendSimpleRequest(MSP_VTX_CONFIG);
             break;
         default:
             return;
