@@ -109,11 +109,6 @@ void loop(void)
           default:
             break;
           }
-
-        // if (myEEPROM.vtxMode == TRAMP)
-        //   trampBuildrPacket();
-        // else
-        //   smartaudioBuildSettingsPacket();
       }
     }
   }
