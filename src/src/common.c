@@ -16,8 +16,8 @@ const uint16_t channelFreqTable[48] = {
     5333, 5373, 5413, 5453, 5493, 5533, 5573, 5613  // L
 };
 
-uint8_t rxPacket[128];
-uint8_t txPacket[128];
+uint8_t rxPacket[64];
+uint8_t txPacket[64];
 uint8_t vtxModeLocked;
 uint8_t pitMode = 0;
 uint8_t initFreqPacketRecived = 0;

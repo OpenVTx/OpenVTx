@@ -6,6 +6,7 @@
 #define TRAMP_BAUD 9600
 #define SMARTAUDIO_BAUD 4800
 #define MSP_BAUD 9600
+// #define MSP_BAUD 19200
 
 #define PROTOCOL_CHECK_TIMEOUT 200
 
@@ -14,8 +15,8 @@
 #define RACE_MODE       2
 #define RACE_MODE_POWER 14 // dBm
 
-extern uint8_t rxPacket[128];
-extern uint8_t txPacket[128];
+extern uint8_t rxPacket[64]; // ?argest MSP packet for vtx table setup is 38 bytes.
+extern uint8_t txPacket[64];
 
 extern uint8_t vtxModeLocked;
 extern uint8_t pitMode;
