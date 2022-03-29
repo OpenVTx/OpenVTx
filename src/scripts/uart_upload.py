@@ -11,6 +11,8 @@ import re
 
 SCRIPT_DEBUG = 1
 PROTOCOL_DEFAULT = "SA"
+UPLOAD_BAUD = 57600 # faster doesnt work :(
+UPLOAD_STOP_BITS = 1
 
 PROTOCOL_DATA = {
     "SA": {
@@ -26,11 +28,10 @@ PROTOCOL_DATA = {
         "stopbits": 1,
     },
     "DEFAULT": {
-        "baud": 115200,
-        "stopbits": 2,
+        "baud": 57600,
+        "stopbits": 1,
     },
 }
-
 
 def dbg_print(line=''):
     sys.stdout.write(line)
@@ -58,7 +59,7 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
 
     # Try to init Betaflight passthrough
     try:
-        vtx_type = BFinitPassthrough.bf_passthrough_init(port, PROTO['baud'], half_duplex)
+        vtx_type = BFinitPassthrough.bf_passthrough_init(port, 0, half_duplex)
         dbg_print("\nDetected VTX protocol: %s\n" % vtx_type)
     except BFinitPassthrough.PassthroughEnabled as info:
         dbg_print("  Warning: '%s'\n" % info)
@@ -71,7 +72,8 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
 
     # Prepare to upload
     conn = serial.Serial()
-    conn.baudrate = PROTO['baud']
+    conn.baudrate = UPLOAD_BAUD
+    conn.stopbits = UPLOAD_STOP_BITS
     conn.port = port
     conn.timeout = 1
     conn.open()
@@ -83,17 +85,18 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
         ## Send command to firmware to boot into bootloader
         dbg_print("\nAttempting to reboot into bootloader...\n")
 
+        conn.baudrate = PROTO['baud']
+        conn.stopbits = PROTO['stopbits']
+        
         rl.set_timeout(2.)
         rl.set_delimiters(["\n", "CCC"])
         # request reboot
         if vtx_type in ['SA', None]:
-            conn.stopbits = 2
             # Need to send dummy zero before actual data to get UART line into correct state!
             BootloaderInitSeq = bytes(
                 [0x0, 0xAA, 0x55, ((0x78 << 1) & 0xFF),
                  0x03, ord('R'), ord('S'), ord('T'), 0xC3])
         elif vtx_type == 'TRAMP':
-            conn.stopbits = 1
             data = [0x00] * 16
             data[0] = 0x0F      # TRAMP_HEADER = 0xF
             data[1] = ord('R')
@@ -102,7 +105,6 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
             data[14] = (sum(data[1:]) & 0xFF)
             BootloaderInitSeq = bytes(data)
         elif vtx_type == 'MSP':
-            conn.stopbits = 1
             data = [0x00] * 9
             data[0] = ord('$')
             data[1] = ord('X')
@@ -114,19 +116,19 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
             data[7] = 0x00
             data[8] = 0x06
             BootloaderInitSeq = bytes(data)
+
         # clear RX buffer before continuing
         rl.clear()
-        #rl.write(BootloaderInitSeq)
-        #time.sleep(.05)
-        #rl.write(BootloaderInitSeq)
-        #time.sleep(.1)
         rl.write(BootloaderInitSeq)
         rl.write(BootloaderInitSeq)
         time.sleep(.1)
-        #dbg_print(rl.read_line(2.))
-        #dbg_print(rl.read_line(2.))
+        time.sleep(.1)
+        time.sleep(.1)
 
-    conn.stopbits = 2
+        # setup serial for flashing
+        conn.baudrate = UPLOAD_BAUD
+        conn.stopbits = UPLOAD_STOP_BITS
+
     rl.clear()
 
     # sanity check! Make sure the bootloader is started
@@ -183,7 +185,7 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
     else:
         dbg_print("[FAILED] Upload failed!\n\n")
         raise Exception('Failed to Upload')
-    dbg_print("\n\nFlashing took: %s seconds\n\n" % (time.time() - start_time))
+    dbg_print("\n\nFlashing took: %s seconds\n\n" % int((time.time() - start_time)))
 
 
 def on_upload(source, target, env):

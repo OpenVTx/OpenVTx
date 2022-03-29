@@ -355,7 +355,7 @@ void smartaudioProcessSerial(void)
                         break;
                     case SA_CMD_BOOTLOADER:
                         if (rxPacket[4] == 'R' && rxPacket[5] == 'S' && rxPacket[6] == 'T')
-                            reboot_into_bootloader(SMARTAUDIO_BAUD);
+                            reboot_into_bootloader(0);
                         break;
                     }
                     status_led3(0);

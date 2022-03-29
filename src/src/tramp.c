@@ -178,7 +178,7 @@ void trampProcessSerial(void)
                         break;
                     case 'R':// Reboot to bootloader
                         if (rxPacket[2] == 'S' && rxPacket[3] == 'T')
-                            reboot_into_bootloader(TRAMP_BAUD);
+                            reboot_into_bootloader(0);
                         break;
                     }
                     status_led3(0);
