@@ -24,6 +24,7 @@
 #define MSP_SET_VTXTABLE_POWERLEVEL     228 //in message          set vtxTable powerLevel data (one powerLevel at a time)
 
 #define MSP_EEPROM_WRITE                250 //in message          no param
+#define MSP_REBOOT                      68  //in message reboot settings
 
 #define FC_QUERY_PERIOD_MS              1000
 
@@ -472,6 +473,9 @@ void mspProcessPacket(void)
     case MSP_EEPROM_WRITE:
         mspState = MONITORING;
         nextFlightControllerQueryTime = millis();
+        break;
+    case MSP_REBOOT:
+        reboot_into_bootloader(MSP_BAUD);
         break;
     }
 }

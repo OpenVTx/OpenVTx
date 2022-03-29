@@ -97,6 +97,19 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
             data[3] = ord('T')
             data[14] = (sum(data[1:]) & 0xFF)
             BootloaderInitSeq = bytes(data)
+        elif vtx_type == 'MSP':
+            conn.stopbits = 1
+            data = [0x00] * 9
+            data[0] = ord('$')
+            data[1] = ord('X')
+            data[2] = ord('<')
+            data[3] = 0x00
+            data[4] = 68       # MSP_REBOOT
+            data[5] = 0x00
+            data[6] = 0x00
+            data[7] = 0x00
+            data[8] = 0x06
+            BootloaderInitSeq = bytes(data)
         # clear RX buffer before continuing
         rl.clear()
         #rl.write(BootloaderInitSeq)

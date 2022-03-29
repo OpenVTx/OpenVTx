@@ -69,6 +69,11 @@ def bf_passthrough_init(port, requestedBaudrate=None, half_duplex=False):
                     SerialRXindex = config.group(1)
                     vtx_type = "TRAMP"
                     requestedBaudrate = 9600
+                elif config.group(2) == "131073":
+                    dbg_print("    ** VTX MSP config detected: '%s'" % line)
+                    SerialRXindex = config.group(1)
+                    vtx_type = "MSP"
+                    requestedBaudrate = 9600
                 elif config.group(2) == "4096": # INav.  4096 is also FUNCTION_TELEMETRY_IBUS in BF.  So this might cause issues.
                     dbg_print("    ** VTX Tramp config detected: '%s'" % line)
                     SerialRXindex = config.group(1)
