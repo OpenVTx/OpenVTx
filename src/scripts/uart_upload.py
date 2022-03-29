@@ -21,6 +21,10 @@ PROTOCOL_DATA = {
         "baud": 9600,
         "stopbits": 1,
     },
+    "MSP": {
+        "baud": 9600,
+        "stopbits": 1,
+    },
     "DEFAULT": {
         "baud": 115200,
         "stopbits": 2,

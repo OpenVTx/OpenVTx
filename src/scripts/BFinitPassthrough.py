@@ -83,7 +83,7 @@ def bf_passthrough_init(port, requestedBaudrate=None, half_duplex=False):
                     break
 
     if not SerialRXindex:
-        raise PassthroughFailed("!!! RX Serial not found !!!!\n  Check configuration and try again...")
+        raise PassthroughFailed("!!! VTx Serial not found !!!!\n  Check configuration and try again...")
 
     cmd = "serialpassthrough %s %s" % (SerialRXindex, requestedBaudrate, )
 
