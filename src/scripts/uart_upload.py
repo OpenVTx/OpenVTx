@@ -130,7 +130,7 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
     # sanity check! Make sure the bootloader is started
     dbg_print("Wait sync...")
     rl.set_delimiters(["CCC"])
-    if "CCC" not in rl.read_line(5.):
+    if "CCC" not in rl.read_line(15.):
         msg = "[FAILED] Unable to communicate with bootloader...\n"
         dbg_print(msg)
 
