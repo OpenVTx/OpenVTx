@@ -12,7 +12,6 @@ import re
 SCRIPT_DEBUG = 1
 PROTOCOL_DEFAULT = "SA"
 UPLOAD_BAUD = 57600 # faster doesnt work :(
-UPLOAD_STOP_BITS = 1
 
 PROTOCOL_DATA = {
     "SA": {
@@ -73,7 +72,7 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
     # Prepare to upload
     conn = serial.Serial()
     conn.baudrate = UPLOAD_BAUD
-    conn.stopbits = UPLOAD_STOP_BITS
+    conn.stopbits = PROTO['stopbits']
     conn.port = port
     conn.timeout = 1
     conn.open()
@@ -86,7 +85,6 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
         dbg_print("\nAttempting to reboot into bootloader...\n")
 
         conn.baudrate = PROTO['baud']
-        conn.stopbits = PROTO['stopbits']
         
         rl.set_timeout(2.)
         rl.set_delimiters(["\n", "CCC"])
@@ -122,22 +120,36 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
         rl.write(BootloaderInitSeq)
         rl.write(BootloaderInitSeq)
         time.sleep(.1)
-        time.sleep(.1)
-        time.sleep(.1)
 
         # setup serial for flashing
+        # Do not change stopbits because BF passthrough does not update, unlike baud.
         conn.baudrate = UPLOAD_BAUD
-        conn.stopbits = UPLOAD_STOP_BITS
 
     rl.clear()
 
     # sanity check! Make sure the bootloader is started
     dbg_print("Wait sync...")
     rl.set_delimiters(["CCC"])
-    if "CCC" not in rl.read_line(15.):
+    if "CCC" not in rl.read_line(5.):
         msg = "[FAILED] Unable to communicate with bootloader...\n"
         dbg_print(msg)
-        raise Exception(msg)
+
+        # Lower baud to old BL default.
+        # BF port must be set the SMART AUDIO so that passthrough is configured for 2 stopbits!
+        conn.baudrate = 4800
+
+        rl.clear()
+
+        dbg_print("Lowered baud to old default 4800.\n")
+        dbg_print("The Betaflight port must be configured for SmartAudio.\n")
+        dbg_print("Wait sync...")
+        rl.set_delimiters(["CCC"])
+        if "CCC" not in rl.read_line(15.):
+            msg = "[FAILED] Unable to communicate with bootloader...\n"
+            dbg_print(msg)
+            raise Exception(msg)
+
+
     dbg_print(" sync OK\n")
 
     # change timeout to 5sec

@@ -174,7 +174,6 @@ struct bootloader {
 
 void reboot_into_bootloader(uint32_t baud)
 {
-    if (!baud) baud = 57600;
     extern uint32_t _bootloader_data;
     struct bootloader * blinfo = (struct bootloader*)&_bootloader_data;
     blinfo->key = BOOTLOADER_KEY;

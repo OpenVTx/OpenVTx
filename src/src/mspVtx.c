@@ -475,7 +475,7 @@ void mspProcessPacket(void)
         nextFlightControllerQueryTime = millis();
         break;
     case MSP_REBOOT:
-        reboot_into_bootloader(0);
+        reboot_into_bootloader(57600);
         break;
     }
 }
