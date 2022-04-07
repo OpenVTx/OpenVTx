@@ -354,10 +354,21 @@ void mspProcessPacket(void)
     {
     case MSP_VTX_CONFIG:
         memcpy(&in_mspVtxConfigStruct, rxPacket + 8, in_PayloadSize);
+        uint8_t channel;
 
         switch (mspState)
         {
         case GET_VTX_TABLE_SIZE:
+
+            //  Store initially received values.  If the VTx Table is correct, only then set these values.  //
+            pitMode = in_mspVtxConfigStruct.pitmode;
+            in_mspVtxConfigStruct.power -= 1; // Correct for BF starting at 1.
+            myEEPROM.currPowerdB = saPowerLevelsLut[in_mspVtxConfigStruct.power];
+            channel = ((in_mspVtxConfigStruct.band - 1) * 8) + (in_mspVtxConfigStruct.channel - 1);    
+            myEEPROM.channel = channel;
+            myEEPROM.freqMode = 0;
+            //////////////////////////////////////////////////////////////////////////////////////////////////
+
             if (in_mspVtxConfigStruct.bands == getFreqTableBands() && in_mspVtxConfigStruct.channels == getFreqTableChannels() && in_mspVtxConfigStruct.powerLevels == SA_NUM_POWER_LEVELS)
             {
                 mspState = CHECK_POWER_LEVELS;
@@ -367,15 +378,13 @@ void mspProcessPacket(void)
             clearVtxTable();
             break;
         case MONITORING:
-            initFreqPacketRecived = 1;
-
             pitMode = in_mspVtxConfigStruct.pitmode;
 
             // Set power before freq changes to prevent PLL settling issues and spamming other frequencies.
             in_mspVtxConfigStruct.power -= 1; // Correct for BF starting at 1.
             setPowerdB(saPowerLevelsLut[in_mspVtxConfigStruct.power]);
 
-            uint8_t channel = ((in_mspVtxConfigStruct.band - 1) * 8) + (in_mspVtxConfigStruct.channel - 1);
+            channel = ((in_mspVtxConfigStruct.band - 1) * 8) + (in_mspVtxConfigStruct.channel - 1);
             if (channel < getFreqTableSize())
             {            
                 myEEPROM.channel = channel;
@@ -576,7 +585,7 @@ void mspUpdate(uint32_t now)
     switch (mspState)
     {
         case GET_VTX_TABLE_SIZE:
-            mspSendSimpleRequest(MSP_VTX_CONFIG);
+            // mspSendSimpleRequest(MSP_VTX_CONFIG);
             break;
         case CHECK_POWER_LEVELS:
             queryVtxTablePowerLevel(checkingIndex);
@@ -586,12 +595,26 @@ void mspUpdate(uint32_t now)
             break;
         case SET_DEFAULTS:
             setDefaultBandChannelPower();
+            
+            initFreqPacketRecived = 1;
+            pitMode = 0;
+            myEEPROM.currPowerdB = 14; // 24 mW
+            myEEPROM.channel = 27; // F4 5800MHz
+            setPowerdB(myEEPROM.currPowerdB);
+            rtc6705WriteFrequency(getFreqByIdx(myEEPROM.channel));
+
             break;
         case SEND_EEPROM_WRITE:
             sendEepromWrite();
             break;
         case MONITORING:
-            mspSendSimpleRequest(MSP_VTX_CONFIG);
+            if (!initFreqPacketRecived)
+            {
+                initFreqPacketRecived = 1;
+                setPowerdB(myEEPROM.currPowerdB);
+                rtc6705WriteFrequency(getFreqByIdx(myEEPROM.channel));
+            }
+            // mspSendSimpleRequest(MSP_VTX_CONFIG);
             break;
         default:
             return;
