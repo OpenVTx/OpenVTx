@@ -344,7 +344,9 @@ void smartaudioProcessSerial(void)
             case SA_CRC:
                 // CRC check and packet processing
                 if (smartadioCalcCrc(rxPacket, in_len) == data) {
+                    #ifndef LED_INDICATION_OF_VTX_MODE
                     status_led3(1);
+                    #endif
                     vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
 
                     switch (rxPacket[2] >> 1) // Commands
@@ -369,7 +371,9 @@ void smartaudioProcessSerial(void)
                             reboot_into_bootloader(SMARTAUDIO_BAUD);
                         break;
                     }
+                    #ifndef LED_INDICATION_OF_VTX_MODE
                     status_led3(0);
+                    #endif
                 }
                 break;
             default:

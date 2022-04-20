@@ -13,6 +13,8 @@
 #define RACE_MODE       2
 #define RACE_MODE_POWER 14 // dBm
 
+//#define LED_INDICATION_OF_VTX_MODE
+
 extern uint8_t rxPacket[16];
 extern uint8_t txPacket[18];
 

@@ -153,7 +153,9 @@ void trampProcessSerial(void)
                 break;
             case TRAMP_CRC:
                 if (data == trampCalcCrc(rxPacket)) {
+                    #ifndef LED_INDICATION_OF_VTX_MODE
                     status_led3(1);
+                    #endif
                     vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
 
                     switch (rxPacket[1]) // command
@@ -181,7 +183,9 @@ void trampProcessSerial(void)
                             reboot_into_bootloader(TRAMP_BAUD);
                         break;
                     }
+                    #ifndef LED_INDICATION_OF_VTX_MODE
                     status_led3(0);
+                    #endif
                 }
                 in_idx = 0;
                 state = TRAMP_SYNC;

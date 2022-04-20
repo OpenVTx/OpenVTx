@@ -10,6 +10,7 @@ Currently SA is fully implemented and test against [Rev. 09](https://www.team-bl
 
 **Race Mode** - When at a race event and using pitmode on a switch with Betaflight, select the RCE VTx power level.  It will force pitmode on boot and only use 25mW.
 
+**VTX mode LED indication** - Indicate current operating mode (band/channel/power) similar to TBS's approach. To enable uncomment ``LED_INDICATION_OF_VTX_MODE`` define in ``commons.h`` file before building the project.
 
 # Currently Supported VTx
 - [EWRF E7082VM V1 & V2](https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20210125211126&SearchText=EWRF+E7082VM) - Max output power of [+500mW](img/EWRF_E7082VM_500mW.jpg).

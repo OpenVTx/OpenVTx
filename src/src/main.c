@@ -8,6 +8,9 @@
 #include "errorCodes.h"
 #include "gpio.h"
 
+#ifdef LED_INDICATION_OF_VTX_MODE
+#include "modeIndicator.h"
+#endif
 
 #if !DEBUG
 static uint32_t protocol_checked;
@@ -119,5 +122,9 @@ void loop(void)
   // writeEEPROM();
 
   taget_loop();
+  #ifndef LED_INDICATION_OF_VTX_MODE
   status_led2(vtxModeLocked);
+  #else
+  modeIndicationLoop();
+  #endif
 }
