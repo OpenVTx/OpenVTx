@@ -84,7 +84,7 @@ save
 
 If the **VTX mode LED indication** feature is enabled see the indication logic below
 
-<img src="img/vtxModeIndication.png" width="50%">
+<img src="img/vtxModeIndication.png" width="100%">
 
 
 # Contributors
