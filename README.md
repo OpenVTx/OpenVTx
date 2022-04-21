@@ -80,6 +80,13 @@ vtxtable powerlabels 0 RCE 25 100 400
 save
 ```
 
+# VTX Mode Indication
+
+If the **VTX mode LED indication** feature is enabled see the indication logic below
+
+<img src="img/vtxModeIndication.png" width="50%">
+
+
 # Contributors
 
 Big thanks to cruwaller for adding the GD32 MCU found on the EWRF E7082VM.
