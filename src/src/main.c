@@ -68,6 +68,10 @@ void setup(void)
 
   status_leds_init();
 
+#ifndef LED_INDICATION_OF_VTX_MODE
+  resetModeIndication()
+#endif /* LED_INDICATION_OF_VTX_MODE */
+
   // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
   myEEPROM.currFreq = 5600;
@@ -122,9 +126,12 @@ void loop(void)
   // writeEEPROM();
 
   taget_loop();
-  #ifndef LED_INDICATION_OF_VTX_MODE
+#ifndef LED_INDICATION_OF_VTX_MODE
   status_led2(vtxModeLocked);
-  #else
-  modeIndicationLoop();
-  #endif
+#else
+  if (vtxModeLocked)
+  {
+    modeIndicationLoop();
+  }
+#endif
 }

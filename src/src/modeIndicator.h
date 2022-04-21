@@ -6,14 +6,14 @@
 #define SET_MODE_LED(x) status_led2(x)
 #define SET_VALUE_LED(x) status_led3(x)
 
-#define LED_ON_DURATION 100
-#define LED_OFF_DURATION 600
-#define INTER_MODE_DELAY 300
+#define LED_ON_DURATION 80
+#define LED_OFF_DURATION 380
+#define INTER_MODE_DELAY 500
 
 typedef enum {
-    BAND,
-    CHANNEL,
-    POWER
+    IND_BAND,
+    IND_CHANNEL,
+    IND_POWER
 } indication_mode_type_t;
 
 typedef enum {
@@ -23,10 +23,10 @@ typedef enum {
 
 typedef struct {
     indication_mode_t mode;
-    indication_mode_type_t mode_type;
-    uint8_t blinks_done;
-    uint32_t last_led_action_time;
-    uint8_t led_is_on;
+    indication_mode_type_t modeType;
+    uint8_t blinksDone;
+    uint32_t lastLedActionTime;
+    uint8_t ledIsOn;
     uint32_t delay; 
 
     uint8_t channel;
