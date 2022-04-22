@@ -68,8 +68,8 @@ void setup(void)
 
   status_leds_init();
 
-#ifndef LED_INDICATION_OF_VTX_MODE
-  resetModeIndication()
+#ifdef LED_INDICATION_OF_VTX_MODE
+  resetModeIndication();
 #endif /* LED_INDICATION_OF_VTX_MODE */
 
   // TODO DEBUG! Below flashing is just for testing. Delete later.

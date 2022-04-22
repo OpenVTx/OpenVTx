@@ -34,3 +34,4 @@ typedef struct {
 } mode_indicator_state_t;
 
 void modeIndicationLoop();
+void resetModeIndication();
