@@ -20,8 +20,8 @@
 
 // These are target specific functions and need to implemented per target!
 
-void taget_setup(void);
-void taget_loop(void);
+void target_setup(void);
+void target_loop(void);
 void target_set_power_dB(float power);
 void checkPowerOutput(void);
 
