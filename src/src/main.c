@@ -118,6 +118,6 @@ void loop(void)
 
   // writeEEPROM();
 
-  taget_loop();
+  target_loop();
   status_led2(vtxModeLocked);
 }

@@ -186,12 +186,12 @@ void checkPowerOutput(void)
   }
 }
 
-void taget_setup(void)
+void target_setup(void)
 {
   /* TODO: Configure WDG, fwdgt_config() */
 }
 
-void taget_loop(void)
+void target_loop(void)
 {
 #if DEBUG
   static uint32_t temp;

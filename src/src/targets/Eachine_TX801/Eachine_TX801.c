@@ -23,11 +23,11 @@ void target_rfPowerAmpPinSetup(void)
   // pinMode(POWER_AMP_6, OUTPUT);
 }
 
-void taget_setup(void)
+void target_setup(void)
 {
 }
 
-void taget_loop(void)
+void target_loop(void)
 {
 }
 
