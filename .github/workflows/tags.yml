@@ -1,0 +1,84 @@
+name: OpenVTX Release
+on:
+  push:
+    tags:
+      - 'rel*_v*'
+jobs:
+  create_release:
+    name: Create Release
+    strategy:
+      max-parallel: 1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v2.x
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+
+      - name: Build project
+        run: |
+          platformio platform update
+          mkdir -p ~/artifcats
+          pio run
+
+      - name: Pack Source Codes
+        run: |
+          echo "SHA=$(git rev-parse --short ${GITHUB_SHA})" > .version_info.txt
+          zip -r release_${{ steps.get_version.outputs.SOURCE_TAG }}.zip . -x ".gitignore" ".git/*" ".github/*" ".pio/*"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Binaries, EWRF_E7082VM native
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./.pio/build/EWRF_E7082VM/firmware.bin
+          asset_name: release_${{ steps.get_version.outputs.SOURCE_TAG }}_EWRF_E7082VM.bin
+          asset_content_type: application/octet-stream
+
+      - name: Upload Binaries, EWRF_E7082VM bootloader
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./.pio/build/EWRF_E7082VM_serialpassthrough/firmware.bin
+          asset_name: release_${{ steps.get_version.outputs.SOURCE_TAG }}_EWRF_E7082VM_passthrough.bin
+          asset_content_type: application/octet-stream
+
+      - name: Upload Sources
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release_${{ steps.get_version.outputs.SOURCE_TAG }}.zip
+          asset_name: release_${{ steps.get_version.outputs.SOURCE_TAG }}.zip
+          asset_content_type: application/zip
