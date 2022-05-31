@@ -125,7 +125,8 @@ void loop(void)
 
   // writeEEPROM();
 
-  taget_loop();
+  target_loop();
+
 #ifndef LED_INDICATION_OF_VTX_MODE
   status_led2(vtxModeLocked);
 #else

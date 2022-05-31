@@ -72,9 +72,9 @@ typedef struct {
 } sa_u16_resp_t;
 
 
-uint8_t findPowerIndexFromLut(uint8_t dBm)
+static uint8_t findPowerIndexFromLut(uint8_t const dBm)
 {
-    if (pitMode) {
+    if (!pitMode) {
         for (uint8_t i = 0; i < ARRAY_SIZE(saPowerLevelsLut); i++) {
             if (dBm == saPowerLevelsLut[i]) {
                 return i;
