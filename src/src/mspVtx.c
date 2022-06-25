@@ -133,15 +133,11 @@ void mspSendSimpleRequest(uint16_t opCode)
 
 void sendEepromWrite()
 {
-    if (!eepromWriteRequired)
-    {
-        mspState = MONITORING;
-        return;
-    }
+    if (eepromWriteRequired)
+        mspSendSimpleRequest(MSP_EEPROM_WRITE);
 
     eepromWriteRequired = 0;
-
-    mspSendSimpleRequest(MSP_EEPROM_WRITE);
+    mspState = MONITORING;
 }
 
 void setVtxTableBand(uint8_t band)
@@ -378,6 +374,7 @@ void mspProcessPacket(void)
             clearVtxTable();
             break;
         case MONITORING:
+        default:
             pitMode = in_mspVtxConfigStruct.pitmode;
 
             // Set power before freq changes to prevent PLL settling issues and spamming other frequencies.
@@ -484,7 +481,7 @@ void mspProcessPacket(void)
         nextFlightControllerQueryTime = millis();
         break;
     case MSP_REBOOT:
-        reboot_into_bootloader(UPLOAD_BAUD);
+        reboot_into_bootloader(9600);
         break;
     }
 }
@@ -578,7 +575,7 @@ void mspUpdate(uint32_t now)
 {
     mspProcessSerial();
 
-    if (now < nextFlightControllerQueryTime || mspState == MONITORING)
+    if (now < nextFlightControllerQueryTime)
     {
         return;
     }

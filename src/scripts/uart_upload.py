@@ -11,7 +11,6 @@ import re
 
 SCRIPT_DEBUG = 1
 PROTOCOL_DEFAULT = "SA"
-UPLOAD_BAUD = 9600 # faster doesnt work :(
 
 PROTOCOL_DATA = {
     "SA": {
@@ -66,12 +65,14 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
         raise
 
     PROTO = PROTOCOL_DATA.get(vtx_type, PROTO)
+    dbg_print("Baud: %d \n" % PROTO['baud'])
+    dbg_print("Stopbits: %d \n" % PROTO['stopbits'])
 
     start_time = time.time()
 
     # Prepare to upload
     conn = serial.Serial()
-    conn.baudrate = UPLOAD_BAUD
+    conn.baudrate = PROTO['baud']
     conn.stopbits = PROTO['stopbits']
     conn.port = port
     conn.timeout = 1
@@ -80,18 +81,11 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
     rl = SerialHelper.SerialHelper(conn, 2., ["CCC"], half_duplex)
     rl.clear()
 
-    bootloader_tries = 0
-    while "CCC" not in rl.read_line(2.):
-        if bootloader_tries == 10:
-            break
+    if "CCC" not in rl.read_line(2.):
 
         ## Send command to firmware to boot into bootloader
         dbg_print("\nAttempting to reboot into bootloader...\n")
 
-        conn.baudrate = PROTO['baud']
-        
-        rl.set_timeout(2.)
-        rl.set_delimiters(["\n", "CCC"])
         # request reboot
         if vtx_type in ['SA', None]:
             # Need to send dummy zero before actual data to get UART line into correct state!
@@ -122,13 +116,7 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
         # clear RX buffer before continuing
         rl.clear()
         rl.write(BootloaderInitSeq)
-        time.sleep(.1)
-
-        bootloader_tries += 1
-
-    # setup serial for flashing
-    # Do not change stopbits because BF passthrough does not update, unlike baud.
-    conn.baudrate = UPLOAD_BAUD
+        time.sleep(1)
 
     rl.clear()
 
@@ -138,23 +126,7 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
     if "CCC" not in rl.read_line(15.):
         msg = "[FAILED] Unable to communicate with bootloader...\n"
         dbg_print(msg)
-
-        # Lower baud to old BL default.
-        # BF port must be set the SMART AUDIO so that passthrough is configured for 2 stopbits!
-        conn.baudrate = 4800
-
-        rl.clear()
-
-        dbg_print("Lowered baud to old default 4800.\n")
-        dbg_print("The Betaflight port must be configured for SmartAudio.\n")
-        dbg_print("Wait sync...")
-        rl.set_delimiters(["CCC"])
-        if "CCC" not in rl.read_line(15.):
-            msg = "[FAILED] Unable to communicate with bootloader...\n"
-            dbg_print(msg)
-            raise Exception(msg)
-
-
+        raise Exception(msg)
     dbg_print(" sync OK\n")
 
     # change timeout to 5sec

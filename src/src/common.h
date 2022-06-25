@@ -6,7 +6,6 @@
 #define TRAMP_BAUD                      9600
 #define SMARTAUDIO_BAUD                 4800
 #define MSP_BAUD                        9600 // ~10% decrease in setup time increasing to 19200. But not worth it for the inceased chance in packets errors due to heat.
-#define UPLOAD_BAUD                     9600
 
 #define PROTOCOL_CHECK_TIMEOUT          500
 
@@ -19,10 +18,10 @@
 #define IS_FACTORY_BAND                 0
 #define CHANNEL_COUNT                   8
 
-#define LED_INDICATION_OF_VTX_MODE
+// #define LED_INDICATION_OF_VTX_MODE
 
-extern uint8_t rxPacket[16];
-extern uint8_t txPacket[18];
+extern uint8_t rxPacket[64];
+extern uint8_t txPacket[64];
 
 extern uint8_t vtxModeLocked;
 extern uint8_t pitMode;

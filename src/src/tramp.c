@@ -180,7 +180,7 @@ void trampProcessSerial(void)
                         break;
                     case 'R':// Reboot to bootloader
                         if (rxPacket[2] == 'S' && rxPacket[3] == 'T')
-                            reboot_into_bootloader(UPLOAD_BAUD);
+                            reboot_into_bootloader(9600);
                         break;
                     }
                     #ifndef LED_INDICATION_OF_VTX_MODE
