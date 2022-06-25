@@ -9,6 +9,9 @@
 #include "errorCodes.h"
 #include "gpio.h"
 
+#ifdef LED_INDICATION_OF_VTX_MODE
+#include "modeIndicator.h"
+#endif
 
 #if !DEBUG
 static uint32_t protocol_checked;
@@ -69,6 +72,10 @@ void setup(void)
   start_serial(myEEPROM.vtxMode);
 
   status_leds_init();
+
+#ifdef LED_INDICATION_OF_VTX_MODE
+  resetModeIndication();
+#endif /* LED_INDICATION_OF_VTX_MODE */
 
   // TODO DEBUG! Below flashing is just for testing. Delete later.
 #if DEBUG
@@ -140,6 +147,14 @@ void loop(void)
 
   // writeEEPROM();
 
-  taget_loop();
+  target_loop();
+
+#ifndef LED_INDICATION_OF_VTX_MODE
   status_led2(vtxModeLocked);
+#else
+  if (vtxModeLocked)
+  {
+    modeIndicationLoop();
+  }
+#endif
 }

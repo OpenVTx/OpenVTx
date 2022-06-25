@@ -19,8 +19,10 @@
 #define IS_FACTORY_BAND                 0
 #define CHANNEL_COUNT                   8
 
-extern uint8_t rxPacket[64]; // ?argest MSP packet for vtx table setup is 38 bytes.
-extern uint8_t txPacket[64];
+#define LED_INDICATION_OF_VTX_MODE
+
+extern uint8_t rxPacket[16];
+extern uint8_t txPacket[18];
 
 extern uint8_t vtxModeLocked;
 extern uint8_t pitMode;

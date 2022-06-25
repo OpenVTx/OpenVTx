@@ -61,9 +61,9 @@ typedef struct {
 } sa_u16_resp_t;
 
 
-uint8_t findPowerIndexFromLut(uint8_t dBm)
+static uint8_t findPowerIndexFromLut(uint8_t const dBm)
 {
-    if (pitMode) {
+    if (!pitMode) {
         for (uint8_t i = 0; i < ARRAY_SIZE(saPowerLevelsLut); i++) {
             if (dBm == saPowerLevelsLut[i]) {
                 return i;
@@ -333,7 +333,9 @@ void smartaudioProcessSerial(void)
             case SA_CRC:
                 // CRC check and packet processing
                 if (smartadioCalcCrc(rxPacket, in_len) == data) {
+                    #ifndef LED_INDICATION_OF_VTX_MODE
                     status_led3(1);
+                    #endif
                     vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
 
                     switch (rxPacket[2] >> 1) // Commands
@@ -358,7 +360,9 @@ void smartaudioProcessSerial(void)
                             reboot_into_bootloader(UPLOAD_BAUD + 1); // LSB represents stopbits. 0 = 1 stopbit, 1 = 2 stopbit.  SA passthrough requires 2 stopbits.
                         break;
                     }
+                    #ifndef LED_INDICATION_OF_VTX_MODE
                     status_led3(0);
+                    #endif
                 }
                 break;
             default:
