@@ -374,7 +374,6 @@ void mspProcessPacket(void)
             clearVtxTable();
             break;
         case MONITORING:
-        default:
             pitMode = in_mspVtxConfigStruct.pitmode;
 
             // Set power before freq changes to prevent PLL settling issues and spamming other frequencies.
@@ -608,6 +607,12 @@ void mspUpdate(uint32_t now)
             sendEepromWrite();
             break;
         case MONITORING:
+            if (!initFreqPacketRecived)
+            {
+                initFreqPacketRecived = 1;
+                setPowerdB(myEEPROM.currPowerdB);
+                rtc6705WriteFrequency(getFreqByIdx(myEEPROM.channel));
+            }
             break;
         default:
             return;
