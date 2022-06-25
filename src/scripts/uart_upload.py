@@ -11,7 +11,7 @@ import re
 
 SCRIPT_DEBUG = 1
 PROTOCOL_DEFAULT = "SA"
-UPLOAD_BAUD = 57600 # faster doesnt work :(
+UPLOAD_BAUD = 9600 # faster doesnt work :(
 
 PROTOCOL_DATA = {
     "SA": {

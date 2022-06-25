@@ -26,7 +26,7 @@
 #define MSP_EEPROM_WRITE                250 //in message          no param
 #define MSP_REBOOT                      68  //in message reboot settings
 
-#define FC_QUERY_PERIOD_MS              1000
+#define FC_QUERY_PERIOD_MS              200
 
 typedef enum
 {
@@ -484,7 +484,7 @@ void mspProcessPacket(void)
         nextFlightControllerQueryTime = millis();
         break;
     case MSP_REBOOT:
-        reboot_into_bootloader(57600);
+        reboot_into_bootloader(UPLOAD_BAUD);
         break;
     }
 }
@@ -510,6 +510,7 @@ void mspProcessSerial(void)
             case MSP_SYNC_X:
                 if (data == MSP_HEADER_X) {
                     state = MSP_TYPE;
+                    status_led3(1); // Got header so turn on incoming packet LED.
                 } else {
                     state = MSP_SYNC_DOLLAR;
                     in_idx = 0;
@@ -555,10 +556,9 @@ void mspProcessSerial(void)
             case MSP_CRC:
                 if (in_CRC == data)
                 {
-                    status_led3(1);
                     vtxModeLocked = 1; // Successfully got a packet so lock VTx mode.
-                    if (in_Type != MSP_HEADER_ERROR) mspProcessPacket();
-                    status_led3(0);
+                    if (in_Type != MSP_HEADER_ERROR)
+                        mspProcessPacket();
                 }
                 state = MSP_SYNC_DOLLAR;
                 in_idx = 0;
@@ -568,6 +568,9 @@ void mspProcessSerial(void)
                 in_idx = 0;
             break;
         }
+
+        if (state == MSP_SYNC_DOLLAR)
+            status_led3(0);
     }
 }
 
@@ -575,17 +578,17 @@ void mspUpdate(uint32_t now)
 {
     mspProcessSerial();
 
-    if (now < nextFlightControllerQueryTime)
+    if (now < nextFlightControllerQueryTime || mspState == MONITORING)
     {
         return;
     }
 
-    nextFlightControllerQueryTime = now + FC_QUERY_PERIOD_MS;
+    nextFlightControllerQueryTime = now + FC_QUERY_PERIOD_MS; // Wait for any reply.
 
     switch (mspState)
     {
         case GET_VTX_TABLE_SIZE:
-            // mspSendSimpleRequest(MSP_VTX_CONFIG);
+            mspSendSimpleRequest(MSP_VTX_CONFIG);
             break;
         case CHECK_POWER_LEVELS:
             queryVtxTablePowerLevel(checkingIndex);
@@ -608,13 +611,6 @@ void mspUpdate(uint32_t now)
             sendEepromWrite();
             break;
         case MONITORING:
-            if (!initFreqPacketRecived)
-            {
-                initFreqPacketRecived = 1;
-                setPowerdB(myEEPROM.currPowerdB);
-                rtc6705WriteFrequency(getFreqByIdx(myEEPROM.channel));
-            }
-            // mspSendSimpleRequest(MSP_VTX_CONFIG);
             break;
         default:
             return;

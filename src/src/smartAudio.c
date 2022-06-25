@@ -355,7 +355,7 @@ void smartaudioProcessSerial(void)
                         break;
                     case SA_CMD_BOOTLOADER:
                         if (rxPacket[4] == 'R' && rxPacket[5] == 'S' && rxPacket[6] == 'T')
-                            reboot_into_bootloader(57601); // LSB represents stopbits. 0 = 1 stopbit, 1 = 2 stopbit.  SA passthrough requires 2 stopbits.
+                            reboot_into_bootloader(UPLOAD_BAUD + 1); // LSB represents stopbits. 0 = 1 stopbit, 1 = 2 stopbit.  SA passthrough requires 2 stopbits.
                         break;
                     }
                     status_led3(0);
