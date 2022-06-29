@@ -358,7 +358,13 @@ void mspProcessPacket(void)
 
             //  Store initially received values.  If the VTx Table is correct, only then set these values.  //
             pitMode = in_mspVtxConfigStruct.pitmode;
-            in_mspVtxConfigStruct.power -= 1; // Correct for BF starting at 1.
+            if (in_mspVtxConfigStruct.lowPowerDisarm)
+            {
+                in_mspVtxConfigStruct.power = 0;
+            } else
+            {
+                in_mspVtxConfigStruct.power -= 1; // Correct for BF starting at 1.
+            }
             myEEPROM.currPowerdB = saPowerLevelsLut[in_mspVtxConfigStruct.power];
             channel = ((in_mspVtxConfigStruct.band - 1) * 8) + (in_mspVtxConfigStruct.channel - 1);    
             myEEPROM.channel = channel;
