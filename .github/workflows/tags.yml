@@ -2,18 +2,53 @@ name: OpenVTX Release
 on:
   push:
     tags:
-      - 'rel*_v*'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-RC[0-9]+'
 jobs:
+  targets:
+    name: Collect Targets
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.set-targets.outputs.targets }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - id: set-targets
+      run: echo "::set-output name=targets::[$(grep -ve "\[env:.*_develop" src/*.ini | grep "\[env:" | sed 's/.*:\(.*\)].*/"\1"/' | tr '\n' ',')]"
+
   create_release:
     name: Create Release
-    strategy:
-      max-parallel: 1
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.step_upload_url.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - id: step_upload_url
+        run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
+
+  publish:
+    needs: [targets, create_release]
+    strategy:
+      matrix:
+        target: ${{fromJSON(needs.targets.outputs.targets)}}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src
     steps:
       - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v2.x
+        uses: rlespinasse/github-slug-action@v3.x
 
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -25,60 +60,35 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
 
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.target }}
+
       - name: Install PlatformIO
         run: |
           python -m pip install --upgrade pip
           pip install platformio
 
+      - name: Cache PlatformIO
+        uses: actions/cache@v2
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-platformio
+
       - name: Build project
         run: |
           platformio platform update
-          mkdir -p ~/artifcats
-          pio run
+          platformio platform install native
+          platformio run -e ${{ matrix.target }}
 
-      - name: Pack Source Codes
-        run: |
-          echo "SHA=$(git rev-parse --short ${GITHUB_SHA})" > .version_info.txt
-          zip -r release_${{ steps.get_version.outputs.SOURCE_TAG }}.zip . -x ".gitignore" ".git/*" ".github/*" ".pio/*"
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Binaries, EWRF_E7082VM native
+      - name: Upload Binary
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./.pio/build/EWRF_E7082VM/firmware.bin
-          asset_name: release_${{ steps.get_version.outputs.SOURCE_TAG }}_EWRF_E7082VM.bin
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./src/.pio/build/${{ matrix.target }}/firmware.bin
+          asset_name: ${{ matrix.target }}_${{ steps.get_version.outputs.SOURCE_TAG }}.bin
           asset_content_type: application/octet-stream
-
-      - name: Upload Binaries, EWRF_E7082VM bootloader
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./.pio/build/EWRF_E7082VM_serialpassthrough/firmware.bin
-          asset_name: release_${{ steps.get_version.outputs.SOURCE_TAG }}_EWRF_E7082VM_passthrough.bin
-          asset_content_type: application/octet-stream
-
-      - name: Upload Sources
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release_${{ steps.get_version.outputs.SOURCE_TAG }}.zip
-          asset_name: release_${{ steps.get_version.outputs.SOURCE_TAG }}.zip
-          asset_content_type: application/zip
