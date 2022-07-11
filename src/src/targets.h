@@ -18,7 +18,7 @@
 #include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
 #elif defined(Pancake)
 #include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
-#elif defined(A03)
+#elif defined(BETAFPV_A03)
 #include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
 #endif
 
