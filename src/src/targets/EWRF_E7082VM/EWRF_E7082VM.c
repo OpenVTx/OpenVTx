@@ -63,7 +63,7 @@ uint8_t amp_state = 0;
                                       { 820,   830,  830,  840,  860,  890,  890,  895,  895}, // 100 mW
                                       {1450,  1450, 1450, 1450, 1450, 1450, 1450, 1450, 1450}  // ~400 mW
                                       };
-#elif defined(A03)
+#elif defined(BETAFPV_A03)
   #define CAL_FREQ_SIZE 9
   #define CAL_DBM_SIZE 17
   uint16_t calFreqs[CAL_FREQ_SIZE] = {5600,	5650,	5700,	5750,	5800,	5850,	5900, 5950, 6000};
