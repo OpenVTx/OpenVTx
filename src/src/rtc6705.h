@@ -15,6 +15,7 @@
 #define READ_BIT 0x00
 #define WRITE_BIT 0x01
 
+#define SYNTH_REG_A_DEFAULT 0x0190
 #define POWER_AMP_ON 0b10011111011111100000
 
 #define MIN_FREQ 5000
@@ -26,6 +27,7 @@ void rtc6705spiPinSetup(void);
 void rtc6705writeRegister(uint32_t data);
 uint32_t rtc6705readRegister(uint8_t reg);
 void rtc6705ResetState(void);
+void rtc6705ResetSynthRegA(void);
 void rtc6705PowerAmpOn(void);
 void rtc6705PowerAmpOff(void);
 uint8_t rtc6705CheckFrequency(void);
