@@ -18,6 +18,8 @@
 #include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
 #elif defined(Pancake)
 #include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
+#elif defined(BETAFPV_A03)
+#include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
 #endif
 
 // These are target specific functions and need to implemented per target!
