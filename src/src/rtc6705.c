@@ -98,6 +98,13 @@ void rtc6705ResetState(void)
   rtc6705writeRegister(newRegData);
 }
 
+void rtc6705ResetSynthRegA(void)
+{
+  uint32_t newRegData = SynthesizerRegisterA | (WRITE_BIT << 4) | (SYNTH_REG_A_DEFAULT << 5);
+
+  rtc6705writeRegister(newRegData);
+}
+
 void rtc6705PowerAmpOn(void)
 {
   uint32_t newRegData = PredriverandPAControlRegister | (WRITE_BIT << 4) | POWER_AMP_ON;
@@ -159,6 +166,8 @@ void rtc6705WriteFrequency(uint32_t newFreq)
   /* Switch off */
   rtc6705PowerAmpOff();
   target_set_power_dB(0);
+
+  rtc6705ResetSynthRegA();
 
   /* Set frequency */
   rtc6705writeRegister(newRegData);
