@@ -63,6 +63,11 @@ int main(void)
     (void)SCB->VTOR;
     __ISB();
 
+    fwdgt_config(0x0FFF, FWDGT_PSC_DIV4);
+    fwdgt_window_value_config(0x0FFF);
+    fwdgt_enable(); // Enable watchdog
+    fwdgt_counter_reload();
+
     SystemCoreClockUpdate();
     systick_config();
 

@@ -2,9 +2,7 @@
 
 #include <stdint.h>
 
-#define versionEEPROM 0x110
-
-#define BOOT_FREQ 5000
+#define versionEEPROM 0x111
 
 extern uint8_t updateEEPROM;
 

@@ -12,13 +12,13 @@ void defaultEEPROM(void)
 {
     myEEPROM.version = versionEEPROM;
     myEEPROM.vtxMode = TRAMP;
-    myEEPROM.currFreq = BOOT_FREQ;
-    myEEPROM.channel = 255;
+    myEEPROM.currFreq = 5800;
+    myEEPROM.channel = 27; // F4
     myEEPROM.freqMode = 0;
     myEEPROM.pitmodeInRange = 0;
     myEEPROM.pitmodeOutRange = 0;
-    myEEPROM.currPowerdB = 0;
-    myEEPROM.currPowermW = 0; // Required due to rounding errors when converting between dBm and mW
+    myEEPROM.currPowerdB = 14;
+    myEEPROM.currPowermW = 25; // Required due to rounding errors when converting between dBm and mW
     myEEPROM.unlocked = 1;
 
     updateEEPROM = 1;
