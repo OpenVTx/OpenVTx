@@ -52,7 +52,7 @@ uint8_t amp_state = 0;
   {1450, 1450, 1450, 1455, 1450, 1450, 1450, 1450, 1435},
   {1450, 1450, 1450, 1455, 1465, 1460, 1460, 1450, 1445}
   };
-#elif defined(Pancake)
+#elif defined(HAPPYMODEL_PANCAKE)
   #define CAL_FREQ_SIZE 9
   #define CAL_DBM_SIZE 4
   uint8_t calDBm[CAL_DBM_SIZE] = {10, 14, 20, 26};
