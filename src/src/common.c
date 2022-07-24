@@ -95,7 +95,7 @@ void setPowerdB(float dB)
     } else
     {
       rtc6705PowerAmpOn();
-      target_set_power_dB(myEEPROM.currPowerdB);
+      target_set_power_dB(dB);
     }
 }
 
