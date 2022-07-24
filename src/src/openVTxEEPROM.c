@@ -40,10 +40,15 @@ void readEEPROM(void)
 
 void writeEEPROM(void)
 {
+    // Dont write if no protocol has been detected, as nothing has changed. 
+    if (!vtxModeLocked)
+        updateEEPROMtime = 0;
+
     if (updateEEPROMtime && (millis() - updateEEPROMtime) > 1000) {
         EEPROM_put(0, myEEPROM);
         updateEEPROMtime = 0;
 
+        // Red LED blinks a couple of times as a visual indication.
         for (uint8_t i = 0; i < 4; i++){
             delay(50);
             status_led1(0);
