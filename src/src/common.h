@@ -15,6 +15,10 @@
 
 #define LED_INDICATION_OF_VTX_MODE
 
+#define FREQ_TABLE_SIZE 48
+
+extern uint16_t channelFreqTable[FREQ_TABLE_SIZE];
+
 extern uint8_t rxPacket[16];
 extern uint8_t txPacket[18];
 

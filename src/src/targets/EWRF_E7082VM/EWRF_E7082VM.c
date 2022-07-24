@@ -17,7 +17,7 @@
  *    Index 0 is ignored [https://github.com/iNavFlight/inav/blob/a8016edd0d6f05bb12a75b0ea75a3483772baaeb/src/main/io/vtx_smartaudio.c#L334]
  *
  */
-uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS] = {0, 1, 14, 20, 26};
+uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS] = {1, 2, 14, 20, 26};
 
 gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;

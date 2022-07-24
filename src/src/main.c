@@ -7,6 +7,7 @@
 #include "serial.h"
 #include "errorCodes.h"
 #include "gpio.h"
+#include "button.h"
 
 #ifdef LED_INDICATION_OF_VTX_MODE
 #include "modeIndicator.h"
@@ -65,6 +66,7 @@ void setup(void)
   start_serial(myEEPROM.vtxMode);
 
   status_leds_init();
+  button_init();
 
 #ifdef LED_INDICATION_OF_VTX_MODE
   resetModeIndication();
@@ -101,6 +103,8 @@ void loop(void)
     trampProcessSerial();
   else
     smartaudioProcessSerial();
+
+  checkButton();
 
   rtc6705PowerUpAfterPLLSettleTime();
 
