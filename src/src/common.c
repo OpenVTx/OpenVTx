@@ -86,7 +86,7 @@ void status_led3(uint8_t state)
 void setPowerdB(float dB)
 {
     myEEPROM.currPowerdB = dB;
-    updateEEPROM = 1;
+    updateEEPROM();
 
     if (pitMode)
     {
@@ -95,14 +95,13 @@ void setPowerdB(float dB)
     } else
     {
       rtc6705PowerAmpOn();
-      target_set_power_dB(dB);
+      target_set_power_dB(myEEPROM.currPowerdB);
     }
 }
 
 void setPowermW(uint16_t mW)
 {
     myEEPROM.currPowermW = mW;
-    updateEEPROM = 1;
 
     float dB = 10.0 * log10f((float)mW);  // avoid double conversion!
     setPowerdB(dB);

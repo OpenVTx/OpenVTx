@@ -142,7 +142,7 @@ uint8_t rtc6705CheckFrequency()
 void rtc6705WriteFrequency(uint32_t newFreq)
 {
   myEEPROM.currFreq = newFreq;
-  updateEEPROM = 1;
+  updateEEPROM();
 
   uint32_t freq = newFreq * 1000U;
   freq /= 40;

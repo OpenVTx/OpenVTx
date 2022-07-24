@@ -4,7 +4,7 @@
 
 #define versionEEPROM 0x111
 
-extern uint8_t updateEEPROM;
+uint32_t updateEEPROMtime;
 
 typedef enum
 {
@@ -30,6 +30,7 @@ typedef struct
 
 extern openVTxEEPROM myEEPROM;
 
+void updateEEPROM(void);
 void defaultEEPROM(void);
 void readEEPROM(void);
 void writeEEPROM(void);

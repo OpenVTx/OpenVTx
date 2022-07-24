@@ -35,7 +35,6 @@ static void start_serial(uint8_t type)
   }
   serial_begin(baud, UART_TX, UART_RX, stopbits);
   myEEPROM.vtxMode = type;
-  updateEEPROM = 1;
 }
 
 void checkRTC6705isAlive()

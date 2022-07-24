@@ -43,8 +43,12 @@ static int flash_storage_write(uint32_t const * data, uint32_t size)
     if (!data || !size || EEPROM_SIZE < size)
         return -1;
 
-    if (!memcmp((void*)address, data, size))
-        return -1;
+    /* 
+        Returns false results when changing only currPowerdB.
+        Commenting out for now to force writing.
+    */
+    // if (!memcmp((void*)address, data, size))
+    //     return -1;
 
     /* unlock the flash program/erase controller */
     fmc_unlock();

@@ -283,7 +283,7 @@ void smartaudioProcessModePacket(void)
         setPowerdB(myEEPROM.currPowerdB);
     }
 
-    updateEEPROM = 1;
+    updateEEPROM();
 
     bitWrite(operationMode, 0, myEEPROM.pitmodeInRange);
     bitWrite(operationMode, 1, myEEPROM.pitmodeOutRange);
