@@ -7,15 +7,6 @@
 #include <math.h>
 #include "helpers.h"
 
-const uint16_t channelFreqTable[48] = {
-    5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // A
-    5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866, // B
-    5705, 5685, 5665, 5645, 5885, 5905, 5925, 5945, // E
-    5740, 5760, 5780, 5800, 5820, 5840, 5860, 5880, // F
-    5658, 5695, 5732, 5769, 5806, 5843, 5880, 5917, // R
-    5333, 5373, 5413, 5453, 5493, 5533, 5573, 5613  // L
-};
-
 const uint8_t channelFreqLabel[48] = {
     'B', 'A', 'N', 'D', '_', 'A', ' ', ' ', // A
     'B', 'A', 'N', 'D', '_', 'B', ' ', ' ', // B
@@ -31,6 +22,7 @@ uint8_t rxPacket[64];
 uint8_t txPacket[64];
 uint8_t vtxModeLocked;
 uint8_t pitMode = 0;
+uint8_t initFreqPacketRecived = 0;
 
 uint16_t channelFreqTable[FREQ_TABLE_SIZE] = {
     5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // A

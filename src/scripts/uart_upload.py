@@ -81,7 +81,10 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
     rl = SerialHelper.SerialHelper(conn, 2., ["CCC"], half_duplex)
     rl.clear()
 
-    if "CCC" not in rl.read_line(2.):
+    bootloader_tries = 0
+    while "CCC" not in rl.read_line(2.):
+        if bootloader_tries == 10:
+            break
 
         ## Send command to firmware to boot into bootloader
         dbg_print("\nAttempting to reboot into bootloader...\n")
