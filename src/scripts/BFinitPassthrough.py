@@ -23,7 +23,7 @@ def bf_passthrough_init(port, requestedBaudrate=None, half_duplex=False):
 
     sys.stdout.flush()
     dbg_print("======== PASSTHROUGH INIT ========")
-    dbg_print("  Trying to initialize %s @ %s" % (port, requestedBaudrate))
+    dbg_print("  Trying to initialize %s" % (port))
 
     s = serial.Serial(port=port, baudrate=115200,
         bytesize=8, parity='N', stopbits=1,
@@ -59,28 +59,29 @@ def bf_passthrough_init(port, requestedBaudrate=None, half_duplex=False):
                 dbg_print("  '%s'" % line)
             config = re.search('serial ([0-9]+) ([0-9]+) ', line)
             if config:
-                if config.group(2) == "2048":
+                if config.group(2) == "2048": # BF https://github.com/betaflight/betaflight/blob/master/docs/Serial.md
                     dbg_print("    ** VTX SA config detected: '%s'" % line)
                     SerialRXindex = config.group(1)
                     vtx_type = "SA"
-                    requestedBaudrate = 4800
-                elif config.group(2) == "8192": # BF https://github.com/betaflight/betaflight/blob/master/docs/Serial.md
+                elif config.group(2) == "8192":
                     dbg_print("    ** VTX Tramp config detected: '%s'" % line)
                     SerialRXindex = config.group(1)
                     vtx_type = "TRAMP"
-                    requestedBaudrate = 9600
                 elif config.group(2) == "4096": # INav.  4096 is also FUNCTION_TELEMETRY_IBUS in BF.  So this might cause issues.
                     dbg_print("    ** VTX Tramp config detected: '%s'" % line)
                     SerialRXindex = config.group(1)
                     vtx_type = "TRAMP"
-                    requestedBaudrate = 9600
+                elif config.group(2) == "131073":
+                    dbg_print("    ** VTX MSP config detected: '%s'" % line)
+                    SerialRXindex = config.group(1)
+                    vtx_type = "MSP"
                 if not debug:
                     break
 
     if not SerialRXindex:
-        raise PassthroughFailed("!!! RX Serial not found !!!!\n  Check configuration and try again...")
+        raise PassthroughFailed("!!! VTx Serial not found !!!!\n  Check configuration and try again...")
 
-    cmd = "serialpassthrough %s %s" % (SerialRXindex, requestedBaudrate, )
+    cmd = "serialpassthrough %s" % (SerialRXindex)
 
     dbg_print("Enabling serial passthrough...")
     dbg_print("  CMD: '%s'" % cmd)

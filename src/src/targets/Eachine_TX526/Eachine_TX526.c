@@ -4,7 +4,7 @@
 #include <Arduino.h>
 
 
-uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS] = {0, 1, 14, 23};
+uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS] = {1, RACE_MODE, 14, 20, 26};
 
 
 void target_rfPowerAmpPinSetup(void)

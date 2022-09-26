@@ -10,6 +10,7 @@ typedef enum
 {
   TRAMP,
   SMARTAUDIO,
+  MSP,
   //BOOTLOADER,
   VTX_MODE_MAX
 } vtxMode_e;

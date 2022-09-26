@@ -184,9 +184,9 @@ void smartaudioProcessChannelPacket(void)
             SA_CMD_SET_CHAN, sizeof(sa_u8_resp_t));
     uint8_t channel = rxPacket[4];
 
-    if (channel < FREQ_TABLE_SIZE) {
+    if (channel < getFreqTableSize()) {
         myEEPROM.channel = channel;
-        rtc6705WriteFrequency(channelFreqTable[channel]);
+        rtc6705WriteFrequency(getFreqByIdx(channel));
         myEEPROM.freqMode = 0;
     } else {
         channel = myEEPROM.channel;
@@ -353,7 +353,7 @@ void smartaudioProcessSerial(void)
                         break;
                     case SA_CMD_BOOTLOADER:
                         if (rxPacket[4] == 'R' && rxPacket[5] == 'S' && rxPacket[6] == 'T')
-                            reboot_into_bootloader(SMARTAUDIO_BAUD);
+                            reboot_into_bootloader(4801); // LSB represents stopbits. 0 = 1 stopbit, 1 = 2 stopbit.  SA passthrough requires 2 stopbits.
                         break;
                     }
                     #ifndef LED_INDICATION_OF_VTX_MODE

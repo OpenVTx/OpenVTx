@@ -5,11 +5,24 @@
 #include "rtc6705.h"
 #include <string.h>
 #include <math.h>
+#include "helpers.h"
 
-uint8_t rxPacket[16];
-uint8_t txPacket[18];
+const uint8_t channelFreqLabel[48] = {
+    'B', 'A', 'N', 'D', '_', 'A', ' ', ' ', // A
+    'B', 'A', 'N', 'D', '_', 'B', ' ', ' ', // B
+    'B', 'A', 'N', 'D', '_', 'E', ' ', ' ', // E
+    'F', 'A', 'T', 'S', 'H', 'A', 'R', 'K', // F
+    'R', 'A', 'C', 'E', ' ', ' ', ' ', ' ', // R
+    'R', 'A', 'C', 'E', '_', 'L', 'O', 'W', // L
+};
+
+const uint8_t bandLetter[6] = {'A', 'B', 'E', 'F', 'R', 'L'};
+
+uint8_t rxPacket[64];
+uint8_t txPacket[64];
 uint8_t vtxModeLocked;
 uint8_t pitMode = 0;
+uint8_t initFreqPacketRecived = 0;
 
 uint16_t channelFreqTable[FREQ_TABLE_SIZE] = {
     5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // A
@@ -19,6 +32,36 @@ uint16_t channelFreqTable[FREQ_TABLE_SIZE] = {
     5658, 5695, 5732, 5769, 5806, 5843, 5880, 5917, // R
     5333, 5373, 5413, 5453, 5493, 5533, 5573, 5613  // L
 };
+
+uint8_t getFreqTableSize(void)
+{
+    return ARRAY_SIZE(channelFreqTable);
+}
+
+uint8_t getFreqTableBands(void)
+{
+    return getFreqTableSize() / getFreqTableChannels();
+}
+
+uint8_t getFreqTableChannels(void)
+{
+    return 8;
+}
+
+uint16_t getFreqByIdx(uint8_t idx)
+{
+    return channelFreqTable[idx];
+}
+
+uint8_t channelFreqLabelByIdx(uint8_t idx)
+{
+    return channelFreqLabel[idx];
+}
+
+uint8_t getBandLetterByIdx(uint8_t idx)
+{
+    return bandLetter[idx];
+}
 
 void clearSerialBuffer(void)
 {
