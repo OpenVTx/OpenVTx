@@ -23,6 +23,8 @@ extern uint8_t saPowerLevelsLabel[SA_NUM_POWER_LEVELS * POWER_LEVEL_LABEL_LENGTH
 
 #define RTC_BIAS      PB5
 
+#define BUTTON        PA6
+
 /******* Target specific declarations *******/
 #include <gd32f1x0.h>
 #include "gpio.h"

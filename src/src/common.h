@@ -22,6 +22,9 @@
 
 extern uint8_t rxPacket[64];
 extern uint8_t txPacket[64];
+#define FREQ_TABLE_SIZE 48
+
+extern uint16_t channelFreqTable[FREQ_TABLE_SIZE];
 
 extern uint8_t vtxModeLocked;
 extern uint8_t pitMode;

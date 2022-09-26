@@ -16,7 +16,9 @@
 #include "targets/Eachine_TX526/Eachine_TX526.h"
 #elif defined(EWRF_E7082VM)
 #include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
-#elif defined(Pancake)
+#elif defined(HAPPYMODEL_PANCAKE)
+#include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
+#elif defined(BETAFPV_A03)
 #include "targets/EWRF_E7082VM/EWRF_E7082VM.h"
 #endif
 
