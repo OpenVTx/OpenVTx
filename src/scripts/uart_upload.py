@@ -119,7 +119,9 @@ def uart_upload(port, filename, protocol=None, half_duplex=True):
         # clear RX buffer before continuing
         rl.clear()
         rl.write(BootloaderInitSeq)
-        time.sleep(1)
+        time.sleep(.1)
+
+        bootloader_tries += 1
 
     rl.clear()
 
