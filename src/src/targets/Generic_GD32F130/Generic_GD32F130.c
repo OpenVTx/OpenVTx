@@ -34,7 +34,7 @@ uint16_t pwm_val = 2500;
 uint16_t VpdSetPoint = 0;
 uint8_t amp_state = 0;
 
-#if defined(EWRF_E7082VM)
+#if defined(GENERIC_GD32F130)
   #define CAL_FREQ_SIZE 9
   #define CAL_DBM_SIZE 17
   uint16_t calFreqs[CAL_FREQ_SIZE] = {5600,	5650,	5700,	5750,	5800,	5850,	5900, 5950, 6000};
