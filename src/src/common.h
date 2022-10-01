@@ -18,8 +18,6 @@
 #define IS_FACTORY_BAND                 0
 #define CHANNEL_COUNT                   8
 
-// #define LED_INDICATION_OF_VTX_MODE
-
 extern uint8_t rxPacket[64];
 extern uint8_t txPacket[64];
 #define FREQ_TABLE_SIZE 48

@@ -9,10 +9,7 @@
 #include "errorCodes.h"
 #include "gpio.h"
 #include "button.h"
-
-#ifdef LED_INDICATION_OF_VTX_MODE
 #include "modeIndicator.h"
-#endif
 
 #if !DEBUG
 static uint32_t protocol_checked;
@@ -73,9 +70,7 @@ void setup(void)
   status_leds_init();
   button_init();
 
-#ifdef LED_INDICATION_OF_VTX_MODE
   resetModeIndication();
-#endif /* LED_INDICATION_OF_VTX_MODE */
 }
 
 void loop(void)
@@ -140,9 +135,12 @@ void loop(void)
 
   target_loop();
 
-#ifndef LED_INDICATION_OF_VTX_MODE
-  status_led2(vtxModeLocked);
-#else
+  if (LED_INDICATION_OF_VTX_MODE && vtxModeLocked && myEEPROM.vtxMode != TRAMP) // TRAMP doesnt use VTx Tables so LED indication of band/channel doesnt really work.
+  {
     modeIndicationLoop();
-#endif
+  }
+  else
+  {
+    status_led2(vtxModeLocked);
+  }
 }
