@@ -78,8 +78,6 @@ void checkButton(void)
             rtc6705WriteFrequency(channelFreqTable[myEEPROM.channel]);
         }
 
-        #ifdef LED_INDICATION_OF_VTX_MODE
         resetModeIndication();
-        #endif
     }
 }
