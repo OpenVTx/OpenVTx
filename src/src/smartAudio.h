@@ -4,3 +4,4 @@
 
 void smartaudioBuildSettingsPacket(void);
 void smartaudioProcessSerial(void);
+void smartaudioReset(void);

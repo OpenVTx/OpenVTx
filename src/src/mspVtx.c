@@ -94,6 +94,12 @@ uint8_t mspCalcCrc(uint8_t crc, unsigned char a)
     return crc;
 }
 
+void mspReset(void)
+{
+    state = MSP_SYNC_DOLLAR;
+    in_idx = 0;
+}
+
 void mspSendPacket(uint8_t len)
 {
     delay(10); // Flight Controller needs a bit time to swap TX to RX state
