@@ -148,8 +148,11 @@ uint8_t rtc6705CheckFrequency()
 
 void rtc6705WriteFrequency(uint32_t newFreq)
 {
-  myEEPROM.currFreq = newFreq;
-  updateEEPROM();
+  if (myEEPROM.currFreq != newFreq)
+  {
+    myEEPROM.currFreq = newFreq;
+    updateEEPROM();
+  }
 
   uint32_t freq = newFreq * 1000U;
   freq /= 40;
@@ -159,6 +162,9 @@ void rtc6705WriteFrequency(uint32_t newFreq)
   uint32_t newRegData = SynthesizerRegisterB | (WRITE_BIT << 4) | (SYN_RF_A_REG << 5) | (SYN_RF_N_REG << 12);
 
   uint32_t currentRegData = SynthesizerRegisterB | (WRITE_BIT << 4) | rtc6705readRegister(SynthesizerRegisterB);
+
+  // Always set powerUpAfterSettleTime so that setPowerdB() is latter called and any changes to power level are set.
+  powerUpAfterSettleTime = millis() + PLL_SETTLE_TIME;
 
   if (newRegData == currentRegData)
     return;
@@ -171,8 +177,6 @@ void rtc6705WriteFrequency(uint32_t newFreq)
 
   /* Set frequency */
   rtc6705writeRegister(newRegData);
-
-  powerUpAfterSettleTime = millis() + PLL_SETTLE_TIME;
 }
 
 void rtc6705PowerUpAfterPLLSettleTime()

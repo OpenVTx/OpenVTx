@@ -137,8 +137,11 @@ void status_led3(uint8_t state)
 
 void setPowerdB(float dB)
 {
-    myEEPROM.currPowerdB = dB;
-    updateEEPROM();
+    if (myEEPROM.currPowerdB != dB)
+    {
+      myEEPROM.currPowerdB = dB;
+      updateEEPROM();
+    }
 
     if (pitMode)
     {

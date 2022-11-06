@@ -273,37 +273,6 @@ void queryVtxTablePowerLevel(uint8_t idx)
     mspSendPacket(MSP_HEADER_SIZE+payloadSize+1);
 }
 
-void setDefaultBandChannelPower()
-{
-    uint16_t payloadSize = 4;
-
-    mspCreateHeader();
-
-    txPacket[4] = MSP_SET_VTX_CONFIG & 0xFF;
-    txPacket[5] = (MSP_SET_VTX_CONFIG >> 8) & 0xFF;
-    
-    txPacket[6] = payloadSize & 0xFF;
-    txPacket[7] = (payloadSize >> 8) & 0xFF;
-
-    
-    txPacket[8] = 27; // idx LSB - Set default to F4 5800MHz
-    txPacket[9] = 0;  // idx MSB
-    txPacket[10] = 3; // 25mW Power idx
-    txPacket[11] = 0; // pitmode
-    
-    uint8_t crc = 0;
-    for(int i = 3; i < MSP_HEADER_SIZE+payloadSize; i++)
-    {
-        crc = mspCalcCrc(crc, txPacket[i]);
-    }
-
-    txPacket[MSP_HEADER_SIZE+payloadSize] = crc;
-
-    mspSendPacket(MSP_HEADER_SIZE+payloadSize+1);
-
-    eepromWriteRequired = 1;
-}
-
 void clearVtxTable(void)
 {
     uint16_t payloadSize = 15;
@@ -317,15 +286,15 @@ void clearVtxTable(void)
     txPacket[7] = (payloadSize >> 8) & 0xFF;
 
     
-    txPacket[8] = 28; // idx LSB - Set default to F4 5800MHz
+    txPacket[8] = 0; // idx LSB
     txPacket[9] = 0;  // idx MSB
     txPacket[10] = 3; // 25mW Power idx
     txPacket[11] = 0; // pitmode
     txPacket[12] = 0; // lowPowerDisarm 
     txPacket[13] = 0; // pitModeFreq LSB
     txPacket[14] = 0; // pitModeFreq MSB
-    txPacket[15] = 1; // newBand 
-    txPacket[16] = 1; // newChannel 
+    txPacket[15] = 4; // newBand - Band Fatshark
+    txPacket[16] = 4; // newChannel - Channel 4
     txPacket[17] = 0; // newFreq  LSB
     txPacket[18] = 0; // newFreq  MSB
     txPacket[19] = 6; // newBandCount  
@@ -364,16 +333,27 @@ void mspProcessPacket(void)
 
             //  Store initially received values.  If the VTx Table is correct, only then set these values.  //
             pitMode = in_mspVtxConfigStruct.pitmode;
-            if (in_mspVtxConfigStruct.lowPowerDisarm)
+
+            in_mspVtxConfigStruct.power -= 1; // Correct for BF starting at 1.
+            if (in_mspVtxConfigStruct.lowPowerDisarm) // Force on boot because BF doesnt send a low power index.
             {
-                in_mspVtxConfigStruct.power = 0;
-            } else
-            {
-                in_mspVtxConfigStruct.power -= 1; // Correct for BF starting at 1.
+                in_mspVtxConfigStruct.power = 0; 
             }
-            myEEPROM.currPowerdB = saPowerLevelsLut[in_mspVtxConfigStruct.power];
-            channel = ((in_mspVtxConfigStruct.band - 1) * 8) + (in_mspVtxConfigStruct.channel - 1);    
-            myEEPROM.channel = channel;
+
+            if (in_mspVtxConfigStruct.power < SA_NUM_POWER_LEVELS)
+            {
+                myEEPROM.currPowerdB = saPowerLevelsLut[in_mspVtxConfigStruct.power];
+            }
+            else
+            {
+                myEEPROM.currPowerdB = 14; // 25 mW
+            }
+            
+            myEEPROM.channel = ((in_mspVtxConfigStruct.band - 1) * 8) + (in_mspVtxConfigStruct.channel - 1);   
+            if (myEEPROM.channel >= getFreqTableSize())
+            {
+                myEEPROM.channel = 27; // F4 5800MHz
+            } 
             myEEPROM.freqMode = 0;
             //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -605,15 +585,9 @@ void mspUpdate(uint32_t now)
             queryVtxTableBand(checkingIndex + 1);
             break;
         case SET_DEFAULTS:
-            setDefaultBandChannelPower();
-            
             initFreqPacketRecived = 1;
-            pitMode = 0;
-            myEEPROM.currPowerdB = 14; // 24 mW
-            myEEPROM.channel = 27; // F4 5800MHz
             setPowerdB(myEEPROM.currPowerdB);
             rtc6705WriteFrequency(getFreqByIdx(myEEPROM.channel));
-
             break;
         case SEND_EEPROM_WRITE:
             sendEepromWrite();
