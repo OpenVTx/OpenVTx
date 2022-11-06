@@ -40,6 +40,17 @@ If using SmartAudio or TRAMP, setup the Ports tab as normal, then pick the Smart
 
 <img src="img/BF_Preset_1.png" width="40%"><img src="img/BF_Preset_2.png" width="40%">
 
+# Firmware Updating
+
+The online Configurator can be used with Chrome https://openvtx.org/.
+
+Any VTx that is currently connected to a flight controller and working via MSP/SA/TRAMP can be updated.  For newly flashed DIY hardware with just the bootloader flashed, the FC must be setup with SA as that is the default protocol for the bootloader.
+
+- First close any flight controller Configurators.  If open they will connect to the FC and block the update.
+- Power the FC and VTx.
+- Connect the FC USB.
+- Select the Version, Target, and press Flash.
+
 # Currently Supported VTx
 
 OpenVTx is continually adding support for more hardware.  The most up to date list will be found in the ```platformio.ini``` file. https://github.com/OpenVTx/OpenVTx/blob/master/src/platformio.ini
