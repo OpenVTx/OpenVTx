@@ -163,7 +163,7 @@ void rtc6705WriteFrequency(uint32_t newFreq)
 
   uint32_t currentRegData = SynthesizerRegisterB | (WRITE_BIT << 4) | rtc6705readRegister(SynthesizerRegisterB);
 
-  // Always set powerUpAfterSettleTime so that setPowerdB() is latter called and any chances to power level are set.
+  // Always set powerUpAfterSettleTime so that setPowerdB() is latter called and any changes to power level are set.
   powerUpAfterSettleTime = millis() + PLL_SETTLE_TIME;
 
   if (newRegData == currentRegData)
