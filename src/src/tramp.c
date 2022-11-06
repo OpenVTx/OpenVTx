@@ -16,6 +16,13 @@ struct tramp_msg {
     uint8_t crc;
 };
 
+enum {
+    TRAMP_SYNC = 0,
+    TRAMP_DATA,
+    TRAMP_CRC,
+};
+
+static uint8_t state, in_idx;
 
 uint8_t trampCalcCrc(uint8_t *packet)
 {
@@ -27,6 +34,12 @@ uint8_t trampCalcCrc(uint8_t *packet)
     }
 
     return crc;
+}
+
+void trampReset(void)
+{
+    state = TRAMP_SYNC;
+    in_idx = 0;
 }
 
 void trampSendPacket(void)
@@ -121,14 +134,6 @@ void trampProcessIPacket(void)
 
     updateEEPROM();
 }
-
-enum {
-    TRAMP_SYNC = 0,
-    TRAMP_DATA,
-    TRAMP_CRC,
-};
-
-static uint8_t state, in_idx;
 
 void trampProcessSerial(void)
 {

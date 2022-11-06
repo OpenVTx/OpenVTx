@@ -22,14 +22,17 @@ static void start_serial(uint8_t type)
     case TRAMP:
       baud = TRAMP_BAUD;
       stopbits = 1;
+      trampReset();    
       break;
     case SMARTAUDIO:
       baud = SMARTAUDIO_BAUD;
       stopbits = 2;
+      smartaudioReset();
       break;
     case MSP:
       baud = MSP_BAUD;
       stopbits = 1;
+      mspReset();
       break;
     default:
       baud = 115200;
@@ -80,7 +83,7 @@ void loop(void)
 #if !DEBUG
   if (!vtxModeLocked)
   {
-    if (PROTOCOL_CHECK_TIMEOUT <= (now - protocol_checked))
+    if (PROTOCOL_CHECK_TIMEOUT <= (now - protocol_checked) && !serial_available()) // Do not change protocol while serial data is still available for processing.
     {
       uint8_t mode = (uint8_t)myEEPROM.vtxMode;
       mode = (mode + 1) % VTX_MODE_MAX;

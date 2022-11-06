@@ -10,6 +10,13 @@
 #define CRC_LEN         1
 #define LEGHT_CALC(len) (sizeof(sa_header_t) + CRC_LEN + (len))
 
+#define PIT_MODE_FREQ_GET   (0x1 << 14)
+#define PIT_MODE_FREQ_SET   (0x1 << 15)
+
+#define SA_SYNC_BYTE    0xAA
+#define SA_HEADER_BYTE  0x55
+#define RESERVE_BYTE    0x01
+
 // SmartAudio command and response codes
 enum {
     SA_CMD_NONE = 0x00,
@@ -24,14 +31,6 @@ enum {
     /* Internal custom commands */
     SA_CMD_BOOTLOADER = 0x78,
 };
-
-#define PIT_MODE_FREQ_GET   (0x1 << 14)
-#define PIT_MODE_FREQ_SET   (0x1 << 15)
-
-#define SA_SYNC_BYTE    0xAA
-#define SA_HEADER_BYTE  0x55
-#define RESERVE_BYTE    0x01
-
 
 typedef struct {
     uint8_t sync;
@@ -60,6 +59,16 @@ typedef struct {
     uint8_t reserved;
 } sa_u16_resp_t;
 
+enum {
+    SA_SYNC = 0,
+    SA_HEADER,
+    SA_COMMAND,
+    SA_LENGTH,
+    SA_DATA,
+    SA_CRC,
+};
+
+static uint8_t state, in_idx, in_len;
 
 static uint8_t findPowerIndexFromLut(uint8_t const dBm)
 {
@@ -105,6 +114,11 @@ uint8_t smartadioCalcCrc(const uint8_t *data, uint8_t len)
     return crc;
 }
 
+void smartaudioReset(void)
+{
+    state = SA_SYNC;
+    in_idx = 0;
+}
 
 void smartaudioSendPacket(void)
 {
@@ -284,18 +298,6 @@ void smartaudioProcessModePacket(void)
 
     smartaudioSendPacket();
 }
-
-
-enum {
-    SA_SYNC = 0,
-    SA_HEADER,
-    SA_COMMAND,
-    SA_LENGTH,
-    SA_DATA,
-    SA_CRC,
-};
-
-static uint8_t state, in_idx, in_len;
 
 void smartaudioProcessSerial(void)
 {
