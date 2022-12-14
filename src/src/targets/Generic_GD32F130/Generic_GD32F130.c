@@ -17,13 +17,22 @@
  *    Index 0 is ignored [https://github.com/iNavFlight/inav/blob/a8016edd0d6f05bb12a75b0ea75a3483772baaeb/src/main/io/vtx_smartaudio.c#L334]
  *
  */
-uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS] = {1, RACE_MODE, 14, 20, 26};
 
+#if defined(GENERIC_GD32F130_1W)
+uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS] = {1, RACE_MODE, 14, 20, 30};
+uint8_t saPowerLevelsLabel[SA_NUM_POWER_LEVELS * POWER_LEVEL_LABEL_LENGTH] = {'0', ' ', ' ',
+                                                                              'R', 'C', 'E',
+                                                                              '2', '5', ' ',
+                                                                              '1', '0', '0',
+                                                                              ' ', '1', 'W'};
+#else
+uint8_t saPowerLevelsLut[SA_NUM_POWER_LEVELS] = {1, RACE_MODE, 14, 20, 26};
 uint8_t saPowerLevelsLabel[SA_NUM_POWER_LEVELS * POWER_LEVEL_LABEL_LENGTH] = {'0', ' ', ' ',
                                                                               'R', 'C', 'E',
                                                                               '2', '5', ' ',
                                                                               '1', '0', '0',
                                                                               '4', '0', '0'};
+#endif
 
 gpio_pwm_t outputPowerTimer;
 gpio_out_t vref_pin;
@@ -58,6 +67,17 @@ uint8_t amp_state = 0;
   {1450, 1450, 1450, 1455, 1450, 1450, 1450, 1450, 1435},
   {1450, 1450, 1450, 1455, 1465, 1460, 1460, 1450, 1445}
   };
+#elif defined(GENERIC_GD32F130_1W)
+  #define CAL_FREQ_SIZE 9
+  #define CAL_DBM_SIZE 4
+  uint8_t calDBm[CAL_DBM_SIZE] = {10, 14, 20, 30};
+  uint16_t calFreqs[CAL_FREQ_SIZE] =  {5600,  5650, 5700, 5750, 5800, 5850, 5900, 5950, 6000};
+  uint16_t calVpd[CAL_DBM_SIZE][CAL_FREQ_SIZE] = {                                        
+                                      { 310,   310,  320,  320,  330,  340,  340,  340,  340}, // 10mW
+                                      { 450,   460,  460,  470,  480,  505,  505,  505,  505}, // 25 mW
+                                      { 820,   830,  830,  840,  860,  890,  890,  895,  895}, // 100 mW
+                                      {1450,  1450, 1450, 1450, 1450, 1450, 1450, 1450, 1450}  // ~1000 mW
+                                      };  
 #elif defined(HAPPYMODEL_PANCAKE)
   #define CAL_FREQ_SIZE 9
   #define CAL_DBM_SIZE 4
