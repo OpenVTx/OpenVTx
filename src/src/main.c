@@ -138,7 +138,7 @@ void loop(void)
 
   target_loop();
 
-  if (LED_INDICATION_OF_VTX_MODE && vtxModeLocked && myEEPROM.vtxMode != TRAMP) // TRAMP doesnt use VTx Tables so LED indication of band/channel doesnt really work.
+  if (LED_INDICATION_OF_VTX_MODE && !(vtxModeLocked && myEEPROM.vtxMode == TRAMP)) // TRAMP doesnt use VTx Tables so LED indication of band/channel doesnt really work.
   {
     modeIndicationLoop();
   }
