@@ -11,6 +11,7 @@
 
 #define DEBOUNCE_TIME   50
 #define LONG_PRESS_TIME 1000
+#define LONGER_PRESS_TIME 3000
 #define DEFAULT_TIME    10000
 
 enum
@@ -34,6 +35,8 @@ void button_init(void)
 void checkButton(void)
 {
     uint32_t now = millis();
+    uint8_t band = 0;
+    uint8_t channel = 0;
     previous_button_state = current_button_state;
     current_button_state = gpio_in_read(buttonPin);
 
@@ -45,39 +48,46 @@ void checkButton(void)
     // Button released
     if (current_button_state == BUTTON_RELEASED && previous_button_state == BUTTON_PRESSED)
     {
-        vtxModeLocked = 1;
+      vtxModeLocked = 1;
 
-        uint32_t elapsedTime = now - pressed_time_ms;
+      uint32_t elapsedTime = now - pressed_time_ms;
 
-        // debounce
-        if (elapsedTime < DEBOUNCE_TIME)
-        {
-            return;
-        } else
-        // short press
-        if (elapsedTime < LONG_PRESS_TIME)
-        {
-            myEEPROM.freqMode = 0;
-            myEEPROM.channel = (myEEPROM.channel + 1) % FREQ_TABLE_SIZE;
-            rtc6705WriteFrequency(channelFreqTable[myEEPROM.channel]);
-        } else
-        // long press
-        if (elapsedTime < DEFAULT_TIME)
-        {
-            uint8_t idx = 0;
-            for (idx = 0; idx < SA_NUM_POWER_LEVELS; idx++)
-            {
-                if (myEEPROM.currPowerdB == saPowerLevelsLut[idx]) break;
-            }
-            myEEPROM.currPowerdB = saPowerLevelsLut[(idx + 1) % SA_NUM_POWER_LEVELS];
-            setPowerdB(myEEPROM.currPowerdB);
-        } else
-        // default EEPROM
-        {
-            defaultEEPROM();
-            rtc6705WriteFrequency(channelFreqTable[myEEPROM.channel]);
-        }
-
-        resetModeIndication();
+      // debounce
+      if (elapsedTime < DEBOUNCE_TIME)
+      {
+          return;
+      } else
+      // short press - change channel
+      if (elapsedTime < LONG_PRESS_TIME)
+      {
+          myEEPROM.freqMode = 0;
+          band = (int)myEEPROM.channel/8;
+          channel = myEEPROM.channel%8;
+          myEEPROM.channel = (band * 8) + ((channel + 1) % 8);
+          rtc6705WriteFrequency(channelFreqTable[myEEPROM.channel]);
+      } else
+      // longer press - change band
+      if ((elapsedTime >= LONG_PRESS_TIME) && (elapsedTime < LONGER_PRESS_TIME))
+      {
+          myEEPROM.freqMode = 0;
+          myEEPROM.channel = (myEEPROM.channel + 8) % FREQ_TABLE_SIZE;
+          rtc6705WriteFrequency(channelFreqTable[myEEPROM.channel]);
+      } else
+      if (elapsedTime < DEFAULT_TIME)
+      {
+          uint8_t idx = 0;
+          for (idx = 0; idx < SA_NUM_POWER_LEVELS; idx++)
+          {
+              if (myEEPROM.currPowerdB == saPowerLevelsLut[idx]) break;
+          }
+          myEEPROM.currPowerdB = saPowerLevelsLut[(idx + 1) % SA_NUM_POWER_LEVELS];
+          setPowerdB(myEEPROM.currPowerdB);
+      } else
+      // default EEPROM
+      {
+          defaultEEPROM();
+          rtc6705WriteFrequency(channelFreqTable[myEEPROM.channel]);
+      }
+      resetModeIndication();
     }
 }
