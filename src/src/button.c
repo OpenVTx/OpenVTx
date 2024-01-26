@@ -28,7 +28,7 @@ uint8_t previous_button_state = BUTTON_RELEASED;
 
 void button_init(void)
 {
-    buttonPin = gpio_in_setup(BUTTON, 0);
+    buttonPin = gpio_in_setup(BUTTON, 1);
 }
 
 void checkButton(void)
