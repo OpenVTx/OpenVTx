@@ -53,6 +53,11 @@ void checkRTC6705isAlive()
     {
       currentErrorMode = RTC6705_NOT_DETECTED;
     }
+  } else {
+    if (currentErrorMode == RTC6705_NOT_DETECTED)
+    {
+      currentErrorMode = NO_ERROR;
+    }
   }
 }
 
