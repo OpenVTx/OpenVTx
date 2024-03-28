@@ -19,7 +19,7 @@ void rtc6705spiPinSetup(void)
 
 uint32_t rtc6705readRegister(uint8_t reg)
 {
-  uint32_t writeData = reg | (READ_BIT << 4);
+  uint32_t writeData = reg;
   uint32_t readData = 0;
   uint8_t i;
 
