@@ -89,7 +89,7 @@ uint8_t* fill_resp_header(uint8_t cmd, uint8_t len)
     hdr->sync = SA_SYNC_BYTE;
     hdr->header = SA_HEADER_BYTE;
     hdr->command = cmd;
-    hdr->length = len;
+    hdr->length = len + CRC_LEN;
     return &txPacket[sizeof(sa_header_t)];
 }
 
@@ -124,10 +124,9 @@ void smartaudioSendPacket(void)
 {
     sa_header_t * hdr = (sa_header_t*)txPacket;
     uint8_t len = hdr->length + sizeof(sa_header_t);
-    txPacket[len] = smartadioCalcCrc(
+    txPacket[len - CRC_LEN] = smartadioCalcCrc(
         (uint8_t*)&hdr->command,
-        (len - offsetof(sa_header_t, command)));
-    len += CRC_LEN;
+        (len - CRC_LEN - offsetof(sa_header_t, command)));
     // Flight Controller needs a bit time to swap TX to RX state
     delay(10);
     Serial_write_len(txPacket, len);
