@@ -162,7 +162,7 @@ void trampProcessSerial(void)
 
                     switch (rxPacket[1]) // command
                     {
-                    case 'F': // 0x50 - Freq - do not respond to this packet
+                    case 'F': // 0x46 - Freq - do not respond to this packet
                         trampProcessFPacket();
                         break;
                     case 'P': // 0x50 - Power - do not respond to this packet
