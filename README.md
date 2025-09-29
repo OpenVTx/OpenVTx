@@ -10,7 +10,7 @@ Currently SA is fully implemented and test against [Rev. 09](https://www.team-bl
 
 # Features
 
-**MSP Control** - MSP is the most common and vender neutral communication protocol.  Like SmartAudio and TRAMP it can be used to set the VTx frequency, power, and pitmode.  It has the added benefit of being able to self configure the VTx Table used in Betaflight.  When the VTx powers up it will query the flight controller and check for a VTx Table.  If it does not exist, or is incorrect, then OpenVTx will send the correct VTx Table to the flight controller.
+**MSP Control** - MSP is the most common and vendor neutral communication protocol.  Like SmartAudio and TRAMP it can be used to set the VTx frequency, power, and pitmode.  It has the added benefit of being able to self configure the VTx Table used in Betaflight.  When the VTx powers up it will query the flight controller and check for a VTx Table.  If it does not exist, or is incorrect, then OpenVTx will send the correct VTx Table to the flight controller.
 
 **Race Mode** - When at a race event and using pitmode on a switch with Betaflight, select the RCE VTx power level.  It will force pitmode on boot and only use 25mW.
 
