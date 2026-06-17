@@ -322,8 +322,13 @@ void smartaudioProcessSerial(void)
                 state_next = SA_LENGTH;
                 break;
             case SA_LENGTH:
-                state_next = data ? SA_DATA : SA_CRC;
                 in_len = in_idx + data;
+                if(in_len >= sizeof(rxPacket)) {
+                    state_next = SA_SYNC;
+                    in_idx = 0;
+                } else {
+                state_next = data ? SA_DATA : SA_CRC;
+                }
                 break;
             case SA_DATA:
                 state_next = (in_idx < in_len) ? SA_DATA : SA_CRC;
